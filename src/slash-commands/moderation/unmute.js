@@ -89,33 +89,48 @@ export default {
 		const [resultCheck] = await bdd.execute(sqlCheck, dataCheck)
 
 		// Si oui alors on lève le mute en base de données
-		if (resultCheck[0]) {
-			const sqlDelete = 'DELETE FROM mute WHERE discordID = ?'
-			const dataDelete = [member.id]
-			const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
+		if (resultCheck[0])
+			try {
+				const sqlDelete = 'DELETE FROM mute WHERE discordID = ?'
+				const dataDelete = [member.id]
+				const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
 
-			// Si erreur
-			if (!resultDelete.affectedRows) {
-				// Suppression du message privé envoyé
-				// car action de mute non réalisée
+				// Si erreur
+				if (!resultDelete.affectedRows) {
+					// Suppression du message privé envoyé
+					// car action de mute non réalisée
+					DMMessage.delete()
+					return interaction.reply({
+						content:
+							'Une erreur est survenue lors de la levée du mute du membre en base de données 😬',
+					})
+				}
+			} catch {
 				DMMessage.delete()
 				return interaction.reply({
-					content: 'Une erreur est survenue lors du mute du membre en base de données 😬',
+					content:
+						'Une erreur est survenue lors de la levée du mute du membre en base de données 😬',
 				})
 			}
-		}
 
 		// Réinsertion du mute en base de données
 		const reinsertBDD = async () => {
-			const sql =
-				'INSERT INTO mute (discordID, timestampStart, timestampEnd) VALUES (?, ?, ?)'
-			const data = [
-				resultCheck[0].discordID,
-				resultCheck[0].timestampStart,
-				resultCheck[0].timestampEnd,
-			]
+			try {
+				const sql =
+					'INSERT INTO mute (discordID, timestampStart, timestampEnd) VALUES (?, ?, ?)'
+				const data = [
+					resultCheck[0].discordID,
+					resultCheck[0].timestampStart,
+					resultCheck[0].timestampEnd,
+				]
 
-			await bdd.execute(sql, data)
+				await bdd.execute(sql, data)
+			} catch {
+				return interaction.reply({
+					content:
+						'Une erreur est survenue lors de la réinsertion du mute du membre en base de données 😬',
+				})
+			}
 		}
 
 		const unmuteAction = await member.roles.remove(mutedRole).catch(error => {
@@ -124,9 +139,10 @@ export default {
 			DMMessage.delete()
 
 			if (![reinsertBDD()].insertId)
-				console.log(
-					'Une erreur est survenue lors de la réinsertion du mute du membre en base de données',
-				)
+				return interaction.reply({
+					content:
+						'Une erreur est survenue lors de la réinsertion du mute du membre en base de données 😬',
+				})
 
 			if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
 				return interaction.reply({

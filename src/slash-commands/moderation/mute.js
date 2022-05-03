@@ -98,34 +98,50 @@ export default {
 			})
 
 		// Vérification si déjà mute en base de données
-		const sqlCheck = 'SELECT * FROM mute WHERE discordID = ?'
-		const dataCheck = [member.id]
-		const [resultCheck] = await bdd.execute(sqlCheck, dataCheck)
+		try {
+			const sqlCheck = 'SELECT * FROM mute WHERE discordID = ?'
+			const dataCheck = [member.id]
+			const [resultCheck] = await bdd.execute(sqlCheck, dataCheck)
 
-		// Si oui alors on lève le mute en base de données
-		if (resultCheck[0]) {
-			const sqlDelete = 'DELETE FROM mute WHERE discordID = ?'
-			const dataDelete = [member.id]
-			const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
+			// Si oui alors on lève le mute en base de données
+			if (resultCheck[0]) {
+				const sqlDelete = 'DELETE FROM mute WHERE discordID = ?'
+				const dataDelete = [member.id]
+				const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
 
-			if (!resultDelete.affectedRows) {
+				if (!resultDelete.affectedRows) {
+					DMMessage.delete()
+					return interaction.reply({
+						content:
+							'Une erreur est survenue lors du mute du membre en base de données 😬',
+					})
+				}
+			}
+		} catch {
+			DMMessage.delete()
+			return interaction.reply({
+				content: 'Une erreur est survenue lors du mute du membre en base de données 😬',
+			})
+		}
+
+		// Insertion du nouveau mute en base de données
+		try {
+			const sql =
+				'INSERT INTO mute (discordID, timestampStart, timestampEnd) VALUES (?, ?, ?)'
+			const data = [
+				member.id,
+				Math.round(Date.now() / 1000),
+				Math.round(Date.now() / 1000) + duration * 60,
+			]
+			const [resultInsert] = await bdd.execute(sql, data)
+
+			if (!resultInsert.insertId) {
 				DMMessage.delete()
 				return interaction.reply({
 					content: 'Une erreur est survenue lors du mute du membre en base de données 😬',
 				})
 			}
-		}
-
-		// Insertion du nouveau mute en base de données
-		const sql = 'INSERT INTO mute (discordID, timestampStart, timestampEnd) VALUES (?, ?, ?)'
-		const data = [
-			member.id,
-			Math.round(Date.now() / 1000),
-			Math.round(Date.now() / 1000) + duration * 60,
-		]
-		const [resultInsert] = await bdd.execute(sql, data)
-
-		if (!resultInsert.insertId) {
+		} catch {
 			DMMessage.delete()
 			return interaction.reply({
 				content: 'Une erreur est survenue lors du mute du membre en base de données 😬',
@@ -135,21 +151,27 @@ export default {
 		// Action de mute du membre
 		const muteAction = await member.roles.add(mutedRole).catch(error => {
 			DMMessage.delete()
-			const sqlDelete = 'DELETE FROM mute WHERE discordID = ?'
-			const dataDelete = [member.id]
-			bdd.execute(sqlDelete, dataDelete)
+			try {
+				const sqlDelete = 'DELETE FROM mute WHERE discordID = ?'
+				const dataDelete = [member.id]
+				bdd.execute(sqlDelete, dataDelete)
 
-			if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
+				if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
+					return interaction.reply({
+						content: "Je n'ai pas les permissions pour mute ce membre 😬",
+						ephemeral: true,
+					})
+
+				console.error(error)
 				return interaction.reply({
-					content: "Je n'ai pas les permissions pour mute ce membre 😬",
-					ephemeral: true,
+					content: 'Une erreur est survenue lors du mute du membre 😬',
 				})
-
-			console.error(error)
-			return interaction.reply({
-				content: 'Une erreur est survenue lors du mute du membre 😬',
-				ephemeral: true,
-			})
+			} catch {
+				console.error(error)
+				return interaction.reply({
+					content: 'Une erreur est survenue lors du mute du membre 😬',
+				})
+			}
 		})
 
 		// Suppression du rôle muted après le temps écoulé
@@ -163,30 +185,36 @@ export default {
 				if (error.code !== Constants.APIErrors.UNKNOWN_MEMBER) throw error
 			})
 
-			const sqlDelete = 'DELETE FROM mute WHERE discordID = ?'
-			const dataDelete = [member.id]
-			const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
+			try {
+				const sqlDelete = 'DELETE FROM mute WHERE discordID = ?'
+				const dataDelete = [member.id]
+				const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
 
-			if (resultDelete)
-				member
-					.send({
-						embeds: [
-							{
-								color: '#C27C0E',
-								title: 'Mute terminé',
-								description: unmuteDM,
-								author: {
-									name: interaction.guild.name,
-									icon_url: interaction.guild.iconURL({ dynamic: true }),
-									url: interaction.guild.vanityURL,
+				if (resultDelete)
+					member
+						.send({
+							embeds: [
+								{
+									color: '#C27C0E',
+									title: 'Mute terminé',
+									description: unmuteDM,
+									author: {
+										name: interaction.guild.name,
+										icon_url: interaction.guild.iconURL({ dynamic: true }),
+										url: interaction.guild.vanityURL,
+									},
 								},
-							},
-						],
-					})
-					.catch(error => {
-						console.error(error)
-						return error
-					})
+							],
+						})
+						.catch(error => {
+							console.error(error)
+						})
+			} catch (error) {
+				console.error(error)
+				return interaction.reply({
+					content: 'Une erreur est survenue lors de la levé du mute du membre 😬',
+				})
+			}
 		}
 
 		setTimeout(removeRole, duration * 60000)
