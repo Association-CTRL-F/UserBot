@@ -30,6 +30,7 @@ export default () => {
 		},
 	})
 	client.commands = new Collection()
+	client.modals = new Collection()
 	client.cooldowns = new Collection()
 	client.config = {
 		prefix: process.env.COMMANDS_PREFIX,
@@ -68,6 +69,8 @@ export default () => {
 	}
 	// Map utilisé pour la commande "rôles"
 	client.commandsCategories = new Map()
+	// Map utilisé pour la commande "rôles"
+	client.modalsCategories = new Map()
 	// Map utilisé pour la gestion des salons vocaux
 	client.voiceManager = new Map()
 

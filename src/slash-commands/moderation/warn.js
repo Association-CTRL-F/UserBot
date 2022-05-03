@@ -1,9 +1,9 @@
+/* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { Constants } from 'discord.js'
-import { readFile } from 'fs/promises'
 import { db, convertDateForDiscord } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
+import { Modal, TextInputComponent, showModal } from 'discord-modals'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -18,18 +18,7 @@ export default {
 				),
 		)
 		.addSubcommand(subcommand =>
-			subcommand
-				.setName('create')
-				.setDescription('Crée un nouvel avertissement')
-				.addUserOption(option =>
-					option.setName('membre').setDescription('Membre').setRequired(true),
-				)
-				.addStringOption(option =>
-					option
-						.setName('raison')
-						.setDescription("Raison de l'avertissement")
-						.setRequired(true),
-				),
+			subcommand.setName('create').setDescription('Crée un nouvel avertissement'),
 		)
 		.addSubcommand(subcommand =>
 			subcommand
@@ -53,7 +42,10 @@ export default {
 
 		// Afin d'éviter les erreurs, on récupère le membre
 		// pour toutes les commandes sauf "del"
-		if (interaction.options.getSubcommand() !== 'del') {
+		if (
+			interaction.options.getSubcommand() !== 'del' &&
+			interaction.options.getSubcommand() !== 'create'
+		) {
 			// Acquisition du membre
 			user = interaction.options.getUser('membre')
 			member = interaction.guild.members.cache.get(user.id)
@@ -130,89 +122,37 @@ export default {
 					return interaction.reply({
 						content:
 							'Une erreur est survenue lors de la récupération des avertissements 😬',
+						ephemeral: true,
 					})
 				}
 
 			// Crée un nouvel avertissement
 			case 'create':
-				try {
-					// Acquisition de la raison
-					// puis insertion en base de données
-					const reason = interaction.options.getString('raison')
-					const sqlCreate =
-						'INSERT INTO warnings (discordID, warnedBy, warnReason, warnedAt) VALUES (?, ?, ?, ?)'
-					const dataCreate = [
-						member.id,
-						interaction.user.tag,
-						reason,
-						Math.round(Date.now() / 1000),
-					]
-					const [resultCreate] = await bdd.execute(sqlCreate, dataCreate)
+				const modalCreate = new Modal()
+					.setCustomId('warn-create')
+					.setTitle("Création d'un avertissement")
+					.addComponents(
+						new TextInputComponent()
+							.setCustomId('warn-member-id')
+							.setLabel('Discord ID')
+							.setStyle('SHORT')
+							.setMinLength(1)
+							.setMaxLength(255)
+							.setRequired(true),
+					)
+					.addComponents(
+						new TextInputComponent()
+							.setCustomId('warn-reason')
+							.setLabel("Raison de l'avertissement")
+							.setStyle('LONG')
+							.setMinLength(1)
+							.setRequired(true),
+					)
 
-					// Si erreur
-					if (!resultCreate.insertId)
-						return interaction.reply({
-							content:
-								"Une erreur est survenue lors de la création de l'avertissement 😬",
-						})
-
-					// Lecture du message d'avertissement
-					const warnDM = await readFile('./forms/warn.md', { encoding: 'utf8' })
-
-					// Envoi du message d'avertissement en message privé
-					const DMMessage = await member
-						.send({
-							embeds: [
-								{
-									color: '#C27C0E',
-									title: 'Avertissement',
-									description: warnDM,
-									author: {
-										name: interaction.guild.name,
-										icon_url: interaction.guild.iconURL({ dynamic: true }),
-										url: interaction.guild.vanityURL,
-									},
-									fields: [
-										{
-											name: "Raison de l'avertissement",
-											value: reason,
-										},
-									],
-								},
-							],
-						})
-						.catch(error => {
-							if (error.code === Constants.APIErrors.CANNOT_MESSAGE_USER)
-								return interaction.reply({
-									content:
-										"Je n'ai pas réussi à envoyer le DM, l'utilisateur mentionné m'a sûrement bloqué / désactivé les messages provenant du serveur 😬",
-									ephemeral: true,
-								})
-
-							console.error(error)
-							return interaction.reply({
-								content:
-									"Une erreur est survenue lors de la création de l'avertissement 😬",
-								ephemeral: true,
-							})
-						})
-
-					// Si au moins une erreur, throw
-					if (DMMessage instanceof Error)
-						throw new Error(
-							"L'envoi d'un message a échoué. Voir les logs précédents pour plus d'informations.",
-						)
-
-					// Message de confirmation
-					return interaction.reply({
-						content: `⚠️ \`${member.user.tag}\` a reçu un avertissement`,
-					})
-				} catch {
-					return interaction.reply({
-						content:
-							'Une erreur est survenue lors de la récupération des avertissements 😬',
-					})
-				}
+				return showModal(modalCreate, {
+					client: client,
+					interaction: interaction,
+				})
 
 			// Supprime un avertissement
 			case 'del':
@@ -229,6 +169,7 @@ export default {
 						return interaction.reply({
 							content:
 								"Une erreur est survenue lors de la suppression de l'avertissement 😬",
+							ephemeral: true,
 						})
 
 					// Sinon, message de confirmation
@@ -239,6 +180,7 @@ export default {
 					return interaction.reply({
 						content:
 							"Une erreur est survenue lors de la suppression de l'avertissement 😬",
+						ephemeral: true,
 					})
 				}
 
@@ -255,6 +197,7 @@ export default {
 						return interaction.reply({
 							content:
 								'Une erreur est survenue lors de la suppression des avertissements 😬',
+							ephemeral: true,
 						})
 
 					// Sinon, message de confirmation
@@ -265,6 +208,7 @@ export default {
 					return interaction.reply({
 						content:
 							'Une erreur est survenue lors de la suppression des avertissements 😬',
+						ephemeral: true,
 					})
 				}
 		}

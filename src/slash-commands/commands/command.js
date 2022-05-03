@@ -1,7 +1,9 @@
+/* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { db, convertDateForDiscord } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
+import { Modal, TextInputComponent, showModal } from 'discord-modals'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -22,32 +24,10 @@ export default {
 				),
 		)
 		.addSubcommand(subcommand =>
-			subcommand
-				.setName('create')
-				.setDescription('Crée une nouvelle commande')
-				.addStringOption(option =>
-					option.setName('nom').setDescription('Nom de la commande').setRequired(true),
-				)
-				.addStringOption(option =>
-					option
-						.setName('contenu')
-						.setDescription('Contenu de la commande')
-						.setRequired(true),
-				),
+			subcommand.setName('create').setDescription('Crée une nouvelle commande'),
 		)
 		.addSubcommand(subcommand =>
-			subcommand
-				.setName('edit')
-				.setDescription('Modifie une commande')
-				.addStringOption(option =>
-					option.setName('nom').setDescription('Nom de la commande').setRequired(true),
-				)
-				.addStringOption(option =>
-					option
-						.setName('contenu')
-						.setDescription('Contenu de la commande')
-						.setRequired(true),
-				),
+			subcommand.setName('edit').setDescription('Modifie une commande'),
 		)
 		.addSubcommand(subcommand =>
 			subcommand
@@ -60,7 +40,6 @@ export default {
 	interaction: async (interaction, client) => {
 		// Acquisition du nom, du contenu et du mot clé de recherche
 		const nom = interaction.options.getString('nom')
-		const contenu = interaction.options.getString('contenu')
 		const keyword = interaction.options.getString('keyword')
 
 		// Acquisition de la base de données
@@ -87,6 +66,7 @@ export default {
 						return interaction.reply({
 							content:
 								'Une erreur est survenue lors de la récupération des commandes 😬',
+							ephemeral: true,
 						})
 
 					// Sinon, boucle d'ajout des champs
@@ -129,6 +109,7 @@ export default {
 				} catch {
 					return interaction.reply({
 						content: 'Une erreur est survenue lors de la récupération des commandes 😬',
+						ephemeral: true,
 					})
 				}
 
@@ -145,6 +126,7 @@ export default {
 						return interaction.reply({
 							content:
 								'Une erreur est survenue lors de la recherche de la commande 😬',
+							ephemeral: true,
 						})
 
 					// Sinon, boucle d'ajout des champs
@@ -187,89 +169,65 @@ export default {
 				} catch {
 					return interaction.reply({
 						content: 'Une erreur est survenue lors de la recherche de commande 😬',
+						ephemeral: true,
 					})
 				}
 
 			// Nouvelle commande
 			case 'create':
-				try {
-					// Vérification si la commande existe déjà
-					if (rowsCheckName[0])
-						return interaction.reply({
-							content: `La commande **${nom}** existe déjà 😕`,
-							ephemeral: true,
-						})
+				const modalCreate = new Modal()
+					.setCustomId('command-create')
+					.setTitle("Création d'une nouvelle commande")
+					.addComponents(
+						new TextInputComponent()
+							.setCustomId('name-command-create')
+							.setLabel('Nom de la commande')
+							.setStyle('SHORT')
+							.setMinLength(1)
+							.setMaxLength(255)
+							.setRequired(true),
+					)
+					.addComponents(
+						new TextInputComponent()
+							.setCustomId('content-command-create')
+							.setLabel('Contenu de la commande')
+							.setStyle('LONG')
+							.setMinLength(1)
+							.setRequired(true),
+					)
 
-					// Sinon, insertion de la nouvelle commande
-					// en base de données
-					const sqlInsert =
-						'INSERT INTO commands (name, content, author, createdAt, lastModification, lastModificationBy, numberOfUses) VALUES (?, ?, ?, ?, ?, ?, ?)'
-
-					const dataInsert = [
-						nom,
-						contenu,
-						interaction.user.tag,
-						Math.round(new Date() / 1000),
-						Math.round(new Date() / 1000),
-						interaction.user.tag,
-						0,
-					]
-
-					const [rowsInsert] = await bdd.execute(sqlInsert, dataInsert)
-
-					if (rowsInsert.insertId)
-						return interaction.reply({
-							content: `La commande **${nom}** a bien été créée 👌`,
-						})
-
-					return interaction.reply({
-						content: 'Une erreur est survenue lors de la création de la commande 😬',
-						ephemeral: true,
-					})
-				} catch {
-					return interaction.reply({
-						content: 'Une erreur est survenue lors de la création de la commande 😬',
-					})
-				}
+				return showModal(modalCreate, {
+					client: client,
+					interaction: interaction,
+				})
 
 			// Modifie une commande
 			case 'edit':
-				try {
-					// Vérification que la commande existe bien
-					if (!rowsCheckName[0])
-						return interaction.reply({
-							content: `La commande **${nom}** n'existe pas 😕`,
-							ephemeral: true,
-						})
+				const modalEdit = new Modal()
+					.setCustomId('command-edit')
+					.setTitle("Modification d'une commande")
+					.addComponents(
+						new TextInputComponent()
+							.setCustomId('name-command-edit')
+							.setLabel('Nom de la commande')
+							.setStyle('SHORT')
+							.setMinLength(1)
+							.setMaxLength(255)
+							.setRequired(true),
+					)
+					.addComponents(
+						new TextInputComponent()
+							.setCustomId('content-command-edit')
+							.setLabel('Nouveau contenu de la commande')
+							.setStyle('LONG')
+							.setMinLength(1)
+							.setRequired(true),
+					)
 
-					// Sinon, mise à jour de la commande en base de données
-					const sqlEdit =
-						'UPDATE commands SET content = ?, lastModification = ?, lastModificationBy = ? WHERE name = ?'
-					const dataEdit = [
-						contenu,
-						Math.round(new Date() / 1000),
-						interaction.user.tag,
-						nom,
-					]
-
-					const [rowsEdit] = await bdd.execute(sqlEdit, dataEdit)
-
-					if (rowsEdit.changedRows)
-						return interaction.reply({
-							content: `La commande **${nom}** a bien été modifiée 👌`,
-						})
-
-					return interaction.reply({
-						content:
-							'Une erreur est survenue lors de la modification de la commande 😬',
-						ephemeral: true,
-					})
-				} catch {
-					return interaction.reply({
-						content:
-							'Une erreur est survenue lors de la modification de la commande 😬',
-					})
-				}
+				return showModal(modalEdit, {
+					client: client,
+					interaction: interaction,
+				})
 
 			// Supprime une commande
 			case 'delete':

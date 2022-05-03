@@ -1,7 +1,9 @@
 import prepareClient from './util/clientLoader.js'
 import slashCommandsLoader from './slash-commands/loader.js'
+import modalsLoader from './modals/loader.js'
 import eventsLoader from './events/loader.js'
 import { closeGracefully } from './util/util.js'
+import discordModals from 'discord-modals'
 
 const run = async () => {
 	console.log('Starting the app...')
@@ -16,6 +18,9 @@ const run = async () => {
 	const client = prepareClient()
 
 	await eventsLoader(client)
+
+	discordModals(client)
+	await modalsLoader(client)
 
 	await client.login(process.env.DISCORD_TOKEN)
 
