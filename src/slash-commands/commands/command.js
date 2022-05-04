@@ -72,12 +72,17 @@ export default {
 					// Sinon, boucle d'ajout des champs
 					const fieldsEmbedView = []
 					resultView.forEach(command => {
+						const commandAuthor = interaction.guild.members.cache.get(command.author)
+						const commandEditor = interaction.guild.members.cache.get(
+							command.lastModificationBy,
+						)
+
 						fieldsEmbedView.push({
 							name: command.name,
-							value: `Créée par ${command.author} (${convertDateForDiscord(
+							value: `Créée par ${commandAuthor.user.tag} (${convertDateForDiscord(
 								command.createdAt * 1000,
 							)})\nDernière modification par ${
-								command.lastModificationBy
+								commandEditor.user.tag
 							} (${convertDateForDiscord(command.lastModification * 1000)})`,
 						})
 					})
