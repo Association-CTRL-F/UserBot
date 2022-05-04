@@ -82,9 +82,10 @@ export default {
 					// Sinon, boucle d'ajout des champs
 					const fieldsEmbed = []
 					resultView.forEach(warning => {
+						const warnedBy = interaction.guild.members.cache.get(warning.warnedBy)
 						fieldsEmbed.push({
 							name: `Avertissement #${warning.id}`,
-							value: `Par ${warning.warnedBy} - ${convertDateForDiscord(
+							value: `Par ${warnedBy.user.tag} - ${convertDateForDiscord(
 								warning.warnedAt * 1000,
 							)}\nRaison : ${warning.warnReason}`,
 						})

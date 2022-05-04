@@ -33,7 +33,7 @@ export default {
 			// puis insertion en base de données
 			const sqlCreate =
 				'INSERT INTO warnings (discordID, warnedBy, warnReason, warnedAt) VALUES (?, ?, ?, ?)'
-			const dataCreate = [userId, modal.user.tag, reason, Math.round(Date.now() / 1000)]
+			const dataCreate = [userId, modal.user.id, reason, Math.round(Date.now() / 1000)]
 			const [resultCreate] = await bdd.execute(sqlCreate, dataCreate)
 
 			// Si erreur

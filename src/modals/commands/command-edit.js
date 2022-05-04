@@ -35,7 +35,7 @@ export default {
 			// Sinon, mise à jour de la commande en base de données
 			const sqlEdit =
 				'UPDATE commands SET content = ?, lastModification = ?, lastModificationBy = ? WHERE name = ?'
-			const dataEdit = [contenu, Math.round(new Date() / 1000), modal.user.tag, nom]
+			const dataEdit = [contenu, Math.round(new Date() / 1000), modal.user.id, nom]
 
 			const [rowsEdit] = await bdd.execute(sqlEdit, dataEdit)
 

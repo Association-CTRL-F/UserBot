@@ -40,10 +40,10 @@ export default {
 			const dataInsert = [
 				nom,
 				contenu,
-				modal.user.tag,
+				modal.user.id,
 				Math.round(new Date() / 1000),
 				Math.round(new Date() / 1000),
-				modal.user.tag,
+				modal.user.id,
 				0,
 			]
 
