@@ -6,8 +6,8 @@ export default {
 	},
 	interaction: async (modal, client) => {
 		// Acquisition du nom et du contenu
-		const nom = modal.getTextInputValue('name-command-create')
-		const contenu = modal.getTextInputValue('content-command-create')
+		const nom = modal.getTextInputValue('name-command-create').trim().replace(/\s+/g, '-')
+		const contenu = modal.getTextInputValue('content-command-create').trim()
 
 		// Acquisition de la base de données
 		const bdd = await db(client, 'userbot')

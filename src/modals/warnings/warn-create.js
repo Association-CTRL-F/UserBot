@@ -8,7 +8,7 @@ export default {
 	},
 	interaction: async (modal, client) => {
 		// Acquisition du membre et de la raison
-		const userId = modal.getTextInputValue('warn-member-id')
+		const userId = modal.getTextInputValue('warn-member-id').trim().replace(/\s+/g, '')
 		const member = modal.guild.members.cache.get(userId)
 		if (!member) {
 			await modal.deferReply({ ephemeral: true })
@@ -17,7 +17,7 @@ export default {
 			})
 		}
 
-		const reason = modal.getTextInputValue('warn-reason')
+		const reason = modal.getTextInputValue('warn-reason').trim()
 
 		// Acquisition de la base de données
 		const bdd = await db(client, 'userbot')
