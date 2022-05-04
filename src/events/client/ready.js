@@ -1,6 +1,8 @@
 /* eslint-disable no-await-in-loop */
 import { readFile } from 'fs/promises'
 import { db } from '../../util/util.js'
+import { Constants } from 'discord.js'
+import ms from 'ms'
 
 export const once = true
 
@@ -224,5 +226,28 @@ export default async client => {
 				)
 			}
 		}, (reminder.timestampEnd - Math.round(Date.now() / 1000)) * 1000)
+	})
+
+	// Boucle @Pas de blabla
+	const joinRole = client.config.joinRoleID
+	const timeoutJoin = client.config.timeoutJoin
+
+	guild.roles.cache.get(joinRole).members.map(async noblablaMember => {
+		const diff = new Date() - noblablaMember.joinedAt
+		const minutesPresence = Math.floor((diff / (1000 * 60 * 60 * 24 * 30.4375)) * 43800)
+		const msPresence = minutesPresence * 60000
+
+		if (msPresence > ms(timeoutJoin))
+			await noblablaMember.roles.remove(joinRole).catch(error => {
+				if (error.code !== Constants.APIErrors.UNKNOWN_MEMBER) throw error
+			})
+
+		setTimeout(
+			() =>
+				noblablaMember.roles.remove(joinRole).catch(error => {
+					if (error.code !== Constants.APIErrors.UNKNOWN_MEMBER) throw error
+				}),
+			ms(timeoutJoin),
+		)
 	})
 }
