@@ -77,13 +77,30 @@ export default {
 							command.lastModificationBy,
 						)
 
+						let creationText = ''
+						let modificationText = ''
+
+						if (commandAuthor)
+							creationText = `Créée par ${
+								commandAuthor.user.tag
+							} (${convertDateForDiscord(command.createdAt * 1000)})`
+						else
+							creationText = `Créée le ${convertDateForDiscord(
+								command.createdAt * 1000,
+							)}`
+
+						if (commandEditor)
+							modificationText = `Dernière modification par ${
+								commandEditor.user.tag
+							} (${convertDateForDiscord(command.lastModification * 1000)})`
+						else
+							modificationText = `Dernière modification le ${convertDateForDiscord(
+								command.lastModification * 1000,
+							)}`
+
 						fieldsEmbedView.push({
 							name: command.name,
-							value: `Créée par ${commandAuthor.user.tag} (${convertDateForDiscord(
-								command.createdAt * 1000,
-							)})\nDernière modification par ${
-								commandEditor.user.tag
-							} (${convertDateForDiscord(command.lastModification * 1000)})`,
+							value: `${creationText}\n${modificationText}`,
 						})
 					})
 
@@ -111,9 +128,11 @@ export default {
 
 					// Envoi de l'embed
 					return paginationView.render()
-				} catch {
+				} catch (error) {
+					console.log(error)
 					return interaction.reply({
-						content: 'Une erreur est survenue lors de la récupération des commandes 😬',
+						content:
+							'Une erreur est survenue lors de la récupération des commandesdddd 😬',
 						ephemeral: true,
 					})
 				}
@@ -137,13 +156,35 @@ export default {
 					// Sinon, boucle d'ajout des champs
 					const fieldsEmbedSearch = []
 					resultSearch.forEach(command => {
+						const commandAuthor = interaction.guild.members.cache.get(command.author)
+						const commandEditor = interaction.guild.members.cache.get(
+							command.lastModificationBy,
+						)
+
+						let creationText = ''
+						let modificationText = ''
+
+						if (commandAuthor)
+							creationText = `Créée par ${
+								commandAuthor.user.tag
+							} (${convertDateForDiscord(command.createdAt * 1000)})`
+						else
+							creationText = `Créée le ${convertDateForDiscord(
+								command.createdAt * 1000,
+							)}`
+
+						if (commandEditor)
+							modificationText = `Dernière modification par ${
+								commandEditor.user.tag
+							} (${convertDateForDiscord(command.lastModification * 1000)})`
+						else
+							modificationText = `Dernière modification le ${convertDateForDiscord(
+								command.lastModification * 1000,
+							)}`
+
 						fieldsEmbedSearch.push({
 							name: command.name,
-							value: `Créée par ${command.author} (${convertDateForDiscord(
-								command.createdAt * 1000,
-							)})\nDernière modification par ${
-								command.lastModificationBy
-							} (${convertDateForDiscord(command.lastModification * 1000)})`,
+							value: `${creationText}\n${modificationText}`,
 						})
 					})
 
