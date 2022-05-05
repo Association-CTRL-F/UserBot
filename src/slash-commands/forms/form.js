@@ -57,10 +57,10 @@ export default {
 
 				// Vérification si la commande existe
 				const sqlCheckName = 'SELECT * FROM forms'
-				const [rowsCheckName] = await bdd.execute(sqlCheckName)
+				const [resultCheckName] = await bdd.execute(sqlCheckName)
 
 				const arrayForms = []
-				rowsCheckName.forEach(form => {
+				resultCheckName.forEach(form => {
 					arrayForms.push({
 						label: form.name,
 						description: `Modification du formulaire "${form.name}"`,
