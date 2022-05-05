@@ -21,11 +21,11 @@ export default {
 		// Vérification si la commande existe
 		const sqlCheckName = 'SELECT * FROM commands WHERE name = ?'
 		const dataCheckName = [nom]
-		const [rowsCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
+		const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 
 		try {
 			// Vérification si la commande existe déjà
-			if (rowsCheckName[0]) {
+			if (resultCheckName[0]) {
 				await modal.deferReply({ ephemeral: true })
 				return modal.followUp({
 					content: `La commande **${nom}** existe déjà 😕`,
@@ -47,9 +47,9 @@ export default {
 				0,
 			]
 
-			const [rowsInsert] = await bdd.execute(sqlInsert, dataInsert)
+			const [resultInsert] = await bdd.execute(sqlInsert, dataInsert)
 
-			if (rowsInsert.insertId)
+			if (resultInsert.insertId)
 				return modal.reply({
 					content: `La commande **${nom}** a bien été créée 👌`,
 				})

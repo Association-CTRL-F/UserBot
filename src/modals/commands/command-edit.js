@@ -21,11 +21,11 @@ export default {
 		// Vérification si la commande existe
 		const sqlCheckName = 'SELECT * FROM commands WHERE name = ?'
 		const dataCheckName = [nom]
-		const [rowsCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
+		const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 
 		try {
 			// Vérification que la commande existe bien
-			if (!rowsCheckName[0]) {
+			if (!resultCheckName[0]) {
 				await modal.deferReply({ ephemeral: true })
 				return modal.followUp({
 					content: `La commande **${nom}** n'existe pas 😕`,
@@ -37,9 +37,9 @@ export default {
 				'UPDATE commands SET content = ?, lastModification = ?, lastModificationBy = ? WHERE name = ?'
 			const dataEdit = [contenu, Math.round(new Date() / 1000), modal.user.id, nom]
 
-			const [rowsEdit] = await bdd.execute(sqlEdit, dataEdit)
+			const [resultEdit] = await bdd.execute(sqlEdit, dataEdit)
 
-			if (rowsEdit.changedRows)
+			if (resultEdit.changedRows)
 				return modal.reply({
 					content: `La commande **${nom}** a bien été modifiée 👌`,
 				})
