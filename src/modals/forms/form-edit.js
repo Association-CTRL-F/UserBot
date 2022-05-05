@@ -38,10 +38,13 @@ export default {
 
 			const [resultUpdate] = await bdd.execute(sqlUpdate, dataUpdate)
 
-			if (resultUpdate.affectedRows)
-				return modal.reply({
-					content: `Le formulaire **${nom}** a bien été modifié 👌`,
+			if (resultUpdate.affectedRows) {
+				await modal.deferReply()
+				await modal.deleteReply()
+				return modal.channel.send({
+					content: `${modal.user}, le formulaire **${nom}** a bien été modifié 👌`,
 				})
+			}
 
 			await modal.deferReply({ ephemeral: true })
 			return modal.followUp({
