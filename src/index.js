@@ -1,6 +1,7 @@
 import prepareClient from './util/clientLoader.js'
 import slashCommandsLoader from './slash-commands/loader.js'
 import modalsLoader from './modals/loader.js'
+import menusLoader from './select-menus/loader.js'
 import eventsLoader from './events/loader.js'
 import { closeGracefully } from './util/util.js'
 import discordModals from 'discord-modals'
@@ -21,6 +22,8 @@ const run = async () => {
 
 	discordModals(client)
 	await modalsLoader(client)
+
+	await menusLoader(client)
 
 	await client.login(process.env.DISCORD_TOKEN)
 

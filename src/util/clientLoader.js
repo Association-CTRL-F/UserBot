@@ -31,6 +31,7 @@ export default () => {
 	})
 	client.commands = new Collection()
 	client.modals = new Collection()
+	client.menus = new Collection()
 	client.cooldowns = new Collection()
 	client.config = {
 		prefix: process.env.COMMANDS_PREFIX,
@@ -67,10 +68,10 @@ export default () => {
 		// les log lors de l'event "messageDelete"
 		deleteMessagesID: new Set(),
 	}
-	// Map utilisé pour la commande "rôles"
+	// Maps utilisées pour la commande "rôles"
 	client.commandsCategories = new Map()
-	// Map utilisé pour la commande "rôles"
 	client.modalsCategories = new Map()
+	client.menusCategories = new Map()
 	// Map utilisé pour la gestion des salons vocaux
 	client.voiceManager = new Map()
 
