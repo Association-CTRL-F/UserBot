@@ -27,7 +27,15 @@ export default {
 			subcommand.setName('create').setDescription('Crée une nouvelle commande'),
 		)
 		.addSubcommand(subcommand =>
-			subcommand.setName('edit').setDescription('Modifie une commande'),
+			subcommand
+				.setName('edit')
+				.setDescription('Modifie une commande')
+				.addStringOption(option =>
+					option
+						.setName('nom')
+						.setDescription('Nom de la commande à modifier')
+						.setRequired(true),
+				),
 		)
 		.addSubcommand(subcommand =>
 			subcommand
@@ -53,7 +61,7 @@ export default {
 		// Vérification si la commande existe
 		const sqlCheckName = 'SELECT * FROM commands WHERE name = ?'
 		const dataCheckName = [nom]
-		const [rowsCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
+		const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 
 		switch (interaction.options.getSubcommand()) {
 			// Visualisation des commandes
@@ -249,6 +257,13 @@ export default {
 
 			// Modifie une commande
 			case 'edit':
+				// Vérification que la commande existe bien
+				if (!resultCheckName[0])
+					return interaction.reply({
+						content: `La commande **${nom}** n'existe pas 😕`,
+						ephemeral: true,
+					})
+
 				const modalEdit = new Modal()
 					.setCustomId('command-edit')
 					.setTitle("Modification d'une commande")
@@ -257,6 +272,7 @@ export default {
 							.setCustomId('name-command-edit')
 							.setLabel('Nom de la commande')
 							.setStyle('SHORT')
+							.setDefaultValue(resultCheckName[0].name)
 							.setMinLength(1)
 							.setMaxLength(255)
 							.setRequired(true),
@@ -266,6 +282,7 @@ export default {
 							.setCustomId('content-command-edit')
 							.setLabel('Nouveau contenu de la commande')
 							.setStyle('LONG')
+							.setDefaultValue(resultCheckName[0].content)
 							.setMinLength(1)
 							.setRequired(true),
 					)
@@ -279,7 +296,7 @@ export default {
 			case 'delete':
 				try {
 					// Vérification que la commande existe bien
-					if (!rowsCheckName[0])
+					if (!resultCheckName[0])
 						return interaction.reply({
 							content: `La commande **${nom}** n'existe pas 😕`,
 							ephemeral: true,
@@ -290,9 +307,9 @@ export default {
 					const sqlDelete = 'DELETE FROM commands WHERE name = ?'
 					const dataDelete = [nom]
 
-					const [rowsDelete] = await bdd.execute(sqlDelete, dataDelete)
+					const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
 
-					if (rowsDelete.affectedRows)
+					if (resultDelete.affectedRows)
 						return interaction.reply({
 							content: `La commande **${nom}** a bien été supprimée 👌`,
 						})
