@@ -10,7 +10,12 @@ export default {
 		.setName('command')
 		.setDescription('Gère les commandes')
 		.addSubcommand(subcommand =>
-			subcommand.setName('view').setDescription('Voir la liste des commandes'),
+			subcommand
+				.setName('view')
+				.setDescription('Voir la liste des commandes')
+				.addStringOption(option =>
+					option.setName('nom').setDescription('Nom de la commande'),
+				),
 		)
 		.addSubcommand(subcommand =>
 			subcommand
@@ -75,6 +80,73 @@ export default {
 		switch (interaction.options.getSubcommand()) {
 			// Visualisation des commandes
 			case 'view':
+				if (nom) {
+					// Vérification que la commande existe bien
+					if (!commandBdd)
+						return interaction.reply({
+							content: `La commande **${nom}** n'existe pas 😕`,
+							ephemeral: true,
+						})
+
+					// Récupération de la commande
+					let command = {}
+					try {
+						const sqlView = 'SELECT * FROM commands WHERE name = ?'
+						const dataView = [nom]
+						const [resultCommand] = await bdd.execute(sqlView, dataView)
+						command = resultCommand[0]
+					} catch (error) {
+						return interaction.reply({
+							content:
+								'Une erreur est survenue lors de la récupération des commandes 😕',
+							ephemeral: true,
+						})
+					}
+
+					const commandAuthor = interaction.guild.members.cache.get(command.author)
+					const commandEditor = interaction.guild.members.cache.get(
+						command.lastModificationBy,
+					)
+
+					let creationText = ''
+					let modificationText = ''
+
+					if (commandAuthor)
+						creationText = `Créée par ${
+							commandAuthor.user.tag
+						} (${convertDateForDiscord(command.createdAt * 1000)})`
+					else
+						creationText = `Créée le ${convertDateForDiscord(command.createdAt * 1000)}`
+
+					if (commandEditor)
+						modificationText = `Dernière modification par ${
+							commandEditor.user.tag
+						} (${convertDateForDiscord(command.lastModification * 1000)})`
+					else
+						modificationText = `Dernière modification le ${convertDateForDiscord(
+							command.lastModification * 1000,
+						)}`
+
+					const embed = {
+						color: 'C27C0E',
+						title: `Commande personnalisée "${command.name}"`,
+						fields: [
+							{
+								name: 'Contenu',
+								value: `\`\`\`${command.content}\`\`\``,
+							},
+						],
+					}
+
+					embed.fields.push({
+						name: 'Historique',
+						value: `${creationText}\n${modificationText}\nUtilisée ${command.numberOfUses} fois`,
+					})
+
+					return interaction.reply({ embeds: [embed] })
+				}
+
+				// Récupération des commandes
 				let commands = []
 				try {
 					const [resultCommands] = await bdd.execute('SELECT * FROM commands')
@@ -86,7 +158,7 @@ export default {
 					})
 				}
 
-				// Sinon, boucle d'ajout des champs
+				// Boucle d'ajout des champs
 				const fieldsEmbedView = []
 				commands.forEach(command => {
 					const commandAuthor = interaction.guild.members.cache.get(command.author)
