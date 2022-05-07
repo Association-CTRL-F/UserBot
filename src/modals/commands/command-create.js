@@ -43,15 +43,15 @@ export default {
 		// Sinon, création de la nouvelle commande en base de données
 		try {
 			const sqlInsert =
-				'INSERT INTO commands (name, content, author, createdAt, lastModification, lastModificationBy, numberOfUses) VALUES (?, ?, ?, ?, ?, ?, ?)'
+				'INSERT INTO commands (name, content, author, createdAt, lastModificationBy, lastModificationAt, numberOfUses) VALUES (?, ?, ?, ?, ?, ?, ?)'
 
 			const dataInsert = [
 				nom,
 				contenu,
 				modal.user.id,
 				Math.round(new Date() / 1000),
-				Math.round(new Date() / 1000),
-				modal.user.id,
+				null,
+				null,
 				0,
 			]
 

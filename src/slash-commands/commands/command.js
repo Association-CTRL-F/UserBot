@@ -114,18 +114,20 @@ export default {
 					if (commandAuthor)
 						creationText = `Créée par ${
 							commandAuthor.user.tag
-						} (${convertDateForDiscord(command.createdAt * 1000)})`
+						} (${convertDateForDiscord(command.createdAt * 1000)})\n`
 					else
-						creationText = `Créée le ${convertDateForDiscord(command.createdAt * 1000)}`
+						creationText = `Créée le ${convertDateForDiscord(
+							command.createdAt * 1000,
+						)}\n`
 
-					if (commandEditor)
+					if (command.lastModificationAt !== null && commandEditor)
 						modificationText = `Dernière modification par ${
 							commandEditor.user.tag
-						} (${convertDateForDiscord(command.lastModification * 1000)})`
-					else
+						} (${convertDateForDiscord(command.lastModificationAt * 1000)})\n`
+					else if (command.lastModificationAt !== null)
 						modificationText = `Dernière modification le ${convertDateForDiscord(
-							command.lastModification * 1000,
-						)}`
+							command.lastModificationAt * 1000,
+						)}\n`
 
 					const embed = {
 						color: 'C27C0E',
@@ -140,7 +142,7 @@ export default {
 
 					embed.fields.push({
 						name: 'Historique',
-						value: `${creationText}\n${modificationText}\nUtilisée ${command.numberOfUses} fois`,
+						value: `${creationText}${modificationText}Utilisée ${command.numberOfUses} fois`,
 					})
 
 					return interaction.reply({ embeds: [embed] })
@@ -172,22 +174,24 @@ export default {
 					if (commandAuthor)
 						creationText = `Créée par ${
 							commandAuthor.user.tag
-						} (${convertDateForDiscord(command.createdAt * 1000)})`
+						} (${convertDateForDiscord(command.createdAt * 1000)})\n`
 					else
-						creationText = `Créée le ${convertDateForDiscord(command.createdAt * 1000)}`
+						creationText = `Créée le ${convertDateForDiscord(
+							command.createdAt * 1000,
+						)}\n`
 
-					if (commandEditor)
+					if (command.lastModificationAt !== null && commandEditor)
 						modificationText = `Dernière modification par ${
 							commandEditor.user.tag
-						} (${convertDateForDiscord(command.lastModification * 1000)})`
-					else
+						} (${convertDateForDiscord(command.lastModificationAt * 1000)})\n`
+					else if (command.lastModificationAt !== null)
 						modificationText = `Dernière modification le ${convertDateForDiscord(
-							command.lastModification * 1000,
-						)}`
+							command.lastModificationAt * 1000,
+						)}\n`
 
 					fieldsEmbedView.push({
 						name: command.name,
-						value: `${creationText}\n${modificationText}`,
+						value: `${creationText}${modificationText}`,
 					})
 				})
 
@@ -250,22 +254,24 @@ export default {
 					if (commandAuthor)
 						creationText = `Créée par ${
 							commandAuthor.user.tag
-						} (${convertDateForDiscord(command.createdAt * 1000)})`
+						} (${convertDateForDiscord(command.createdAt * 1000)})\n`
 					else
-						creationText = `Créée le ${convertDateForDiscord(command.createdAt * 1000)}`
+						creationText = `Créée le ${convertDateForDiscord(
+							command.createdAt * 1000,
+						)}\n`
 
-					if (commandEditor)
+					if (command.lastModificationAt !== null && commandEditor)
 						modificationText = `Dernière modification par ${
 							commandEditor.user.tag
-						} (${convertDateForDiscord(command.lastModification * 1000)})`
-					else
+						} (${convertDateForDiscord(command.lastModificationAt * 1000)})\n`
+					else if (command.lastModificationAt !== null)
 						modificationText = `Dernière modification le ${convertDateForDiscord(
-							command.lastModification * 1000,
-						)}`
+							command.lastModificationAt * 1000,
+						)}\n`
 
 					fieldsEmbedSearch.push({
 						name: command.name,
-						value: `${creationText}\n${modificationText}`,
+						value: `${creationText}${modificationText}`,
 					})
 				})
 

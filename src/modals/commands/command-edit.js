@@ -43,8 +43,8 @@ export default {
 		// Sinon, mise à jour de la commande en base de données
 		try {
 			const sqlEdit =
-				'UPDATE commands SET content = ?, lastModification = ?, lastModificationBy = ? WHERE name = ?'
-			const dataEdit = [contenu, Math.round(new Date() / 1000), modal.user.id, nom]
+				'UPDATE commands SET content = ?, lastModificationBy = ?, lastModificationAt = ? WHERE name = ?'
+			const dataEdit = [contenu, modal.user.id, Math.round(new Date() / 1000), nom]
 
 			await bdd.execute(sqlEdit, dataEdit)
 		} catch (error) {
