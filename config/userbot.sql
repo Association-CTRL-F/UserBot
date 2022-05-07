@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: May 06, 2022 at 11:59 PM
+-- Generation Time: May 07, 2022 at 02:35 PM
 -- Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal
 -- PHP Version: 7.4.23
 
@@ -33,8 +33,8 @@ CREATE TABLE `commands` (
   `content` text NOT NULL,
   `author` varchar(255) NOT NULL,
   `createdAt` varchar(255) NOT NULL,
-  `lastModification` varchar(255) NOT NULL,
-  `lastModificationBy` varchar(255) NOT NULL,
+  `lastModificationBy` varchar(255) DEFAULT NULL,
+  `lastModificationAt` varchar(255) DEFAULT NULL,
   `numberOfUses` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
