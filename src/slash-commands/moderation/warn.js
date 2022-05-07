@@ -3,7 +3,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { db, convertDateForDiscord } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
-import { Modal, TextInputComponent, showModal } from 'discord-modals'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -18,7 +17,18 @@ export default {
 				),
 		)
 		.addSubcommand(subcommand =>
-			subcommand.setName('create').setDescription('Crée un nouvel avertissement'),
+			subcommand
+				.setName('create')
+				.setDescription('Crée un nouvel avertissement')
+				.addUserOption(option =>
+					option.setName('membre').setDescription('Membre').setRequired(true),
+				)
+				.addStringOption(option =>
+					option
+						.setName('raison')
+						.setDescription("Raison de l'avertissement")
+						.setRequired(true),
+				),
 		)
 		.addSubcommand(subcommand =>
 			subcommand
@@ -42,10 +52,7 @@ export default {
 
 		// Afin d'éviter les erreurs, on récupère le membre
 		// pour toutes les commandes sauf "del"
-		if (
-			interaction.options.getSubcommand() !== 'del' &&
-			interaction.options.getSubcommand() !== 'create'
-		) {
+		if (interaction.options.getSubcommand() !== 'del') {
 			// Acquisition du membre
 			user = interaction.options.getUser('membre')
 			member = interaction.guild.members.cache.get(user.id)
@@ -131,30 +138,79 @@ export default {
 
 			// Crée un nouvel avertissement
 			case 'create':
-				const modalCreate = new Modal()
-					.setCustomId('warn-create')
-					.setTitle("Création d'un avertissement")
-					.addComponents(
-						new TextInputComponent()
-							.setCustomId('warn-member-id')
-							.setLabel('Discord ID')
-							.setStyle('SHORT')
-							.setMinLength(1)
-							.setMaxLength(255)
-							.setRequired(true),
-					)
-					.addComponents(
-						new TextInputComponent()
-							.setCustomId('warn-reason')
-							.setLabel("Raison de l'avertissement")
-							.setStyle('LONG')
-							.setMinLength(1)
-							.setRequired(true),
+				// Acquisition de la raison
+				const reason = interaction.options.getString('raison')
+
+				// Création de l'avertissement en base de données
+				try {
+					const sqlCreate =
+						'INSERT INTO warnings (discordID, warnedBy, warnReason, warnedAt) VALUES (?, ?, ?, ?)'
+					const dataCreate = [
+						member.id,
+						interaction.user.id,
+						reason,
+						Math.round(Date.now() / 1000),
+					]
+
+					await bdd.execute(sqlCreate, dataCreate)
+				} catch (error) {
+					return interaction.reply({
+						content:
+							"Une erreur est survenue lors de la création de l'avertissement en base de données 😕",
+						ephemeral: true,
+					})
+				}
+
+				// Lecture du message d'avertissement
+				let warnDM = ''
+				try {
+					const sqlSelectUnmute = 'SELECT * FROM forms WHERE name = ?'
+					const dataSelectUnmute = ['warn']
+					const [resultSelectWarn] = await bdd.execute(sqlSelectUnmute, dataSelectUnmute)
+					warnDM = resultSelectWarn[0].content
+				} catch (error) {
+					return interaction.reply({
+						content:
+							"Une erreur est survenue lors de la récupération du message d'avertissement en base de données 😕",
+						ephemeral: true,
+					})
+				}
+
+				// Envoi du message d'avertissement en message privé
+				const DMMessage = await member
+					.send({
+						embeds: [
+							{
+								color: '#C27C0E',
+								title: 'Avertissement',
+								description: warnDM,
+								author: {
+									name: interaction.guild.name,
+									icon_url: interaction.guild.iconURL({ dynamic: true }),
+									url: interaction.guild.vanityURL,
+								},
+								fields: [
+									{
+										name: "Raison de l'avertissement",
+										value: reason,
+									},
+								],
+							},
+						],
+					})
+					.catch(error => {
+						console.error(error)
+					})
+
+				// Si au moins une erreur, throw
+				if (DMMessage instanceof Error)
+					throw new Error(
+						"L'envoi d'un message a échoué. Voir les logs précédents pour plus d'informations.",
 					)
 
-				return showModal(modalCreate, {
-					client: client,
-					interaction: interaction,
+				// Message de confirmation
+				return interaction.reply({
+					content: `⚠️ \`${member.user.tag}\` a reçu un avertissement`,
 				})
 
 			// Supprime un avertissement
