@@ -21,6 +21,12 @@ export default {
 
 		// Unban du membre
 		const unbanAction = await interaction.guild.members.unban(user).catch(error => {
+			if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
+				return interaction.reply({
+					content: "Je n'ai pas les permissions pour bannir ce membre 😬",
+					ephemeral: true,
+				})
+
 			if (error.code === Constants.APIErrors.UNKNOWN_USER)
 				return interaction.reply({
 					content: "Cet utilisateur n'existe pas 😬",

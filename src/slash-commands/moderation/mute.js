@@ -42,11 +42,11 @@ export default {
 			})
 
 		// On ne peut pas se mute soi-même
-		// if (member.id === interaction.user.id)
-		// 	return interaction.reply({
-		// 		content: 'Tu ne peux pas te mute toi-même 😕',
-		// 		ephemeral: true,
-		// 	})
+		if (member.id === interaction.user.id)
+			return interaction.reply({
+				content: 'Tu ne peux pas te mute toi-même 😕',
+				ephemeral: true,
+			})
 
 		// Acquisition de la raison et la durée du mute
 		const reason = interaction.options.getString('raison')
