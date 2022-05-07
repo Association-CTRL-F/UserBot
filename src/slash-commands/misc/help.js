@@ -31,6 +31,8 @@ export default {
 				embeds: [
 					{
 						title: 'Commandes principales disponibles',
+						description:
+							'Certaines commandes sont réservées au staff du serveur, elles ne sont donc pas visibles pour les membres.',
 						color: 'ff8000',
 						fields,
 					},
@@ -51,16 +53,6 @@ export default {
 			title: command.data.name,
 			color: 'ff8000',
 			description: command.data.description,
-			fields: [
-				{
-					name: 'Permissions nécessaires',
-					value:
-						command.requirePermissions.reduce(
-							(acc, permission) => `${acc}> \`${permission}\`\n`,
-							'',
-						) || 'Ne nécessite aucune permission',
-				},
-			],
 		}
 
 		return interaction.reply({ embeds: [embed] })

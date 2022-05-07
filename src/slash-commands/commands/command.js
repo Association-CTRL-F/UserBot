@@ -8,7 +8,7 @@ import { Modal, TextInputComponent, showModal } from 'discord-modals'
 export default {
 	data: new SlashCommandBuilder()
 		.setName('command')
-		.setDescription('Gère les commandes')
+		.setDescription('Gère les commandes personnalisées')
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('view')
