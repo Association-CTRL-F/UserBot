@@ -56,11 +56,20 @@ export default {
 					})
 
 				// Vérification si la commande existe
-				const sqlCheckName = 'SELECT * FROM forms'
-				const [resultCheckName] = await bdd.execute(sqlCheckName)
+				let forms = []
+				try {
+					const sqlCheckName = 'SELECT * FROM forms'
+					const [resultCheckName] = await bdd.execute(sqlCheckName)
+					forms = resultCheckName
+				} catch {
+					return interaction.reply({
+						content: 'Une erreur est survenue lors de la récupération du formulaire 😬',
+						ephemeral: true,
+					})
+				}
 
 				const arrayForms = []
-				resultCheckName.forEach(form => {
+				forms.forEach(form => {
 					arrayForms.push({
 						label: form.name,
 						description: `Modification du formulaire "${form.name}"`,

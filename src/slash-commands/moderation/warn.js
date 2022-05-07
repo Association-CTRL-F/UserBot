@@ -67,58 +67,12 @@ export default {
 		switch (interaction.options.getSubcommand()) {
 			// Voir les avertissements
 			case 'view':
+				let warnings = []
 				try {
 					const sqlView = 'SELECT * FROM warnings WHERE discordID = ?'
 					const dataView = [member.id]
-					const [resultView] = await bdd.execute(sqlView, dataView)
-
-					// Si erreur
-					if (!resultView)
-						return interaction.reply({
-							content:
-								'Une erreur est survenue lors de la récupération des avertissements 😬',
-						})
-
-					// Sinon, boucle d'ajout des champs
-					const fieldsEmbed = []
-					resultView.forEach(warning => {
-						const warnedBy = interaction.guild.members.cache.get(warning.warnedBy)
-						fieldsEmbed.push({
-							name: `Avertissement #${warning.id}`,
-							value: `Par ${warnedBy.user.tag} - ${convertDateForDiscord(
-								warning.warnedAt * 1000,
-							)}\nRaison : ${warning.warnReason}`,
-						})
-					})
-
-					// Configuration de l'embed
-					const pagination = new Pagination(interaction, {
-						firstEmoji: '⏮',
-						prevEmoji: '◀️',
-						nextEmoji: '▶️',
-						lastEmoji: '⏭',
-						limit: 5,
-						idle: 30000,
-						ephemeral: false,
-						prevDescription: '',
-						postDescription: '',
-						buttonStyle: 'SECONDARY',
-						loop: false,
-					})
-
-					pagination.author = {
-						name: `${member.displayName} (ID ${member.id})`,
-						icon_url: member.user.displayAvatarURL({ dynamic: true }),
-					}
-
-					pagination.setDescription(`**Total : ${resultView.length}**`)
-					pagination.setColor('#C27C0E')
-					pagination.setFields(fieldsEmbed)
-					pagination.footer = { text: 'Page : {pageNumber} / {totalPages}' }
-					pagination.paginateFields(true)
-
-					// Envoi de l'embed
-					return pagination.render()
+					const [resultWarnings] = await bdd.execute(sqlView, dataView)
+					warnings = resultWarnings
 				} catch {
 					return interaction.reply({
 						content:
@@ -126,6 +80,54 @@ export default {
 						ephemeral: true,
 					})
 				}
+
+				// Sinon, boucle d'ajout des champs
+				const fieldsEmbed = []
+				warnings.forEach(warning => {
+					const warnedBy = interaction.guild.members.cache.get(warning.warnedBy)
+
+					let warnText = ''
+
+					if (warnedBy)
+						warnText = `Par ${warnedBy.user.tag} - ${convertDateForDiscord(
+							warning.warnedAt * 1000,
+						)}\nRaison : ${warning.warnReason}`
+					else warnText = `Le ${convertDateForDiscord(warning.warnedAt * 1000)}`
+
+					fieldsEmbed.push({
+						name: `Avertissement #${warning.id}`,
+						value: warnText,
+					})
+				})
+
+				// Configuration de l'embed
+				const pagination = new Pagination(interaction, {
+					firstEmoji: '⏮',
+					prevEmoji: '◀️',
+					nextEmoji: '▶️',
+					lastEmoji: '⏭',
+					limit: 5,
+					idle: 30000,
+					ephemeral: false,
+					prevDescription: '',
+					postDescription: '',
+					buttonStyle: 'SECONDARY',
+					loop: false,
+				})
+
+				pagination.author = {
+					name: `${member.displayName} (ID ${member.id})`,
+					icon_url: member.user.displayAvatarURL({ dynamic: true }),
+				}
+
+				pagination.setDescription(`**Total : ${warnings.length}**`)
+				pagination.setColor('#C27C0E')
+				pagination.setFields(fieldsEmbed)
+				pagination.footer = { text: 'Page : {pageNumber} / {totalPages}' }
+				pagination.paginateFields(true)
+
+				// Envoi de l'embed
+				return pagination.render()
 
 			// Crée un nouvel avertissement
 			case 'create':
@@ -157,26 +159,15 @@ export default {
 
 			// Supprime un avertissement
 			case 'del':
+				// Acquisition de l'id de l'avertissement
+				// puis suppresion en base de données
+				let deletedWarn = {}
 				try {
-					// Acquisition de l'id de la commande
-					// puis suppresion en base de données
 					const id = interaction.options.getString('id')
 					const sqlDelete = 'DELETE FROM warnings WHERE id = ?'
 					const dataDelete = [id]
 					const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
-
-					// Si erreur
-					if (!resultDelete.affectedRows)
-						return interaction.reply({
-							content:
-								"Une erreur est survenue lors de la suppression de l'avertissement 😬",
-							ephemeral: true,
-						})
-
-					// Sinon, message de confirmation
-					return interaction.reply({
-						content: "L'avertissement a bien été supprimé 👌",
-					})
+					deletedWarn = resultDelete
 				} catch {
 					return interaction.reply({
 						content:
@@ -185,26 +176,24 @@ export default {
 					})
 				}
 
+				if (deletedWarn.affectedRows === 1)
+					return interaction.reply({
+						content: "L'avertissement a bien été supprimé 👌",
+					})
+
+				// Sinon, message d'erreur
+				return interaction.reply({
+					content: "L'avertissement n'existe pas 😬",
+					ephemeral: true,
+				})
+
 			// Supprime tous les avertissements
 			case 'clear':
 				try {
 					// Suppression en base de données
 					const sqlDeleteAll = 'DELETE FROM warnings WHERE discordID = ?'
 					const dataDeleteAll = [member.id]
-					const [resultDeleteAll] = await bdd.execute(sqlDeleteAll, dataDeleteAll)
-
-					// Si erreur
-					if (!resultDeleteAll.affectedRows)
-						return interaction.reply({
-							content:
-								'Une erreur est survenue lors de la suppression des avertissements 😬',
-							ephemeral: true,
-						})
-
-					// Sinon, message de confirmation
-					return interaction.reply({
-						content: 'Les avertissements ont bien été supprimés 👌',
-					})
+					await bdd.execute(sqlDeleteAll, dataDeleteAll)
 				} catch {
 					return interaction.reply({
 						content:
@@ -212,6 +201,11 @@ export default {
 						ephemeral: true,
 					})
 				}
+
+				// Sinon, message de confirmation
+				return interaction.reply({
+					content: 'Les avertissements ont bien été supprimés 👌',
+				})
 		}
 	},
 }

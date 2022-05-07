@@ -11,7 +11,6 @@ export default {
 		),
 	interaction: async (interaction, client) => {
 		const long_url = interaction.options.getString('url')
-		let api_key = ''
 
 		// Acquisition de la base de données
 		const bdd = await db(client, 'url_api')
@@ -22,15 +21,15 @@ export default {
 			})
 
 		// Requête de récupération de la clé API de l'utilisateur
-		const sql = 'SELECT api_key FROM tokens WHERE discord_id = ?'
-		const data = [interaction.user.id]
-		const [result] = await bdd.execute(sql, data)
-
+		let api_key = ''
 		try {
+			const sql = 'SELECT api_key FROM tokens WHERE discord_id = ?'
+			const data = [interaction.user.id]
+			const [result] = await bdd.execute(sql, data)
 			api_key = result[0].api_key
-		} catch (error) {
+		} catch {
 			return interaction.reply({
-				content: "Vous n'êtes pas autorisé à créer un lien affilié 😕",
+				content: "Vous n'êtes pas autorisé à créer un lien affilié 😬",
 				ephemeral: true,
 			})
 		}

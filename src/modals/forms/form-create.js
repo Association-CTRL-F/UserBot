@@ -18,40 +18,44 @@ export default {
 			})
 		}
 
-		// Vérification si la commande existe
-		const sqlCheckName = 'SELECT * FROM forms WHERE name = ?'
-		const dataCheckName = [nom]
-		const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
-
+		// Vérification si le formulaire existe
+		let form = {}
 		try {
-			// Vérification si le formulaire existe déjà
-			if (resultCheckName[0]) {
-				await modal.deferReply({ ephemeral: true })
-				return modal.followUp({
-					content: `Le formulaire **${nom}** existe déjà 😕`,
-				})
-			}
+			const sqlCheckName = 'SELECT * FROM forms WHERE name = ?'
+			const dataCheckName = [nom]
+			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
+			form = resultCheckName[0]
+		} catch (error) {
+			await modal.deferReply({ ephemeral: true })
+			return modal.followUp({
+				content: 'Une erreur est survenue lors de la vérification du nom du formulaire 😕',
+			})
+		}
 
-			// Sinon,insertion du nouveau formulaire en base de données
+		// Vérification si le formulaire existe déjà
+		if (form) {
+			await modal.deferReply({ ephemeral: true })
+			return modal.followUp({
+				content: `Le formulaire **${nom}** existe déjà 😕`,
+			})
+		}
+
+		// Sinon, création du nouveau formulaire en base de données
+		try {
 			const sqlInsert = 'INSERT INTO forms (name, content) VALUES (?, ?)'
 			const dataInsert = [nom, contenu]
 
-			const [resultInsert] = await bdd.execute(sqlInsert, dataInsert)
-
-			if (resultInsert.insertId)
-				return modal.reply({
-					content: `Le formulaire **${nom}** a bien été créé 👌`,
-				})
-
+			await bdd.execute(sqlInsert, dataInsert)
+		} catch (error) {
 			await modal.deferReply({ ephemeral: true })
 			return modal.followUp({
-				content: 'Une erreur est survenue lors de la création du formulaire 😬',
-			})
-		} catch {
-			await modal.deferReply({ ephemeral: true })
-			return modal.reply({
-				content: 'Une erreur est survenue lors de la création du formulaire 😬',
+				content:
+					'Une erreur est survenue lors de la création du formulaire en base de données 😕',
 			})
 		}
+
+		return modal.reply({
+			content: `Le formulaire **${nom}** a bien été créé 👌`,
+		})
 	},
 }

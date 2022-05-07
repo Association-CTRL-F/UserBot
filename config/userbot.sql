@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: May 02, 2022 at 03:02 PM
+-- Generation Time: May 06, 2022 at 11:59 PM
 -- Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal
 -- PHP Version: 7.4.23
 
@@ -36,6 +36,18 @@ CREATE TABLE `commands` (
   `lastModification` varchar(255) NOT NULL,
   `lastModificationBy` varchar(255) NOT NULL,
   `numberOfUses` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `forms`
+--
+
+CREATE TABLE `forms` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `content` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -91,6 +103,12 @@ ALTER TABLE `commands` ADD FULLTEXT KEY `name` (`name`);
 ALTER TABLE `commands` ADD FULLTEXT KEY `content` (`content`);
 
 --
+-- Indexes for table `forms`
+--
+ALTER TABLE `forms`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `mute`
 --
 ALTER TABLE `mute`
@@ -116,6 +134,12 @@ ALTER TABLE `warnings`
 -- AUTO_INCREMENT for table `commands`
 --
 ALTER TABLE `commands`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `forms`
+--
+ALTER TABLE `forms`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --

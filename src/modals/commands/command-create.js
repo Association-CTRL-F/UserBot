@@ -19,21 +19,29 @@ export default {
 		}
 
 		// Vérification si la commande existe
-		const sqlCheckName = 'SELECT * FROM commands WHERE name = ?'
-		const dataCheckName = [nom]
-		const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
-
+		let command = {}
 		try {
-			// Vérification si la commande existe déjà
-			if (resultCheckName[0]) {
-				await modal.deferReply({ ephemeral: true })
-				return modal.followUp({
-					content: `La commande **${nom}** existe déjà 😕`,
-				})
-			}
+			const sqlCheckName = 'SELECT * FROM commands WHERE name = ?'
+			const dataCheckName = [nom]
+			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
+			command = resultCheckName[0]
+		} catch (error) {
+			await modal.deferReply({ ephemeral: true })
+			return modal.followUp({
+				content: 'Une erreur est survenue lors de la vérification du nom de la commande 😕',
+			})
+		}
 
-			// Sinon, insertion de la nouvelle commande
-			// en base de données
+		// Vérification si la commande existe déjà
+		if (command) {
+			await modal.deferReply({ ephemeral: true })
+			return modal.followUp({
+				content: `La commande **${nom}** existe déjà 😕`,
+			})
+		}
+
+		// Sinon, création de la nouvelle commande en base de données
+		try {
 			const sqlInsert =
 				'INSERT INTO commands (name, content, author, createdAt, lastModification, lastModificationBy, numberOfUses) VALUES (?, ?, ?, ?, ?, ?, ?)'
 
@@ -47,22 +55,17 @@ export default {
 				0,
 			]
 
-			const [resultInsert] = await bdd.execute(sqlInsert, dataInsert)
-
-			if (resultInsert.insertId)
-				return modal.reply({
-					content: `La commande **${nom}** a bien été créée 👌`,
-				})
-
+			await bdd.execute(sqlInsert, dataInsert)
+		} catch (error) {
 			await modal.deferReply({ ephemeral: true })
 			return modal.followUp({
-				content: 'Une erreur est survenue lors de la création de la commande 😬',
-			})
-		} catch {
-			await modal.deferReply({ ephemeral: true })
-			return modal.reply({
-				content: 'Une erreur est survenue lors de la création de la commande 😬',
+				content:
+					'Une erreur est survenue lors de la création de la commande en base de données 😕',
 			})
 		}
+
+		return modal.reply({
+			content: `La commande **${nom}** a bien été créée 👌`,
+		})
 	},
 }

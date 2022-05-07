@@ -19,40 +19,44 @@ export default {
 		}
 
 		// Vérification si la commande existe
-		const sqlCheckName = 'SELECT * FROM commands WHERE name = ?'
-		const dataCheckName = [nom]
-		const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
-
+		let command = {}
 		try {
-			// Vérification que la commande existe bien
-			if (!resultCheckName[0]) {
-				await modal.deferReply({ ephemeral: true })
-				return modal.followUp({
-					content: `La commande **${nom}** n'existe pas 😕`,
-				})
-			}
+			const sqlCheckName = 'SELECT * FROM commands WHERE name = ?'
+			const dataCheckName = [nom]
+			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
+			command = resultCheckName[0]
+		} catch (error) {
+			await modal.deferReply({ ephemeral: true })
+			return modal.followUp({
+				content: 'Une erreur est survenue lors de la vérification du nom de la commande 😕',
+			})
+		}
 
-			// Sinon, mise à jour de la commande en base de données
+		// Vérification que la commande existe bien
+		if (!command) {
+			await modal.deferReply({ ephemeral: true })
+			return modal.followUp({
+				content: `La commande **${nom}** n'existe pas 😕`,
+			})
+		}
+
+		// Sinon, mise à jour de la commande en base de données
+		try {
 			const sqlEdit =
 				'UPDATE commands SET content = ?, lastModification = ?, lastModificationBy = ? WHERE name = ?'
 			const dataEdit = [contenu, Math.round(new Date() / 1000), modal.user.id, nom]
 
-			const [resultEdit] = await bdd.execute(sqlEdit, dataEdit)
-
-			if (resultEdit.changedRows)
-				return modal.reply({
-					content: `La commande **${nom}** a bien été modifiée 👌`,
-				})
-
+			await bdd.execute(sqlEdit, dataEdit)
+		} catch (error) {
 			await modal.deferReply({ ephemeral: true })
 			return modal.followUp({
-				content: 'Une erreur est survenue lors de la modification de la commande 😬',
-			})
-		} catch {
-			await modal.deferReply({ ephemeral: true })
-			return modal.followUp({
-				content: 'Une erreur est survenue lors de la modification de la commande 😬',
+				content:
+					'Une erreur est survenue lors de la modification de la commande en base de données 😕',
 			})
 		}
+
+		return modal.reply({
+			content: `La commande **${nom}** a bien été modifiée 👌`,
+		})
 	},
 }

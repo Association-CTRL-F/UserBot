@@ -46,9 +46,8 @@ export default {
 				),
 		),
 	interaction: async (interaction, client) => {
-		// Acquisition du nom, du contenu et du mot clé de recherche
+		// Acquisition du nom
 		const nom = interaction.options.getString('nom')
-		const keyword = interaction.options.getString('keyword')
 
 		// Acquisition de la base de données
 		const bdd = await db(client, 'userbot')
@@ -59,173 +58,171 @@ export default {
 			})
 
 		// Vérification si la commande existe
-		const sqlCheckName = 'SELECT * FROM commands WHERE name = ?'
-		const dataCheckName = [nom]
-		const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
+		let commandBdd = {}
+		try {
+			const sqlCheckName = 'SELECT * FROM commands WHERE name = ?'
+			const dataCheckName = [nom]
+			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
+			commandBdd = resultCheckName[0]
+		} catch (error) {
+			return interaction.reply({
+				content:
+					'Une erreur est survenue lors de la récupération de la commande en base de données 😕',
+				ephemeral: true,
+			})
+		}
 
 		switch (interaction.options.getSubcommand()) {
 			// Visualisation des commandes
 			case 'view':
+				let commands = []
 				try {
-					const [resultView] = await bdd.execute('SELECT * FROM commands')
-
-					// Si erreur
-					if (!resultView)
-						return interaction.reply({
-							content:
-								'Une erreur est survenue lors de la récupération des commandes 😬',
-							ephemeral: true,
-						})
-
-					// Sinon, boucle d'ajout des champs
-					const fieldsEmbedView = []
-					resultView.forEach(command => {
-						const commandAuthor = interaction.guild.members.cache.get(command.author)
-						const commandEditor = interaction.guild.members.cache.get(
-							command.lastModificationBy,
-						)
-
-						let creationText = ''
-						let modificationText = ''
-
-						if (commandAuthor)
-							creationText = `Créée par ${
-								commandAuthor.user.tag
-							} (${convertDateForDiscord(command.createdAt * 1000)})`
-						else
-							creationText = `Créée le ${convertDateForDiscord(
-								command.createdAt * 1000,
-							)}`
-
-						if (commandEditor)
-							modificationText = `Dernière modification par ${
-								commandEditor.user.tag
-							} (${convertDateForDiscord(command.lastModification * 1000)})`
-						else
-							modificationText = `Dernière modification le ${convertDateForDiscord(
-								command.lastModification * 1000,
-							)}`
-
-						fieldsEmbedView.push({
-							name: command.name,
-							value: `${creationText}\n${modificationText}`,
-						})
-					})
-
-					// Configuration de l'embed
-					const paginationView = new Pagination(interaction, {
-						firstEmoji: '⏮',
-						prevEmoji: '◀️',
-						nextEmoji: '▶️',
-						lastEmoji: '⏭',
-						limit: 5,
-						idle: 30000,
-						ephemeral: false,
-						prevDescription: '',
-						postDescription: '',
-						buttonStyle: 'SECONDARY',
-						loop: false,
-					})
-
-					paginationView.setTitle('Commandes personnalisées')
-					paginationView.setDescription(`**Total : ${resultView.length}**`)
-					paginationView.setColor('#C27C0E')
-					paginationView.setFields(fieldsEmbedView)
-					paginationView.footer = { text: 'Page : {pageNumber} / {totalPages}' }
-					paginationView.paginateFields(true)
-
-					// Envoi de l'embed
-					return paginationView.render()
+					const [resultCommands] = await bdd.execute('SELECT * FROM commands')
+					commands = resultCommands
 				} catch (error) {
-					console.log(error)
 					return interaction.reply({
-						content:
-							'Une erreur est survenue lors de la récupération des commandesdddd 😬',
+						content: 'Une erreur est survenue lors de la récupération des commandes 😕',
 						ephemeral: true,
 					})
 				}
 
+				// Sinon, boucle d'ajout des champs
+				const fieldsEmbedView = []
+				commands.forEach(command => {
+					const commandAuthor = interaction.guild.members.cache.get(command.author)
+					const commandEditor = interaction.guild.members.cache.get(
+						command.lastModificationBy,
+					)
+
+					let creationText = ''
+					let modificationText = ''
+
+					if (commandAuthor)
+						creationText = `Créée par ${
+							commandAuthor.user.tag
+						} (${convertDateForDiscord(command.createdAt * 1000)})`
+					else
+						creationText = `Créée le ${convertDateForDiscord(command.createdAt * 1000)}`
+
+					if (commandEditor)
+						modificationText = `Dernière modification par ${
+							commandEditor.user.tag
+						} (${convertDateForDiscord(command.lastModification * 1000)})`
+					else
+						modificationText = `Dernière modification le ${convertDateForDiscord(
+							command.lastModification * 1000,
+						)}`
+
+					fieldsEmbedView.push({
+						name: command.name,
+						value: `${creationText}\n${modificationText}`,
+					})
+				})
+
+				// Configuration de l'embed
+				const paginationView = new Pagination(interaction, {
+					firstEmoji: '⏮',
+					prevEmoji: '◀️',
+					nextEmoji: '▶️',
+					lastEmoji: '⏭',
+					limit: 5,
+					idle: 30000,
+					ephemeral: false,
+					prevDescription: '',
+					postDescription: '',
+					buttonStyle: 'SECONDARY',
+					loop: false,
+				})
+
+				paginationView.setTitle('Commandes personnalisées')
+				paginationView.setDescription(
+					`**Total : ${commands.length}\nPréfixe : \`${client.config.prefix}\`**`,
+				)
+				paginationView.setColor('#C27C0E')
+				paginationView.setFields(fieldsEmbedView)
+				paginationView.footer = { text: 'Page : {pageNumber} / {totalPages}' }
+				paginationView.paginateFields(true)
+
+				// Envoi de l'embed
+				return paginationView.render()
+
 			// Chercher une commande
 			case 'search':
+				// Acquisition du mot clé de recherche
+				const keyword = interaction.options.getString('keyword')
+				let commandsSearch = []
 				try {
 					const sqlSearch =
 						'SELECT * FROM commands WHERE MATCH(name) AGAINST(? IN BOOLEAN MODE) OR MATCH(content) AGAINST(? IN BOOLEAN MODE);'
 					const dataSearch = [keyword, keyword]
-					const [resultSearch] = await bdd.execute(sqlSearch, dataSearch)
-
-					// Si erreur
-					if (!resultSearch)
-						return interaction.reply({
-							content:
-								'Une erreur est survenue lors de la recherche de la commande 😬',
-							ephemeral: true,
-						})
-
-					// Sinon, boucle d'ajout des champs
-					const fieldsEmbedSearch = []
-					resultSearch.forEach(command => {
-						const commandAuthor = interaction.guild.members.cache.get(command.author)
-						const commandEditor = interaction.guild.members.cache.get(
-							command.lastModificationBy,
-						)
-
-						let creationText = ''
-						let modificationText = ''
-
-						if (commandAuthor)
-							creationText = `Créée par ${
-								commandAuthor.user.tag
-							} (${convertDateForDiscord(command.createdAt * 1000)})`
-						else
-							creationText = `Créée le ${convertDateForDiscord(
-								command.createdAt * 1000,
-							)}`
-
-						if (commandEditor)
-							modificationText = `Dernière modification par ${
-								commandEditor.user.tag
-							} (${convertDateForDiscord(command.lastModification * 1000)})`
-						else
-							modificationText = `Dernière modification le ${convertDateForDiscord(
-								command.lastModification * 1000,
-							)}`
-
-						fieldsEmbedSearch.push({
-							name: command.name,
-							value: `${creationText}\n${modificationText}`,
-						})
-					})
-
-					// Configuration de l'embed
-					const paginationSearch = new Pagination(interaction, {
-						firstEmoji: '⏮',
-						prevEmoji: '◀️',
-						nextEmoji: '▶️',
-						lastEmoji: '⏭',
-						limit: 5,
-						idle: 30000,
-						ephemeral: false,
-						prevDescription: '',
-						postDescription: '',
-						buttonStyle: 'SECONDARY',
-						loop: false,
-					})
-
-					paginationSearch.setTitle('Résultats de la recherche')
-					paginationSearch.setDescription(`**Total : ${resultSearch.length}**`)
-					paginationSearch.setColor('#C27C0E')
-					paginationSearch.setFields(fieldsEmbedSearch)
-					paginationSearch.footer = { text: 'Page : {pageNumber} / {totalPages}' }
-					paginationSearch.paginateFields(true)
-
-					// Envoi de l'embed
-					return paginationSearch.render()
-				} catch {
+					const [resultsSearch] = await bdd.execute(sqlSearch, dataSearch)
+					commandsSearch = resultsSearch
+				} catch (error) {
 					return interaction.reply({
-						content: 'Une erreur est survenue lors de la recherche de commande 😬',
+						content: 'Une erreur est survenue lors de la recherche des commandes 😕',
 						ephemeral: true,
 					})
 				}
+
+				// Sinon, boucle d'ajout des champs
+				const fieldsEmbedSearch = []
+				commandsSearch.forEach(command => {
+					const commandAuthor = interaction.guild.members.cache.get(command.author)
+					const commandEditor = interaction.guild.members.cache.get(
+						command.lastModificationBy,
+					)
+
+					let creationText = ''
+					let modificationText = ''
+
+					if (commandAuthor)
+						creationText = `Créée par ${
+							commandAuthor.user.tag
+						} (${convertDateForDiscord(command.createdAt * 1000)})`
+					else
+						creationText = `Créée le ${convertDateForDiscord(command.createdAt * 1000)}`
+
+					if (commandEditor)
+						modificationText = `Dernière modification par ${
+							commandEditor.user.tag
+						} (${convertDateForDiscord(command.lastModification * 1000)})`
+					else
+						modificationText = `Dernière modification le ${convertDateForDiscord(
+							command.lastModification * 1000,
+						)}`
+
+					fieldsEmbedSearch.push({
+						name: command.name,
+						value: `${creationText}\n${modificationText}`,
+					})
+				})
+
+				// Configuration de l'embed
+				const paginationSearch = new Pagination(interaction, {
+					firstEmoji: '⏮',
+					prevEmoji: '◀️',
+					nextEmoji: '▶️',
+					lastEmoji: '⏭',
+					limit: 5,
+					idle: 30000,
+					ephemeral: false,
+					prevDescription: '',
+					postDescription: '',
+					buttonStyle: 'SECONDARY',
+					loop: false,
+				})
+
+				paginationSearch.setTitle('Résultats de la recherche')
+				paginationSearch.setDescription(
+					`**Total : ${commandsSearch.length}\nPréfixe : \`${client.config.prefix}\`**`,
+				)
+				paginationSearch.setColor('#C27C0E')
+				paginationSearch.setFields(fieldsEmbedSearch)
+				paginationSearch.footer = { text: 'Page : {pageNumber} / {totalPages}' }
+				paginationSearch.paginateFields(true)
+
+				// Envoi de l'embed
+				return paginationSearch.render()
 
 			// Nouvelle commande
 			case 'create':
@@ -258,7 +255,7 @@ export default {
 			// Modifie une commande
 			case 'edit':
 				// Vérification que la commande existe bien
-				if (!resultCheckName[0])
+				if (!commandBdd)
 					return interaction.reply({
 						content: `La commande **${nom}** n'existe pas 😕`,
 						ephemeral: true,
@@ -272,7 +269,7 @@ export default {
 							.setCustomId('name-command-edit')
 							.setLabel('Nom de la commande')
 							.setStyle('SHORT')
-							.setDefaultValue(resultCheckName[0].name)
+							.setDefaultValue(commandBdd.name)
 							.setMinLength(1)
 							.setMaxLength(255)
 							.setRequired(true),
@@ -282,7 +279,7 @@ export default {
 							.setCustomId('content-command-edit')
 							.setLabel('Nouveau contenu de la commande')
 							.setStyle('LONG')
-							.setDefaultValue(resultCheckName[0].content)
+							.setDefaultValue(commandBdd.content)
 							.setMinLength(1)
 							.setRequired(true),
 					)
@@ -294,36 +291,30 @@ export default {
 
 			// Supprime une commande
 			case 'delete':
-				try {
-					// Vérification que la commande existe bien
-					if (!resultCheckName[0])
-						return interaction.reply({
-							content: `La commande **${nom}** n'existe pas 😕`,
-							ephemeral: true,
-						})
+				// Vérification que la commande existe bien
+				if (!commandBdd)
+					return interaction.reply({
+						content: `La commande **${nom}** n'existe pas 😕`,
+						ephemeral: true,
+					})
 
-					// Si oui, alors suppression de la commande
-					// en base de données
+				// Si oui, alors suppression de la commande en base de données
+				try {
 					const sqlDelete = 'DELETE FROM commands WHERE name = ?'
 					const dataDelete = [nom]
 
-					const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
-
-					if (resultDelete.affectedRows)
-						return interaction.reply({
-							content: `La commande **${nom}** a bien été supprimée 👌`,
-						})
-
-					return interaction.reply({
-						content: 'Une erreur est survenue lors de la suppression de la commande 😬',
-						ephemeral: true,
-					})
+					await bdd.execute(sqlDelete, dataDelete)
 				} catch {
 					return interaction.reply({
-						content: 'Une erreur est survenue lors de la suppression de la commande 😬',
+						content:
+							'Une erreur est survenue lors de la suppression de la commande en base de données 😬',
 						ephemeral: true,
 					})
 				}
+
+				return interaction.reply({
+					content: `La commande **${nom}** a bien été supprimée 👌`,
+				})
 		}
 	},
 }
