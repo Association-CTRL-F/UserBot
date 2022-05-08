@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: May 07, 2022 at 02:35 PM
+-- Generation Time: May 08, 2022 at 03:20 PM
 -- Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal
 -- PHP Version: 7.4.23
 
@@ -20,6 +20,32 @@ SET time_zone = "+00:00";
 --
 -- Database: `userbot`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `automodDomains`
+--
+
+CREATE TABLE `automodDomains` (
+  `id` int(11) NOT NULL,
+  `domain` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `automodRules`
+--
+
+CREATE TABLE `automodRules` (
+  `id` int(11) NOT NULL,
+  `customId` varchar(255) DEFAULT NULL,
+  `ruleName` varchar(255) NOT NULL,
+  `regex` text NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `reason` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -95,6 +121,18 @@ CREATE TABLE `warnings` (
 --
 
 --
+-- Indexes for table `automodDomains`
+--
+ALTER TABLE `automodDomains`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `automodRules`
+--
+ALTER TABLE `automodRules`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `commands`
 --
 ALTER TABLE `commands`
@@ -129,6 +167,18 @@ ALTER TABLE `warnings`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `automodDomains`
+--
+ALTER TABLE `automodDomains`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `automodRules`
+--
+ALTER TABLE `automodRules`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `commands`
