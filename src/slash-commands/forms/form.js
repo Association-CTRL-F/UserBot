@@ -63,7 +63,8 @@ export default {
 					forms = resultSelect
 				} catch {
 					return interaction.reply({
-						content: 'Une erreur est survenue lors de la récupération du formulaire 😬',
+						content:
+							'Une erreur est survenue lors de la récupération des formulaires 😬',
 						ephemeral: true,
 					})
 				}
