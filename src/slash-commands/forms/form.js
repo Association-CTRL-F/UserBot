@@ -58,9 +58,9 @@ export default {
 				// Récupération des formulaires
 				let forms = []
 				try {
-					const sqlCheckName = 'SELECT * FROM forms'
-					const [resultCheckName] = await bdd.execute(sqlCheckName)
-					forms = resultCheckName
+					const sqlSelect = 'SELECT * FROM forms'
+					const [resultSelect] = await bdd.execute(sqlSelect)
+					forms = resultSelect
 				} catch {
 					return interaction.reply({
 						content: 'Une erreur est survenue lors de la récupération du formulaire 😬',
