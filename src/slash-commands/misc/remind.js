@@ -16,7 +16,7 @@ export default {
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('create')
-				.setDescription('CRée un rappel')
+				.setDescription('Crée un rappel')
 				.addStringOption(option =>
 					option
 						.setName('temps')
@@ -25,6 +25,9 @@ export default {
 				)
 				.addStringOption(option =>
 					option.setName('rappel').setDescription('Rappel').setRequired(true),
+				)
+				.addBooleanOption(option =>
+					option.setName('private').setDescription('En privé ?').setRequired(true),
 				),
 		)
 		.addSubcommand(subcommand =>
@@ -58,7 +61,7 @@ export default {
 					})
 				}
 
-				// Sinon, boucle d'ajout des champs
+				// Boucle d'ajout des champs
 				const fieldsEmbedView = []
 				reminders.forEach(reminder => {
 					fieldsEmbedView.push({
@@ -96,15 +99,31 @@ export default {
 			case 'create':
 				const temps = interaction.options.getString('temps')
 				const rappel = interaction.options.getString('rappel')
+				const prive = interaction.options.getBoolean('private')
 
 				// Insertion du rappel en base de données
 				const timestampStart = Math.round(Date.now() / 1000)
 				const timestampEnd = Math.round(Date.now() / 1000) + ms(temps) / 1000
 
+				const delay = (timestampEnd - timestampStart) * 1000
+
+				if (delay.toString(2).length > 32)
+					return interaction.reply({
+						content:
+							'Le délai est trop grand et dépasse la limite autorisée de 32 bits 😬',
+						ephemeral: true,
+					})
+
 				try {
 					const sql =
-						'INSERT INTO reminders (discordID, reminder, timestampEnd) VALUES (?, ?, ?)'
-					const data = [interaction.user.id, rappel, timestampEnd]
+						'INSERT INTO reminders (discordID, reminder, timestampEnd, channel, private) VALUES (?, ?, ?, ?, ?)'
+					const data = [
+						interaction.user.id,
+						rappel,
+						timestampEnd,
+						interaction.channel.id,
+						prive ? 1 : 0,
+					]
 					await bdd.execute(sql, data)
 				} catch (error) {
 					return interaction.reply({
@@ -122,8 +141,19 @@ export default {
 
 						const member = interaction.guild.members.cache.get(interaction.user.id)
 
-						return member.send({
-							content: `Rappel : ${rappel}`,
+						const embed = {
+							color: '#C27C0E',
+							title: 'Rappel',
+							description: rappel,
+						}
+
+						if (prive)
+							return member.send({
+								embeds: [embed],
+							})
+
+						return interaction.channel.send({
+							content: `Rappel pour ${interaction.user} : ${rappel}`,
 						})
 					} catch {
 						return interaction.reply({
@@ -132,7 +162,7 @@ export default {
 							ephemeral: true,
 						})
 					}
-				}, (timestampEnd - timestampStart) * 1000)
+				}, delay)
 
 				return interaction.reply({
 					content: `Rappel créé 👌\nRappel : ${rappel}\nProgrammé le ${convertDateForDiscord(
@@ -141,7 +171,7 @@ export default {
 					ephemeral: true,
 				})
 
-			// Suppression d'nu rappel
+			// Suppression d'un rappel
 			case 'del':
 				// Acquisition de l'id du rappel
 				// puis suppresion en base de données
