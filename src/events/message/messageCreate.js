@@ -75,8 +75,8 @@ export default async (message, client) => {
 						const sqlCreate =
 							'INSERT INTO warnings (discordID, warnedBy, warnReason, warnedAt) VALUES (?, ?, ?, ?)'
 						const dataCreate = [
-							client.user.id,
 							message.member.id,
+							client.user.id,
 							rule.reason,
 							Math.round(Date.now() / 1000),
 						]
