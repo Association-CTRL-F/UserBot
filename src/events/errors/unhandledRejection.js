@@ -1,1 +1,1 @@
-export default error => console.error('Unhandled promise rejection :', error)
+export default error => console.error('Unhandled promise rejection : ', error)
