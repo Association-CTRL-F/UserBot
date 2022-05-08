@@ -7,7 +7,7 @@ export default {
 	},
 	interaction: async (menu, client) => {
 		// Acquisition de la base de données
-		const bdd = await db(client, 'userbot')
+		const bdd = await db(client, client.config.dbName)
 		if (!bdd)
 			return menu.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',

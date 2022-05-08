@@ -47,7 +47,7 @@ export default {
 			// Modification d'un formulaire
 			case 'edit':
 				// Acquisition de la base de données
-				const bdd = await db(client, 'userbot')
+				const bdd = await db(client, client.config.dbName)
 				if (!bdd)
 					return interaction.reply({
 						content:

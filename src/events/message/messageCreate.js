@@ -35,7 +35,7 @@ export default async (message, client) => {
 	}
 
 	// Acquisition de la base de données
-	const bdd = await db(client, 'userbot')
+	const bdd = await db(client, client.config.dbName)
 	if (!bdd)
 		return console.log('Une erreur est survenue lors de la connexion à la base de données')
 

@@ -12,7 +12,7 @@ export default {
 		const reason = modal.getTextInputValue('rule-create-reason').trim()
 
 		// Acquisition de la base de données
-		const bdd = await db(client, 'userbot')
+		const bdd = await db(client, client.config.dbName)
 		if (!bdd) {
 			await modal.deferReply({ ephemeral: true })
 			return modal.followUp({

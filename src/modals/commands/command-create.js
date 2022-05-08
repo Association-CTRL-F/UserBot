@@ -10,7 +10,7 @@ export default {
 		const contenu = modal.getTextInputValue('content-command-create').trim()
 
 		// Acquisition de la base de données
-		const bdd = await db(client, 'userbot')
+		const bdd = await db(client, client.config.dbName)
 		if (!bdd) {
 			await modal.deferReply({ ephemeral: true })
 			return modal.followUp({

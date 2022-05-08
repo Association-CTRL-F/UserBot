@@ -225,14 +225,17 @@ export const convertDateForDiscord = date => `<t:${Math.round(new Date(date) / 1
  */
 export const db = async (client, table) => {
 	try {
-		const bdd = await mysql.createConnection({
+		const pool = await mysql.createPool({
 			host: client.config.dbHost,
 			user: client.config.dbUser,
 			password: client.config.dbPass,
 			database: table,
+			waitForConnections: true,
+			connectionLimit: 10,
+			queueLimit: 0,
 		})
 
-		return bdd
+		return pool
 	} catch (error) {
 		return false
 	}
