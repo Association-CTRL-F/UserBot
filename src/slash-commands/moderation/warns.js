@@ -164,9 +164,9 @@ export default {
 				// Lecture du message d'avertissement
 				let warnDM = ''
 				try {
-					const sqlSelectUnmute = 'SELECT * FROM forms WHERE name = ?'
-					const dataSelectUnmute = ['warn']
-					const [resultSelectWarn] = await bdd.execute(sqlSelectUnmute, dataSelectUnmute)
+					const sqlSelectWarn = 'SELECT * FROM forms WHERE name = ?'
+					const dataSelectWarn = ['warn']
+					const [resultSelectWarn] = await bdd.execute(sqlSelectWarn, dataSelectWarn)
 					warnDM = resultSelectWarn[0].content
 				} catch (error) {
 					return interaction.reply({
