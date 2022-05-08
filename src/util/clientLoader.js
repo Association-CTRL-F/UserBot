@@ -62,6 +62,9 @@ export default () => {
 		threadsManagerChannelIDs: process.env.THREADS_MANAGER_CHANNELS_IDS
 			? process.env.THREADS_MANAGER_CHANNELS_IDS.split(/, */)
 			: [],
+		staffRolesManagerIDs: process.env.STAFF_ROLES_MANAGER_IDS
+			? process.env.STAFF_ROLES_MANAGER_IDS.split(/, */)
+			: [],
 	}
 	client.cache = {
 		// Messages supprimés par le bot pour ne pas
