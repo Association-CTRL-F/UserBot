@@ -5,7 +5,7 @@ export default {
 		name: 'command-edit',
 	},
 	interaction: async (modal, client) => {
-		// Acquisition du nom, du contenu et du mot clé de recherche
+		// Acquisition du nom et du contenu
 		const nom = modal.getTextInputValue('name-command-edit').trim().replace(/\s+/g, '-')
 		const contenu = modal.getTextInputValue('content-command-edit').trim()
 

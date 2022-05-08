@@ -13,7 +13,7 @@ export default {
 			option.setName('raison').setDescription('Raison du bannissement').setRequired(true),
 		),
 	interaction: async (interaction, client) => {
-		// Acquisition du membre et de la raison du bannissement
+		// Acquisition du membre
 		const user = interaction.options.getUser('membre')
 		const member = interaction.guild.members.cache.get(user.id)
 		if (!member)

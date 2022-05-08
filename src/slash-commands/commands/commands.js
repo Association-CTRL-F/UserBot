@@ -201,7 +201,7 @@ export default {
 
 			// Chercher une commande
 			case 'search':
-				// Acquisition du mot clé de recherche
+				// Acquisition du mot clé de la recherche
 				const keyword = interaction.options.getString('keyword')
 				let commandsSearch = []
 				try {
@@ -217,7 +217,7 @@ export default {
 					})
 				}
 
-				// Sinon, boucle d'ajout des champs
+				// Boucle d'ajout des champs
 				const fieldsEmbedSearch = []
 				commandsSearch.forEach(command => {
 					const commandAuthor = interaction.guild.members.cache.get(command.author)

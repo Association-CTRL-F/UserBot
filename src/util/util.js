@@ -221,22 +221,23 @@ export const convertDateForDiscord = date => `<t:${Math.round(new Date(date) / 1
 /**
  * Crée une connexion à la base de données
  * @param {Client} client Discord.js
- * @param {string} table nom de la table à utiliser
+ * @param {string} dbName nom de la base de données à utiliser
  */
-export const db = async (client, table) => {
+export const db = async (client, dbName) => {
 	try {
 		const pool = await mysql.createPool({
 			host: client.config.dbHost,
 			user: client.config.dbUser,
 			password: client.config.dbPass,
-			database: table,
+			database: dbName,
 			waitForConnections: true,
-			connectionLimit: 10,
+			connectionLimit: 100,
 			queueLimit: 0,
 		})
 
 		return pool
 	} catch (error) {
+		console.error(error)
 		return false
 	}
 }

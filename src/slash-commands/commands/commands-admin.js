@@ -24,10 +24,13 @@ export default {
 		)
 		.addSubcommand(subcommand =>
 			subcommand
-				.setName('delete')
+				.setName('del')
 				.setDescription('Supprime une commande')
 				.addStringOption(option =>
-					option.setName('nom').setDescription('Nom de la commande').setRequired(true),
+					option
+						.setName('nom')
+						.setDescription('Nom de la commande à supprimer')
+						.setRequired(true),
 				),
 		),
 	interaction: async (interaction, client) => {
@@ -124,7 +127,7 @@ export default {
 				})
 
 			// Supprime une commande
-			case 'delete':
+			case 'del':
 				// Vérification que la commande existe bien
 				if (!commandBdd)
 					return interaction.reply({

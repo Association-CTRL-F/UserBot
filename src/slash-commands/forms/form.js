@@ -44,6 +44,7 @@ export default {
 					client: client,
 					interaction: interaction,
 				})
+
 			// Modification d'un formulaire
 			case 'edit':
 				// Acquisition de la base de données

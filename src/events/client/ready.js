@@ -57,8 +57,7 @@ export default async client => {
 
 	// Acquisition du rôle muted
 	const mutedRole = client.config.mutedRoleID
-	if (!mutedRole)
-		return console.log("Une erreur est survenue lors de l'acquisition du rôle muted")
+	if (!mutedRole) return console.log("Il n'y a pas de rôle muted")
 
 	// Boucle mutes //
 
@@ -221,15 +220,35 @@ export default async client => {
 				}
 
 				// Envoi du rappel en message privé
-				if (deletedReminder.affectedRows === 1)
-					return member
+				if (deletedReminder.affectedRows === 1) {
+					if (reminder.private) {
+						const embed = {
+							color: '#C27C0E',
+							title: 'Rappel',
+							description: reminder.reminder,
+						}
+
+						return member
+							.send({
+								embeds: [embed],
+							})
+							.catch(error => {
+								console.error(error)
+								return error
+							})
+					}
+
+					const channel = member.guild.channels.cache.get(reminder.channel)
+
+					return channel
 						.send({
-							content: `Rappel : ${reminder.reminder}`,
+							content: `Rappel pour ${member} : ${reminder.reminder}`,
 						})
 						.catch(error => {
 							console.error(error)
 							return error
 						})
+				}
 			}
 
 			// Sinon on réactive le timeout et on supprime en base de données
@@ -247,15 +266,35 @@ export default async client => {
 				}
 
 				// Envoi du rappel en message privé
-				if (deletedReminder.affectedRows === 1)
-					return member
+				if (deletedReminder.affectedRows === 1) {
+					if (reminder.private) {
+						const embed = {
+							color: '#C27C0E',
+							title: 'Rappel',
+							description: reminder.reminder,
+						}
+
+						return member
+							.send({
+								embeds: [embed],
+							})
+							.catch(error => {
+								console.error(error)
+								return error
+							})
+					}
+
+					const channel = member.guild.channels.cache.get(reminder.channel)
+
+					return channel
 						.send({
-							content: `Rappel : ${reminder.reminder}`,
+							content: `Rappel pour ${member} : ${reminder.reminder}`,
 						})
 						.catch(error => {
 							console.error(error)
 							return error
 						})
+				}
 			}, (reminder.timestampEnd - Math.round(Date.now() / 1000)) * 1000)
 		})
 

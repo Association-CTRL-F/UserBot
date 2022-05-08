@@ -5,7 +5,8 @@ export default {
 		name: 'rule-create',
 	},
 	interaction: async (modal, client) => {
-		// Acquisition du nom et du contenu
+		// Acquisition du type, du nom, de la regex
+		// et de la raison envoyée en message privé
 		const type = modal.getTextInputValue('rule-create-type').trim().toLowerCase()
 		const nom = modal.getTextInputValue('rule-create-name').trim()
 		const regex = modal.getTextInputValue('rule-create-regex').trim()

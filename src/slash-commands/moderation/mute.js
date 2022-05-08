@@ -17,7 +17,7 @@ export default {
 			option.setName('durée').setDescription('Durée du mute en minutes').setRequired(true),
 		),
 	interaction: async (interaction, client) => {
-		// Acquisition du membre, de la raison du mute et de sa durée
+		// Acquisition du membre
 		const user = interaction.options.getUser('membre')
 		const member = interaction.guild.members.cache.get(user.id)
 		if (!member)
@@ -48,7 +48,7 @@ export default {
 				ephemeral: true,
 			})
 
-		// Acquisition de la raison et la durée du mute
+		// Acquisition de la raison du mute et de sa durée
 		const reason = interaction.options.getString('raison')
 		const duration = interaction.options.getInteger('durée')
 
