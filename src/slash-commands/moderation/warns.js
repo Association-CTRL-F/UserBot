@@ -6,7 +6,7 @@ import { Pagination } from 'pagination.djs'
 
 export default {
 	data: new SlashCommandBuilder()
-		.setName('warn')
+		.setName('warns')
 		.setDescription('Gère les avertissements')
 		.addSubcommand(subcommand =>
 			subcommand
