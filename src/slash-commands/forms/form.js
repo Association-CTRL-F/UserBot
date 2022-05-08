@@ -55,7 +55,7 @@ export default {
 						ephemeral: true,
 					})
 
-				// Vérification si la commande existe
+				// Récupération des formulaires
 				let forms = []
 				try {
 					const sqlCheckName = 'SELECT * FROM forms'
