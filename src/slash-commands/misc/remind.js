@@ -168,7 +168,7 @@ export default {
 					content: `Rappel créé 👌\nRappel : ${rappel}\nProgrammé le ${convertDateForDiscord(
 						timestampEnd * 1000,
 					)}`,
-					ephemeral: true,
+					ephemeral: prive,
 				})
 
 			// Suppression d'un rappel
