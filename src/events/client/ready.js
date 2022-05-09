@@ -92,7 +92,7 @@ export default async client => {
 			// alors on retire le rôle muted et on supprime en base de données
 			if (
 				member.roles.cache.has(mutedRole) &&
-				mutedMember.timestampEnd - Math.round(Date.now() / 1000) <= 0
+				parseInt(mutedMember.timestampEnd) <= Math.round(Date.now() / 1000)
 			) {
 				member.roles.remove(mutedRole).catch(error => {
 					console.error(error)
@@ -102,8 +102,9 @@ export default async client => {
 				// Suppression du mute en base de données
 				let deletedMute = {}
 				try {
-					const sqlDeleteMute = 'DELETE FROM mute WHERE discordID = ?'
-					const dataDeleteMute = [member.id]
+					const sqlDeleteMute =
+						'DELETE FROM mute WHERE discordID = ? AND timestampEnd = ?'
+					const dataDeleteMute = [member.id, mutedMember.timestampEnd]
 					const [resultDeleteMute] = await bdd.execute(sqlDeleteMute, dataDeleteMute)
 					deletedMute = resultDeleteMute
 				} catch (error) {
@@ -146,8 +147,9 @@ export default async client => {
 					// Suppression du mute en base de données
 					let deletedMute = {}
 					try {
-						const sqlDeleteMute = 'DELETE FROM mute WHERE discordID = ?'
-						const dataDeleteMute = [member.id]
+						const sqlDeleteMute =
+							'DELETE FROM mute WHERE discordID = ? AND timestampEnd = ?'
+						const dataDeleteMute = [member.id, mutedMember.timestampEnd]
 						const [resultDeleteMute] = await bdd.execute(sqlDeleteMute, dataDeleteMute)
 						deletedMute = resultDeleteMute
 					} catch (error) {
@@ -202,17 +204,18 @@ export default async client => {
 	if (reminders)
 		reminders.forEach(async reminder => {
 			// Acquisition du membre
-			const member = guild.members.cache.get(reminder.discordID)
+			const member = await guild.members.fetch(reminder.discordID)
 			if (!member) return
 
-			// Si le rappel est expiré alors on supprime en base de données
-			// et on envoi le message privé
-			if (reminder.timestampEnd - Math.round(Date.now() / 1000) <= 0) {
+			if (parseInt(reminder.timestampEnd) <= Math.round(Date.now() / 1000)) {
+				// Si le rappel est expiré alors on supprime en base de données
+				// et on envoi le message privé
 				// Suppression du rappel en base de données
 				let deletedReminder = {}
 				try {
-					const sqlDeleteReminder = 'DELETE FROM reminders WHERE discordID = ?'
-					const dataDeleteReminder = [member.id]
+					const sqlDeleteReminder =
+						'DELETE FROM reminders WHERE discordID = ? AND timestampEnd = ?'
+					const dataDeleteReminder = [member.user.id, reminder.timestampEnd]
 					const [resultDelete] = await bdd.execute(sqlDeleteReminder, dataDeleteReminder)
 					deletedReminder = resultDelete
 				} catch (error) {
@@ -257,8 +260,9 @@ export default async client => {
 				let deletedReminder = {}
 				try {
 					// Suppression du rappel en base de données
-					const sqlDeleteReminder = 'DELETE FROM reminders WHERE discordID = ?'
-					const dataDeleteReminder = [member.id]
+					const sqlDeleteReminder =
+						'DELETE FROM reminders WHERE discordID = ? AND timestampEnd = ?'
+					const dataDeleteReminder = [member.user.id, reminder.timestampEnd]
 					const [resultDelete] = await bdd.execute(sqlDeleteReminder, dataDeleteReminder)
 					deletedReminder = resultDelete
 				} catch (error) {

@@ -65,6 +65,8 @@ export default async (message, client) => {
 			const matchesRegex = message.content.match(regexRule)
 			if (!matchesRegex) return
 
+			const sentMessage = await message.fetch()
+			const guildMember = await message.guild.members.fetch(sentMessage.author)
 			await message.delete()
 
 			// Switch sur les types de règles
@@ -75,7 +77,7 @@ export default async (message, client) => {
 						const sqlCreate =
 							'INSERT INTO warnings (discordID, warnedBy, warnReason, warnedAt) VALUES (?, ?, ?, ?)'
 						const dataCreate = [
-							message.member.id,
+							guildMember.user.id,
 							client.user.id,
 							rule.reason,
 							Math.round(Date.now() / 1000),
@@ -102,7 +104,7 @@ export default async (message, client) => {
 					}
 
 					// Envoi du message d'avertissement en message privé
-					const DMMessageWarn = await message.member
+					const DMMessageWarn = await guildMember
 						.send({
 							embeds: [
 								{
@@ -110,9 +112,9 @@ export default async (message, client) => {
 									title: 'Avertissement',
 									description: warnDM,
 									author: {
-										name: message.guild.name,
-										icon_url: message.guild.iconURL({ dynamic: true }),
-										url: message.guild.vanityURL,
+										name: sentMessage.guild.name,
+										icon_url: sentMessage.guild.iconURL({ dynamic: true }),
+										url: sentMessage.guild.vanityURL,
 									},
 									fields: [
 										{
@@ -132,6 +134,7 @@ export default async (message, client) => {
 						throw new Error(
 							"L'envoi d'un message a échoué. Voir les logs précédents pour plus d'informations.",
 						)
+
 					break
 
 				case 'ban':
@@ -150,7 +153,7 @@ export default async (message, client) => {
 					}
 
 					// Envoi du message de bannissement en message privé
-					const DMMessageBan = await message.member
+					const DMMessageBan = await guildMember
 						.send({
 							embeds: [
 								{
@@ -158,9 +161,9 @@ export default async (message, client) => {
 									title: 'Bannissement',
 									description: banDM,
 									author: {
-										name: message.guild.name,
-										icon_url: message.guild.iconURL({ dynamic: true }),
-										url: message.guild.vanityURL,
+										name: sentMessage.guild.name,
+										icon_url: sentMessage.guild.iconURL({ dynamic: true }),
+										url: sentMessage.guild.vanityURL,
 									},
 									fields: [
 										{
@@ -176,7 +179,7 @@ export default async (message, client) => {
 						})
 
 					// Ban du membre
-					const banAction = await message.member
+					const banAction = await guildMember
 						.ban({ days: 7, reason: `${client.user.tag}: ${rule.reason}` })
 						.catch(error => {
 							// Suppression du message privé envoyé
@@ -199,9 +202,10 @@ export default async (message, client) => {
 						throw new Error(
 							"L'envoi d'un message et / ou le bannissement d'un membre a échoué. Voir les logs précédents pour plus d'informations.",
 						)
-					break
 			}
 		})
+
+		return
 	}
 
 	// Fin Automod
