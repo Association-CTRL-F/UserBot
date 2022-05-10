@@ -1,7 +1,6 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { db } from '../../util/util.js'
 import { Modal, TextInputComponent, showModal } from 'discord-modals'
 
 export default {
@@ -38,7 +37,7 @@ export default {
 		const nom = interaction.options.getString('nom')
 
 		// Acquisition de la base de données
-		const bdd = await db(client, client.config.dbName)
+		const bdd = client.config.db.pools.userbot
 		if (!bdd)
 			return interaction.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',

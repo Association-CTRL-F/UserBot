@@ -1,5 +1,3 @@
-import { db } from '../../util/util.js'
-
 export default {
 	data: {
 		name: 'rule-create',
@@ -8,12 +6,22 @@ export default {
 		// Acquisition du type, du nom, de la regex
 		// et de la raison envoyée en message privé
 		const type = modal.getTextInputValue('rule-create-type').trim().toLowerCase()
-		const nom = modal.getTextInputValue('rule-create-name').trim()
+		const customId = modal.getTextInputValue('rule-create-id').trim()
 		const regex = modal.getTextInputValue('rule-create-regex').trim()
+		const ignoredRoles = modal.getTextInputValue('rule-create-ignored-roles').trim()
 		const reason = modal.getTextInputValue('rule-create-reason').trim()
 
+		// Vérification du type de règle
+		if (type !== 'warn' && type !== 'ban') {
+			await modal.deferReply({ ephemeral: true })
+			return modal.reply({
+				content: `Le type **${type}** n'est pas pris en charge 😕`,
+				ephemeral: true,
+			})
+		}
+
 		// Acquisition de la base de données
-		const bdd = await db(client, client.config.dbName)
+		const bdd = client.config.db.pools.userbot
 		if (!bdd) {
 			await modal.deferReply({ ephemeral: true })
 			return modal.followUp({
@@ -24,8 +32,8 @@ export default {
 		// Vérification si la règle existe
 		let rule = {}
 		try {
-			const sqlCheckName = 'SELECT * FROM automodRules WHERE ruleName = ?'
-			const dataCheckName = [nom]
+			const sqlCheckName = 'SELECT * FROM automodRules WHERE customId = ?'
+			const dataCheckName = [customId]
 			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 			rule = resultCheckName[0]
 		} catch (error) {
@@ -39,15 +47,15 @@ export default {
 		if (rule) {
 			await modal.deferReply({ ephemeral: true })
 			return modal.followUp({
-				content: `La règle **${nom}** existe déjà 😕`,
+				content: `La règle ayant l'id **${customId}** existe déjà 😕`,
 			})
 		}
 
 		// Sinon, création de la règle en base de données
 		try {
 			const sqlInsert =
-				'INSERT INTO automodRules (customId, ruleName, regex, type, reason) VALUES (?, ?, ?, ?, ?)'
-			const dataInsert = [null, nom, regex, type, reason]
+				'INSERT INTO automodRules (customId, regex, type, ignoredRoles, reason) VALUES (?, ?, ?, ?, ?)'
+			const dataInsert = [customId, regex, type, ignoredRoles, reason]
 
 			await bdd.execute(sqlInsert, dataInsert)
 		} catch (error) {
@@ -58,8 +66,10 @@ export default {
 			})
 		}
 
-		return modal.reply({
-			content: `La règle **${nom}** a bien été créée 👌`,
+		await modal.deferReply()
+		await modal.deleteReply()
+		return modal.channel.send({
+			content: `${modal.user}, la règle ayant pour id **${customId}** a bien été créée 👌`,
 		})
 	},
 }

@@ -1,6 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { Constants, GuildMember } from 'discord.js'
-import { db } from '../../util/util.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -33,7 +32,7 @@ export default {
 		const reason = interaction.options.getString('raison')
 
 		// Acquisition de la base de données
-		const bdd = await db(client, client.config.dbName)
+		const bdd = client.config.db.pools.userbot
 		if (!bdd)
 			return interaction.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',

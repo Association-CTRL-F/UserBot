@@ -3,12 +3,14 @@ import { convertDateForDiscord, diffDate } from '../../util/util.js'
 export default (guildMember, client) => {
 	if (
 		guildMember.user.bot ||
-		guildMember.guild.id !== client.config.guildID ||
+		guildMember.guild.id !== client.config.guild.guildID ||
 		!guildMember.guild.available
 	)
 		return
 
-	const leaveJoinChannel = guildMember.guild.channels.cache.get(client.config.leaveJoinChannelID)
+	const leaveJoinChannel = guildMember.guild.channels.cache.get(
+		client.config.guild.channels.leaveJoinChannelID,
+	)
 	if (!leaveJoinChannel) return
 
 	const embed = {

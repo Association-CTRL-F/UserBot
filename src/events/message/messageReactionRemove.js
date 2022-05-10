@@ -8,7 +8,7 @@ export default async (messageReaction, user, client) => {
 		user.bot ||
 		!message.guild ||
 		!message.guild.available ||
-		message.guild.id !== client.config.guildID
+		message.guild.id !== client.config.guild.guildID
 	)
 		return
 
@@ -21,7 +21,7 @@ export default async (messageReaction, user, client) => {
 
 		// Système rôle arrivant
 		if (giveJoinRole) {
-			const joinRole = client.config.joinRoleID
+			const joinRole = client.config.guild.roles.joinRoleID
 			guildMember.roles.remove(joinRole)
 		}
 

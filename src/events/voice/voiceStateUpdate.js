@@ -30,7 +30,7 @@ const handleLeave = (oldState, newState, client) => {
 
 const handleJoin = async (newState, client) => {
 	// S'il rejoint un salon qui doit créer un nouveau salon
-	if (client.config.voiceManagerChannelsIDs.includes(newState.channelId)) {
+	if (client.config.guild.managers.voiceManagerChannelsIDs.includes(newState.channelId)) {
 		const member = newState.member
 
 		const permissions = newState.channel.permissionOverwrites.cache.clone().set(member, {

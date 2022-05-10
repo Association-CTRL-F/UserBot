@@ -1,19 +1,19 @@
 /* eslint-disable default-case */
 /* eslint-disable no-case-declarations */
-import { Collection, Constants } from 'discord.js'
+import { Collection, Constants, GuildMember } from 'discord.js'
 import {
 	modifyWrongUsernames,
 	convertDate,
 	isImage,
 	getFileInfos,
 	displayNameAndID,
-	db,
 } from '../../util/util.js'
 
 export default async (message, client) => {
 	if (
 		message.author.bot ||
-		(message.guild && (message.guild.id !== client.config.guildID || !message.guild.available))
+		(message.guild &&
+			(message.guild.id !== client.config.guild.guildID || !message.guild.available))
 	)
 		return
 
@@ -26,193 +26,301 @@ export default async (message, client) => {
 
 		// Si c'est un salon autre que blabla
 		if (
-			message.channel.id !== client.config.blablaChannelID &&
-			message.member.roles.cache.has(client.config.joinRoleID)
+			message.channel.id !== client.config.guild.channels.blablaChannelID &&
+			message.member.roles.cache.has(client.config.guild.roles.joinRoleID)
 		)
-			message.member.roles.remove(client.config.joinRoleID).catch(error => {
+			message.member.roles.remove(client.config.guild.roles.joinRoleID).catch(error => {
 				if (error.code !== Constants.APIErrors.UNKNOWN_MEMBER) throw error
 			})
 	}
 
 	// Acquisition de la base de données
-	const bdd = await db(client, client.config.dbName)
+	const bdd = client.config.db.pools.userbot
 	if (!bdd)
 		return console.log('Une erreur est survenue lors de la connexion à la base de données')
 
 	// Automod //
+
+	// Partie domaines
+
 	let hasRole = 0
 	message.member.roles.cache.forEach(role => {
 		if (role.name === '@everyone') return
 
-		if (client.config.staffRolesManagerIDs.includes(role.id)) hasRole += 1
+		if (client.config.guild.managers.staffRolesManagerIDs.includes(role.id)) hasRole += 1
 	})
 
 	if (hasRole === 0) {
-		// Acquisition des règles depuis la base de données
-		let rules = []
+		let domains = []
 		try {
-			const sqlRules = 'SELECT * FROM automodRules'
-			const [resultsRules] = await bdd.execute(sqlRules)
-			rules = resultsRules
+			const sqlDomains = 'SELECT * FROM automodDomains'
+			const [resultsDomains] = await bdd.execute(sqlDomains)
+			domains = resultsDomains
 		} catch (error) {
 			return console.error(error)
 		}
 
-		rules.forEach(async rule => {
-			const regexRule = rule.regex
+		if (domains.length > 0)
+			domains.forEach(async domain => {
+				const regexDomain = String.raw`(http[s]?:\/\/)?(www\.)?((${domain.domain})[\w]*){1}\.([a-z]{2,})`
 
-			// Vérification si le message envoyé match avec la regex
-			const matchesRegex = message.content.match(regexRule)
-			if (!matchesRegex) return
+				const matchesRegex = message.content.match(regexDomain)
+				if (!matchesRegex) return
 
-			const sentMessage = await message.fetch()
-			const guildMember = await message.guild.members.fetch(sentMessage.author)
-			await message.delete()
+				const sentMessage = await message.fetch()
+				const guildMember = await message.guild.members.fetch(sentMessage.author)
+				await message.delete()
 
-			// Switch sur les types de règles
-			switch (rule.type) {
-				case 'warn':
-					// Création de l'avertissement en base de données
-					try {
-						const sqlCreate =
-							'INSERT INTO warnings (discordID, warnedBy, warnReason, warnedAt) VALUES (?, ?, ?, ?)'
-						const dataCreate = [
-							guildMember.user.id,
-							client.user.id,
-							rule.reason,
-							Math.round(Date.now() / 1000),
-						]
+				// Acquisition du message de bannissement
+				let banDM = ''
+				try {
+					const sqlSelectBan = 'SELECT * FROM forms WHERE name = ?'
+					const dataSelectBan = ['ban']
+					const [resultSelectBan] = await bdd.execute(sqlSelectBan, dataSelectBan)
 
-						await bdd.execute(sqlCreate, dataCreate)
-					} catch (error) {
-						return console.log(
-							"Une erreur est survenue lors de la création de l'avertissement Automod en base de données (Automod)",
-						)
-					}
+					banDM = resultSelectBan[0].content
+				} catch {
+					return console.log(
+						'Une erreur est survenue lors de la récupération du message de bannissement en base de données (Automod)',
+					)
+				}
 
-					// Lecture du message d'avertissement
-					let warnDM = ''
-					try {
-						const sqlSelectWarn = 'SELECT * FROM forms WHERE name = ?'
-						const dataSelectWarn = ['warn']
-						const [resultSelectWarn] = await bdd.execute(sqlSelectWarn, dataSelectWarn)
-						warnDM = resultSelectWarn[0].content
-					} catch (error) {
-						return console.log(
-							"Une erreur est survenue lors de la récupération du message d'avertissement en base de données (Automod)",
-						)
-					}
-
-					// Envoi du message d'avertissement en message privé
-					const DMMessageWarn = await guildMember
-						.send({
-							embeds: [
-								{
-									color: '#C27C0E',
-									title: 'Avertissement',
-									description: warnDM,
-									author: {
-										name: sentMessage.guild.name,
-										icon_url: sentMessage.guild.iconURL({ dynamic: true }),
-										url: sentMessage.guild.vanityURL,
-									},
-									fields: [
-										{
-											name: "Raison de l'avertissement",
-											value: rule.reason,
-										},
-									],
+				// Envoi du message de bannissement en message privé
+				const DMMessageBan = await guildMember
+					.send({
+						embeds: [
+							{
+								color: '#C27C0E',
+								title: 'Bannissement',
+								description: banDM,
+								author: {
+									name: sentMessage.guild.name,
+									icon_url: sentMessage.guild.iconURL({ dynamic: true }),
+									url: sentMessage.guild.vanityURL,
 								},
-							],
-						})
-						.catch(error => {
-							console.error(error)
-						})
-
-					// Si au moins une erreur, throw
-					if (DMMessageWarn instanceof Error)
-						throw new Error(
-							"L'envoi d'un message a échoué. Voir les logs précédents pour plus d'informations.",
-						)
-
-					break
-
-				case 'ban':
-					// Acquisition du message de bannissement
-					let banDM = ''
-					try {
-						const sqlSelectBan = 'SELECT * FROM forms WHERE name = ?'
-						const dataSelectBan = ['ban']
-						const [resultSelectBan] = await bdd.execute(sqlSelectBan, dataSelectBan)
-
-						banDM = resultSelectBan[0].content
-					} catch {
-						return console.log(
-							'Une erreur est survenue lors de la récupération du message de bannissement en base de données (Automod)',
-						)
-					}
-
-					// Envoi du message de bannissement en message privé
-					const DMMessageBan = await guildMember
-						.send({
-							embeds: [
-								{
-									color: '#C27C0E',
-									title: 'Bannissement',
-									description: banDM,
-									author: {
-										name: sentMessage.guild.name,
-										icon_url: sentMessage.guild.iconURL({ dynamic: true }),
-										url: sentMessage.guild.vanityURL,
+								fields: [
+									{
+										name: 'Raison du bannissement',
+										value: 'Scam Nitro / Steam (Automod)',
 									},
-									fields: [
-										{
-											name: 'Raison du bannissement',
-											value: rule.reason,
-										},
-									],
-								},
-							],
-						})
-						.catch(error => {
-							console.error(error)
-						})
+								],
+							},
+						],
+					})
+					.catch(error => {
+						console.error(error)
+					})
 
-					// Ban du membre
-					const banAction = await guildMember
-						.ban({ days: 7, reason: `${client.user.tag}: ${rule.reason}` })
-						.catch(error => {
-							// Suppression du message privé envoyé
-							// car action de bannissement non réalisée
-							if (DMMessageBan) DMMessageBan.delete()
+				// Ban du membre
+				const banAction = await guildMember
+					.ban({ days: 7, reason: `${client.user.tag}: Scam Nitro / Steam (Automod)` })
+					.catch(error => {
+						// Suppression du message privé envoyé
+						// car action de bannissement non réalisée
+						if (DMMessageBan) DMMessageBan.delete()
 
-							if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
-								return console.log(
-									"Je n'ai pas les permissions pour bannir ce membre (Automod)",
-								)
-
-							console.error(error)
+						if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
 							return console.log(
-								'Une erreur est survenue lors du bannissement du membre (Automod)',
+								"Je n'ai pas les permissions pour bannir ce membre (Automod)",
 							)
-						})
 
-					// Si au moins une erreur, throw
-					if (banAction instanceof Error || DMMessageBan instanceof Error)
-						throw new Error(
-							"L'envoi d'un message et / ou le bannissement d'un membre a échoué. Voir les logs précédents pour plus d'informations.",
+						console.error(error)
+						return console.log(
+							'Une erreur est survenue lors du bannissement du membre (Automod)',
 						)
+					})
+
+				// Si pas d'erreur
+				if (banAction instanceof GuildMember) return
+
+				// Si au moins une erreur, throw
+				if (banAction instanceof Error || DMMessageBan instanceof Error)
+					throw new Error(
+						"L'envoi d'un message et / ou le bannissement d'un membre a échoué. Voir les logs précédents pour plus d'informations.",
+					)
+			})
+	}
+
+	// Partie règles
+
+	// Acquisition des règles depuis la base de données
+	let rules = []
+	try {
+		const sqlRules = 'SELECT * FROM automodRules'
+		const [resultsRules] = await bdd.execute(sqlRules)
+		rules = resultsRules
+	} catch (error) {
+		return console.error(error)
+	}
+
+	// Boucle sur les règles
+	if (rules.length > 0)
+		rules.forEach(async rule => {
+			let hasIgnoredRole = 0
+			const ignoredRoles = rule.ignoredRoles.split(',')
+			ignoredRoles.forEach(ignoredRole => {
+				message.member.roles.cache.forEach(role => {
+					if (role.name === '@everyone') return
+					if (role.id === ignoredRole) hasIgnoredRole += 1
+				})
+			})
+
+			if (hasIgnoredRole === 0) {
+				const regexRule = rule.regex
+
+				// Vérification si le message envoyé match avec la regex
+				const matchesRegex = message.content.match(regexRule)
+				if (!matchesRegex) return
+
+				const sentMessage = await message.fetch()
+				const guildMember = await message.guild.members.fetch(sentMessage.author)
+				await message.delete()
+
+				// Switch sur les types de règles
+				switch (rule.type) {
+					case 'ban':
+						// Acquisition du message de bannissement
+						let banDM = ''
+						try {
+							const sqlSelectBan = 'SELECT * FROM forms WHERE name = ?'
+							const dataSelectBan = ['ban']
+							const [resultSelectBan] = await bdd.execute(sqlSelectBan, dataSelectBan)
+
+							banDM = resultSelectBan[0].content
+						} catch {
+							return console.log(
+								'Une erreur est survenue lors de la récupération du message de bannissement en base de données (Automod)',
+							)
+						}
+
+						// Envoi du message de bannissement en message privé
+						const DMMessageBan = await guildMember
+							.send({
+								embeds: [
+									{
+										color: '#C27C0E',
+										title: 'Bannissement',
+										description: banDM,
+										author: {
+											name: sentMessage.guild.name,
+											icon_url: sentMessage.guild.iconURL({ dynamic: true }),
+											url: sentMessage.guild.vanityURL,
+										},
+										fields: [
+											{
+												name: 'Raison du bannissement',
+												value: rule.reason,
+											},
+										],
+									},
+								],
+							})
+							.catch(error => {
+								console.error(error)
+							})
+
+						// Ban du membre
+						const banAction = await guildMember
+							.ban({ days: 7, reason: `${client.user.tag}: ${rule.reason}` })
+							.catch(error => {
+								// Suppression du message privé envoyé
+								// car action de bannissement non réalisée
+								if (DMMessageBan) DMMessageBan.delete()
+
+								if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
+									return console.log(
+										"Je n'ai pas les permissions pour bannir ce membre (Automod)",
+									)
+
+								console.error(error)
+								return console.log(
+									'Une erreur est survenue lors du bannissement du membre (Automod)',
+								)
+							})
+
+						// Si au moins une erreur, throw
+						if (banAction instanceof Error || DMMessageBan instanceof Error)
+							throw new Error(
+								"L'envoi d'un message et / ou le bannissement d'un membre a échoué. Voir les logs précédents pour plus d'informations.",
+							)
+
+						return
+
+					case 'warn':
+						// Création de l'avertissement en base de données
+						try {
+							const sqlCreate =
+								'INSERT INTO warnings (discordID, warnedBy, warnReason, warnedAt) VALUES (?, ?, ?, ?)'
+							const dataCreate = [
+								guildMember.user.id,
+								client.user.id,
+								rule.reason,
+								Math.round(Date.now() / 1000),
+							]
+
+							await bdd.execute(sqlCreate, dataCreate)
+						} catch (error) {
+							return console.log(
+								"Une erreur est survenue lors de la création de l'avertissement Automod en base de données (Automod)",
+							)
+						}
+
+						// Lecture du message d'avertissement
+						let warnDM = ''
+						try {
+							const sqlSelectWarn = 'SELECT * FROM forms WHERE name = ?'
+							const dataSelectWarn = ['warn']
+							const [resultSelectWarn] = await bdd.execute(
+								sqlSelectWarn,
+								dataSelectWarn,
+							)
+							warnDM = resultSelectWarn[0].content
+						} catch (error) {
+							return console.log(
+								"Une erreur est survenue lors de la récupération du message d'avertissement en base de données (Automod)",
+							)
+						}
+
+						// Envoi du message d'avertissement en message privé
+						const DMMessageWarn = await guildMember
+							.send({
+								embeds: [
+									{
+										color: '#C27C0E',
+										title: 'Avertissement',
+										description: warnDM,
+										author: {
+											name: sentMessage.guild.name,
+											icon_url: sentMessage.guild.iconURL({ dynamic: true }),
+											url: sentMessage.guild.vanityURL,
+										},
+										fields: [
+											{
+												name: "Raison de l'avertissement",
+												value: rule.reason,
+											},
+										],
+									},
+								],
+							})
+							.catch(error => {
+								console.error(error)
+							})
+
+						// Si au moins une erreur, throw
+						if (DMMessageWarn instanceof Error)
+							throw new Error(
+								"L'envoi d'un message a échoué. Voir les logs précédents pour plus d'informations.",
+							)
+				}
 			}
 		})
-
-		return
-	}
 
 	// Fin Automod
 
 	// Si c'est un salon no-text
 	if (
-		client.config.noTextManagerChannelIDs.includes(message.channel.id) &&
+		client.config.guild.managers.noTextManagerChannelIDs.includes(message.channel.id) &&
 		message.attachments.size < 1
 	) {
 		const sentMessage = await message.channel.send(
@@ -232,7 +340,10 @@ export default async (message, client) => {
 	}
 
 	// Si c'est un salon auto-thread
-	if (client.config.threadsManagerChannelIDs.includes(message.channel.id) && !message.hasThread)
+	if (
+		client.config.guild.managers.threadsManagerChannelIDs.includes(message.channel.id) &&
+		!message.hasThread
+	)
 		// Création automatique du thread associé
 		return message.startThread({
 			name: `Thread de ${message.member.displayName}`,
@@ -247,8 +358,8 @@ export default async (message, client) => {
 	}
 
 	// Command handler
-	if (message.content.startsWith(client.config.prefix)) {
-		const args = message.content.slice(client.config.prefix.length).split(/ +/)
+	if (message.content.startsWith(client.config.bot.prefix)) {
+		const args = message.content.slice(client.config.bot.prefix.length).split(/ +/)
 		const commandName = args.shift().toLowerCase()
 
 		// Vérification si la commande existe
@@ -314,7 +425,7 @@ export default async (message, client) => {
 				matches
 					.reduce((acc, match) => {
 						const [, guildId, channelId, messageId] = regex.exec(match)
-						if (guildId !== client.config.guildID) return acc
+						if (guildId !== client.config.guild.guildID) return acc
 
 						const foundChannel = message.guild.channels.cache.get(channelId)
 						if (!foundChannel) return acc

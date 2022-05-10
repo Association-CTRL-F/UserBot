@@ -12,7 +12,7 @@ export default async (messageReaction, user, client) => {
 		user.bot ||
 		!message.guild ||
 		!message.guild.available ||
-		message.guild.id !== client.config.guildID
+		message.guild.id !== client.config.guild.guildID
 	)
 		return
 
@@ -25,7 +25,7 @@ export default async (messageReaction, user, client) => {
 
 		// Système rôle arrivant
 		if (giveJoinRole) {
-			const joinRole = client.config.joinRoleID
+			const joinRole = client.config.guild.roles.joinRoleID
 			await guildMember.roles.add(joinRole)
 
 			setTimeout(
@@ -33,7 +33,7 @@ export default async (messageReaction, user, client) => {
 					guildMember.roles.remove(joinRole).catch(error => {
 						if (error.code !== Constants.APIErrors.UNKNOWN_MEMBER) throw error
 					}),
-				ms(client.config.timeoutJoin),
+				ms(client.config.guild.timeoutJoin),
 			)
 		}
 
@@ -48,7 +48,9 @@ export default async (messageReaction, user, client) => {
 			// On ne peut pas report un message posté pour soi-même
 			if (message.author === user) return messageReaction.users.remove(user)
 
-			const reportChannel = message.guild.channels.cache.get(client.config.reportChannelID)
+			const reportChannel = message.guild.channels.cache.get(
+				client.config.guild.channels.reportChannelID,
+			)
 			if (!reportChannel) return
 
 			const fetchedMessages = await reportChannel.messages.fetch()

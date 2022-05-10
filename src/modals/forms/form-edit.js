@@ -1,5 +1,3 @@
-import { db } from '../../util/util.js'
-
 export default {
 	data: {
 		name: 'form-edit',
@@ -10,7 +8,7 @@ export default {
 		const contenu = modal.getTextInputValue('form-edit-content').trim()
 
 		// Acquisition de la base de données
-		const bdd = await db(client, client.config.dbName)
+		const bdd = client.config.db.pools.userbot
 		if (!bdd) {
 			await modal.deferReply({ ephemeral: true })
 			return modal.followUp({

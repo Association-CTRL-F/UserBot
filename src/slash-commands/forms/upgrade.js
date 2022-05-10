@@ -1,6 +1,5 @@
 import { Constants } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { db } from '../../util/util.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -18,7 +17,7 @@ export default {
 			})
 
 		// Acquisition de la base de données
-		const bdd = await db(client, client.config.dbName)
+		const bdd = client.config.db.pools.userbot
 		if (!bdd)
 			return interaction.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
@@ -67,7 +66,9 @@ export default {
 		}
 
 		// Acquisition du salon
-		const upgradeChannel = interaction.guild.channels.cache.get(client.config.upgradeChannelID)
+		const upgradeChannel = interaction.guild.channels.cache.get(
+			client.config.guild.channels.upgradeChannelID,
+		)
 
 		// Ajout salon du formulaire si le salon a été trouvé
 		if (upgradeChannel)

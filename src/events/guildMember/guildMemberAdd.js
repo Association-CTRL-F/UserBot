@@ -6,12 +6,14 @@ const removeAddedReactions = reactions => Promise.all(reactions.map(reaction => 
 
 export default async (guildMember, client) => {
 	const guild = guildMember.guild
-	if (guildMember.user.bot || guild.id !== client.config.guildID || !guild.available) return
+	if (guildMember.user.bot || guild.id !== client.config.guild.guildID || !guild.available) return
 
 	modifyWrongUsernames(guildMember).catch(() => null)
 
 	// Acquisition du salon de logs
-	const leaveJoinChannel = guild.channels.cache.get(client.config.leaveJoinChannelID)
+	const leaveJoinChannel = guild.channels.cache.get(
+		client.config.guild.channels.leaveJoinChannelID,
+	)
 	if (!leaveJoinChannel) return
 
 	// Envoi du message de join

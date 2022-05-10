@@ -2,8 +2,7 @@
 /* eslint-disable default-case */
 import { MessageActionRow, MessageSelectMenu } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { Modal, TextInputComponent, showModal } from 'discord-modals'
-import { db } from '../../util/util.js'
+import { Pagination } from 'pagination.djs'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -38,15 +37,26 @@ export default {
 				.setName('rules')
 				.setDescription("Gères les règles d'Automod")
 				.addSubcommand(subcommand =>
+					subcommand
+						.setName('view')
+						.setDescription("Ajouter une règle d'Automod")
+						.addStringOption(option =>
+							option.setName('id').setDescription('ID de la règle'),
+						),
+				)
+				.addSubcommand(subcommand =>
 					subcommand.setName('add').setDescription("Ajouter une règle d'Automod"),
 				)
 				.addSubcommand(subcommand =>
 					subcommand.setName('edit').setDescription("Modifier une règle d'Automod"),
+				)
+				.addSubcommand(subcommand =>
+					subcommand.setName('del').setDescription("Supprimer une règle d'Automod"),
 				),
 		),
 	interaction: async (interaction, client) => {
 		// Acquisition de la base de données
-		const bdd = await db(client, client.config.dbName)
+		const bdd = client.config.db.pools.userbot
 		if (!bdd)
 			return interaction.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
@@ -88,73 +98,163 @@ export default {
 					})
 				}
 
+				const arrayRules = []
+				rules.forEach(rule => {
+					arrayRules.push({
+						label: rule.customId,
+						description: `Modification de la règle "${rule.customId}"`,
+						value: rule.customId,
+					})
+				})
+
 				switch (interaction.options.getSubcommand()) {
+					// Voir les règles d'automod
+					case 'view':
+						// Acquisition du nom
+						const ruleId = interaction.options.getString('id')
+
+						// Vérification si la règle existe
+						let ruleBdd = {}
+						try {
+							const sqlCheckName = 'SELECT * FROM automodRules WHERE id = ?'
+							const dataCheckName = [ruleId]
+							const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
+							ruleBdd = resultCheckName[0]
+						} catch (error) {
+							return interaction.reply({
+								content:
+									'Une erreur est survenue lors de la récupération de la commande en base de données 😕',
+								ephemeral: true,
+							})
+						}
+
+						if (ruleId) {
+							// Vérification que la commande existe bien
+							if (!ruleBdd)
+								return interaction.reply({
+									content: `La règle n'existe pas 😕`,
+									ephemeral: true,
+								})
+
+							let displayRoles = ''
+							const ignoredRoles = ruleBdd.ignoredRoles.split(',')
+							ignoredRoles.forEach(ignoredRole => {
+								displayRoles = displayRoles.concat('\n', `• <@&${ignoredRole}>`)
+							})
+
+							const embed = {
+								color: 'C27C0E',
+								title: `Règle d'automod "${ruleBdd.customId}"`,
+								fields: [
+									{
+										name: 'Type',
+										value: ruleBdd.type,
+									},
+									{
+										name: 'Contenu de la regex',
+										value: `\`\`\`${ruleBdd.regex}\`\`\``,
+									},
+									{
+										name: 'Rôles ignorés',
+										value: displayRoles,
+									},
+									{
+										name: 'Raison',
+										value: ruleBdd.reason,
+									},
+								],
+							}
+
+							return interaction.reply({ embeds: [embed] })
+						}
+
+						// Sinon, boucle d'ajout des champs
+						const fieldsEmbed = []
+						rules.forEach(rule => {
+							fieldsEmbed.push({
+								name: `Règle #${rule.id}`,
+								value: rule.customId,
+							})
+						})
+
+						// Configuration de l'embed
+						const pagination = new Pagination(interaction, {
+							firstEmoji: '⏮',
+							prevEmoji: '◀️',
+							nextEmoji: '▶️',
+							lastEmoji: '⏭',
+							limit: 5,
+							idle: 30000,
+							ephemeral: false,
+							prevDescription: '',
+							postDescription: '',
+							buttonStyle: 'SECONDARY',
+							loop: false,
+						})
+
+						pagination.setTitle("Règles d'automod")
+						pagination.setDescription(`**Total : ${rules.length}**`)
+						pagination.setColor('#C27C0E')
+						pagination.setFields(fieldsEmbed)
+						pagination.footer = { text: 'Page : {pageNumber} / {totalPages}' }
+						pagination.paginateFields(true)
+
+						// Envoi de l'embed
+						return pagination.render()
+
 					// Ajouter une règle d'automod
 					case 'add':
-						const modalCreate = new Modal()
-							.setCustomId('rule-create')
-							.setTitle("Création d'une règle")
-							.addComponents(
-								new TextInputComponent()
-									.setCustomId('rule-create-type')
-									.setLabel('Type de la règle')
-									.setStyle('SHORT')
-									.setMinLength(1)
-									.setMaxLength(255)
-									.setRequired(true),
-							)
-							.addComponents(
-								new TextInputComponent()
-									.setCustomId('rule-create-name')
-									.setLabel('Nom de la règle')
-									.setStyle('SHORT')
-									.setMinLength(1)
-									.setMaxLength(255)
-									.setRequired(true),
-							)
-							.addComponents(
-								new TextInputComponent()
-									.setCustomId('rule-create-regex')
-									.setLabel('Regex de la règle')
-									.setStyle('LONG')
-									.setMinLength(1)
-									.setRequired(true),
-							)
-							.addComponents(
-								new TextInputComponent()
-									.setCustomId('rule-create-reason')
-									.setLabel('Raison')
-									.setStyle('LONG')
-									.setMinLength(1)
-									.setRequired(true),
-							)
+						const menuType = new MessageActionRow().addComponents(
+							new MessageSelectMenu()
+								.setCustomId('select-rule-create')
+								.setPlaceholder('Sélectionnez un type de règle')
+								.addOptions([
+									{
+										label: 'Warn',
+										description: 'Avertir le membre',
+										value: 'warn',
+									},
+									{
+										label: 'Ban',
+										description: 'banir le membre',
+										value: 'ban',
+									},
+								]),
+						)
 
-						return showModal(modalCreate, {
-							client: client,
-							interaction: interaction,
+						return interaction.reply({
+							content: 'Choisissez le type de règle à créer',
+							components: [menuType],
+							ephemeral: true,
 						})
 
 					// Modifier une règle d'automod
 					case 'edit':
-						const arrayRules = []
-						rules.forEach(rule => {
-							arrayRules.push({
-								label: rule.ruleName,
-								description: `Modification de la règle "${rule.ruleName}"`,
-								value: rule.ruleName,
-							})
-						})
-
-						const menu = new MessageActionRow().addComponents(
+						const menuRulesEdit = new MessageActionRow().addComponents(
 							new MessageSelectMenu()
-								.setCustomId('select-rules')
+								.setCustomId('select-rule-edit')
 								.setPlaceholder('Sélectionnez la règle')
 								.addOptions(arrayRules),
 						)
 
 						return interaction.reply({
 							content: 'Choisissez la règle à modifier',
-							components: [menu],
+							components: [menuRulesEdit],
+							ephemeral: true,
+						})
+
+					// Supprimer une règle d'automod
+					case 'del':
+						const menuRulesDel = new MessageActionRow().addComponents(
+							new MessageSelectMenu()
+								.setCustomId('select-rule-del')
+								.setPlaceholder('Sélectionnez la règle')
+								.addOptions(arrayRules),
+						)
+
+						return interaction.reply({
+							content: 'Choisissez la règle à supprimer',
+							components: [menuRulesDel],
 							ephemeral: true,
 						})
 				}
@@ -163,7 +263,7 @@ export default {
 			// Domaines blacklistés
 			case 'domains':
 				switch (interaction.options.getSubcommand()) {
-					// Liste des domaines de la règle 'scam'
+					// Liste des domaines blacklistés
 					case 'view':
 						let domainsView = []
 						try {
@@ -191,27 +291,14 @@ export default {
 
 						return interaction.reply({ embeds: [embed] })
 
-					// Ajouter un domaine à la règle 'scam'
+					// Ajouter un domaine blacklisté
 					case 'add':
 						// Vérification que le domaine existe bien
 						if (domainBdd)
 							return interaction.reply({
-								content: `Le domaine **${domainString}** existe déjà 😕`,
+								content: `Le domaine **${domainString}** est déjà ajouté 😕`,
 								ephemeral: true,
 							})
-
-						let domainsAdd = []
-						try {
-							const sqlSelectAdd = 'SELECT * FROM automodDomains'
-							const [resultResultSelectAdd] = await bdd.execute(sqlSelectAdd)
-							domainsAdd = resultResultSelectAdd
-						} catch (error) {
-							return interaction.reply({
-								content:
-									'Une erreur est survenue lors de la récupération des domaines 😕',
-								ephemeral: true,
-							})
-						}
 
 						// Ajout du domaine en base de données
 						try {
@@ -227,40 +314,16 @@ export default {
 							})
 						}
 
-						// Création de la chaine de domaines de la regex
-						let domainsAddList = ''
-						domainsAdd.forEach(domain => {
-							domainsAddList = domainsAddList.concat('|', domain.domain)
-						})
-						domainsAddList = domainsAddList.concat('|', domainString).replace(/^./, '')
-
-						const regexBaseAdd = String.raw`(http[s]?:\/\/)?(www\.)?((${domainsAddList})[\w]*){1}\.([a-z]{2,})`
-
-						// Mise à jour de la regex en base de données
-						try {
-							const sqlUpdate = 'UPDATE automodRules SET regex = ? WHERE customId = ?'
-							const dataUpdate = [regexBaseAdd, 'scam']
-
-							await bdd.execute(sqlUpdate, dataUpdate)
-						} catch (error) {
-							return interaction.reply({
-								content:
-									'Une erreur est survenue lors de la mise à jour de la règle en base de données 😕',
-								ephemeral: true,
-							})
-						}
-
 						return interaction.reply({
-							content: "La règle d'Automod a bien été modifiée 👌",
-							ephemeral: true,
+							content: `Le domaine **${domainString}** a bien été ajouté 👌`,
 						})
 
-					// Supprimer un domaine à la règle 'scam'
+					// Supprimer un domaine blacklisté
 					case 'del':
 						// Vérification que le domaine existe bien
 						if (!domainBdd)
 							return interaction.reply({
-								content: `Le domaine **${domainString}** n'existe pas 😕`,
+								content: `Le domaine **${domainString}** n'est pas ajouté 😕`,
 								ephemeral: true,
 							})
 
@@ -279,45 +342,8 @@ export default {
 							})
 						}
 
-						let domainsDel = []
-						try {
-							const sqlSelectDel = 'SELECT * FROM automodDomains'
-							const [resultSelectDel] = await bdd.execute(sqlSelectDel)
-							domainsDel = resultSelectDel
-						} catch (error) {
-							return interaction.reply({
-								content:
-									'Une erreur est survenue lors de la récupération des domaines 😕',
-								ephemeral: true,
-							})
-						}
-
-						// Création de la chaine de domaines de la regex
-						let domainsDelList = ''
-						domainsDel.forEach(domain => {
-							domainsDelList = domainsDelList.concat('|', domain.domain)
-						})
-						domainsDelList = domainsDelList.replace(/^./, '')
-
-						const regexBaseDel = String.raw`(http[s]?:\/\/)?(www\.)?((${domainsDelList})[\w]*){1}\.([a-z]{2,})`
-
-						// Mise à jour de la regex en base de données
-						try {
-							const sqlUpdate = 'UPDATE automodRules SET regex = ? WHERE customId = ?'
-							const dataUpdate = [regexBaseDel.toString(), 'scam']
-
-							await bdd.execute(sqlUpdate, dataUpdate)
-						} catch (error) {
-							return interaction.reply({
-								content:
-									'Une erreur est survenue lors de la mise à jour de la règle en base de données 😕',
-								ephemeral: true,
-							})
-						}
-
 						return interaction.reply({
-							content: "La règle d'Automod a bien été modifiée 👌",
-							ephemeral: true,
+							content: `Le domaine **${domainString}** a bien été supprimé 👌`,
 						})
 				}
 		}

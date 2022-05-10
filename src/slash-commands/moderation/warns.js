@@ -1,7 +1,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { db, convertDateForDiscord } from '../../util/util.js'
+import { convertDateForDiscord } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
 
 export default {
@@ -64,7 +64,7 @@ export default {
 		}
 
 		// Acquisition de la base de données
-		const bdd = await db(client, client.config.dbName)
+		const bdd = client.config.db.pools.userbot
 		if (!bdd)
 			return interaction.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
@@ -177,6 +177,7 @@ export default {
 				}
 
 				// Envoi du message d'avertissement en message privé
+				let errorDM = ''
 				const DMMessage = await member
 					.send({
 						embeds: [
@@ -200,6 +201,8 @@ export default {
 					})
 					.catch(error => {
 						console.error(error)
+						errorDM =
+							"\n\nℹ️ Le message privé n'a pas été envoyé car le membre les a bloqué"
 					})
 
 				// Si au moins une erreur, throw
@@ -210,7 +213,7 @@ export default {
 
 				// Message de confirmation
 				return interaction.reply({
-					content: `⚠️ \`${member.user.tag}\` a reçu un avertissement`,
+					content: `⚠️ \`${member.user.tag}\` a reçu un avertissement : ${reason}${errorDM}`,
 				})
 
 			// Supprime un avertissement
@@ -245,6 +248,27 @@ export default {
 
 			// Supprime tous les avertissements
 			case 'clear':
+				// Vérification si le membre a des avertissements
+				let deletedWarns = []
+				try {
+					const sqlDelete = 'SELECT * FROM warnings WHERE discordID = ?'
+					const dataDelete = [member.id]
+					const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
+					deletedWarns = resultDelete
+				} catch {
+					return interaction.reply({
+						content:
+							"Une erreur est survenue lors de la suppression de l'avertissement 😬",
+						ephemeral: true,
+					})
+				}
+
+				if (deletedWarns.length === 0)
+					return interaction.reply({
+						content: "Ce membre n'a pas d'avertissements 😕",
+						ephemeral: true,
+					})
+
 				try {
 					// Suppression en base de données
 					const sqlDeleteAll = 'DELETE FROM warnings WHERE discordID = ?'

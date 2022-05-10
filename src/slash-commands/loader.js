@@ -5,7 +5,7 @@ import { removeFileExtension } from '../util/util.js'
 
 export default async client => {
 	const clientId = client.user.id
-	const guildId = client.config.guildID
+	const guildId = client.config.guild.guildID
 	const rest = new REST({ version: '9' }).setToken(client.token)
 
 	// Dossier des commandes

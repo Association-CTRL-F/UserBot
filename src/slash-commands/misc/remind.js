@@ -2,7 +2,7 @@
 /* eslint-disable default-case */
 /* eslint-disable no-mixed-operators */
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { db, convertDateForDiscord } from '../../util/util.js'
+import { convertDateForDiscord } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
 import ms from 'ms'
 
@@ -40,7 +40,7 @@ export default {
 		),
 	interaction: async (interaction, client) => {
 		// Acquisition de la base de données
-		const bdd = await db(client, client.config.dbName)
+		const bdd = client.config.db.pools.userbot
 		if (!bdd)
 			return interaction.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
@@ -52,7 +52,9 @@ export default {
 			case 'view':
 				let reminders = []
 				try {
-					const [resultReminders] = await bdd.execute('SELECT * FROM reminders')
+					const sqlSelect = 'SELECT * FROM reminders WHERE discordID = ?'
+					const dataSelect = [interaction.user.id]
+					const [resultReminders] = await bdd.execute(sqlSelect, dataSelect)
 					reminders = resultReminders
 				} catch (error) {
 					return interaction.reply({
@@ -66,7 +68,9 @@ export default {
 				reminders.forEach(reminder => {
 					fieldsEmbedView.push({
 						name: `Rappel #${reminder.id}`,
-						value: reminder.reminder,
+						value: `Message : ${reminder.reminder}\nDate : ${convertDateForDiscord(
+							reminder.timestampEnd * 1000,
+						)}`,
 					})
 				})
 
@@ -85,7 +89,7 @@ export default {
 					loop: false,
 				})
 
-				paginationView.setTitle('Rappels')
+				paginationView.setTitle('Mes rappels')
 				paginationView.setDescription(`**Total : ${reminders.length}**`)
 				paginationView.setColor('#C27C0E')
 				paginationView.setFields(fieldsEmbedView)
@@ -174,7 +178,29 @@ export default {
 			// Suppression d'un rappel
 			case 'del':
 				// Acquisition de l'id du rappel
-				// puis suppresion en base de données
+				// Fetch du rappel
+				let fetchReminder = {}
+				try {
+					const id = interaction.options.getString('id')
+					const sqlSelect = 'SELECT * FROM reminders WHERE id = ?'
+					const dataSelect = [id]
+					const [resultDelete] = await bdd.execute(sqlSelect, dataSelect)
+					fetchReminder = resultDelete[0]
+				} catch {
+					return interaction.reply({
+						content: 'Une erreur est survenue lors de la suppression du rappel 😬',
+						ephemeral: true,
+					})
+				}
+
+				// Vérification si le rappel appartient bien au membre
+				if (fetchReminder.discordID !== interaction.user.id)
+					return interaction.reply({
+						content: "Ce rappel ne t'appartient pas 😬",
+						ephemeral: true,
+					})
+
+				// Suppresion en base de données
 				let deletedReminder = {}
 				try {
 					const id = interaction.options.getString('id')

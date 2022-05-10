@@ -1,6 +1,5 @@
 /* eslint-disable no-await-in-loop */
 import { readFile } from 'fs/promises'
-import { db } from '../../util/util.js'
 import { Constants } from 'discord.js'
 import ms from 'ms'
 
@@ -31,11 +30,12 @@ export default async client => {
 
 	console.log('Startup finished !')
 
-	if (client.config.richPresenceText && client.config.richPresenceText !== '')
+	const richPresenceText = client.config.bot.richPresenceText
+	if (richPresenceText && richPresenceText !== '')
 		await client.user.setPresence({
 			activities: [
 				{
-					name: client.config.richPresenceText,
+					name: richPresenceText,
 					type: 'PLAYING',
 				},
 			],
@@ -47,16 +47,16 @@ export default async client => {
 	// s'il y en avait en fonction des durées
 
 	// Acquisition de la base de données
-	const bdd = await db(client, client.config.dbName)
+	const bdd = client.config.db.pools.userbot
 	if (!bdd)
 		return console.log('Une erreur est survenue lors de la connexion à la base de données')
 
 	// Acquisition de la guild
-	const guild = await client.guilds.fetch(client.config.guildID)
+	const guild = await client.guilds.fetch(client.config.guild.guildID)
 	if (!guild) return console.log("Une erreur est survenue lors de l'acquisition de la guild")
 
 	// Acquisition du rôle muted
-	const mutedRole = client.config.mutedRoleID
+	const mutedRole = client.config.guild.roles.mutedRoleID
 	if (!mutedRole) return console.log("Il n'y a pas de rôle muted")
 
 	// Boucle mutes //
@@ -304,8 +304,8 @@ export default async client => {
 
 	// Boucle @Pas de blabla //
 
-	const joinRole = client.config.joinRoleID
-	const timeoutJoin = client.config.timeoutJoin
+	const joinRole = client.config.guild.roles.joinRoleID
+	const timeoutJoin = client.config.guild.timeoutJoin
 
 	guild.roles.cache.get(joinRole).members.map(async noblablaMember => {
 		const diff = new Date() - noblablaMember.joinedAt

@@ -16,7 +16,7 @@ const run = async () => {
 		dotenv.config({ path: './config/bot.env' })
 	}
 
-	const client = prepareClient()
+	const client = await prepareClient()
 
 	await eventsLoader(client)
 

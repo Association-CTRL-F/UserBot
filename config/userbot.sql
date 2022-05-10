@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: May 08, 2022 at 03:20 PM
+-- Generation Time: May 10, 2022 at 01:20 PM
 -- Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal
 -- PHP Version: 7.4.23
 
@@ -40,10 +40,10 @@ CREATE TABLE `automodDomains` (
 
 CREATE TABLE `automodRules` (
   `id` int(11) NOT NULL,
-  `customId` varchar(255) DEFAULT NULL,
-  `ruleName` varchar(255) NOT NULL,
+  `customId` varchar(255) NOT NULL,
   `regex` text NOT NULL,
   `type` varchar(255) NOT NULL,
+  `ignoredRoles` text NOT NULL,
   `reason` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -99,7 +99,9 @@ CREATE TABLE `reminders` (
   `id` int(11) NOT NULL,
   `discordID` varchar(255) NOT NULL,
   `reminder` text NOT NULL,
-  `timestampEnd` varchar(255) NOT NULL
+  `timestampEnd` varchar(255) NOT NULL,
+  `channel` varchar(255) NOT NULL,
+  `private` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------

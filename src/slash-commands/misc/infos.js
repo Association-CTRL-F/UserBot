@@ -26,7 +26,7 @@ export default {
 				},
 				{
 					name: 'Préfixe',
-					value: `\`${client.config.prefix}\``,
+					value: `\`${client.config.bot.prefix}\``,
 					inline: true,
 				},
 				{

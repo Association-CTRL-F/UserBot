@@ -1,13 +1,12 @@
 import { Modal, TextInputComponent, showModal } from 'discord-modals'
-import { db } from '../../util/util.js'
 
 export default {
 	data: {
-		name: 'select-form',
+		name: 'select-edit-form',
 	},
 	interaction: async (menu, client) => {
 		// Acquisition de la base de données
-		const bdd = await db(client, client.config.dbName)
+		const bdd = client.config.db.pools.userbot
 		if (!bdd)
 			return menu.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',

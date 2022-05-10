@@ -12,18 +12,20 @@ export default async (message, client) => {
 		message.partial ||
 		message.author.bot ||
 		!message.guild ||
-		message.guild.id !== client.config.guildID ||
+		message.guild.id !== client.config.guild.guildID ||
 		client.cache.deleteMessagesID.has(message.id)
 	)
 		return
 
 	// Acquisition du salon pour les logs
-	const logsChannel = message.guild.channels.cache.get(client.config.logsMessagesChannelID)
+	const logsChannel = message.guild.channels.cache.get(
+		client.config.guild.channels.logsMessagesChannelID,
+	)
 	if (!logsChannel) return
 
 	// Vérification si le salon du message
 	// est dans la liste des salons à ne pas logger
-	if (client.config.noLogsManagerChannelIDs.includes(message.channel.id)) return
+	if (client.config.guild.managers.noLogsManagerChannelIDs.includes(message.channel.id)) return
 
 	// Fetch du message supprimé
 	const fetchedLog = (

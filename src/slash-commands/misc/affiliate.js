@@ -1,5 +1,4 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { db } from '../../util/util.js'
 import fetch from 'node-fetch'
 
 export default {
@@ -13,7 +12,7 @@ export default {
 		const long_url = interaction.options.getString('url')
 
 		// Acquisition de la base de données
-		const bdd = await db(client, 'url_api')
+		const bdd = client.config.db.pools.urlsAPI
 		if (!bdd)
 			return interaction.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
@@ -29,7 +28,7 @@ export default {
 			api_key = result[0].api_key
 		} catch {
 			return interaction.reply({
-				content: "Vous n'êtes pas autorisé à créer un lien affilié 😬",
+				content: "Tu n'es pas autorisé à créer un lien affilié 😬",
 				ephemeral: true,
 			})
 		}

@@ -3,7 +3,6 @@
 import { MessageActionRow, MessageSelectMenu } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { Modal, TextInputComponent, showModal } from 'discord-modals'
-import { db } from '../../util/util.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -48,7 +47,7 @@ export default {
 			// Modification d'un formulaire
 			case 'edit':
 				// Acquisition de la base de données
-				const bdd = await db(client, client.config.dbName)
+				const bdd = client.config.db.pools.userbot
 				if (!bdd)
 					return interaction.reply({
 						content:
@@ -81,7 +80,7 @@ export default {
 
 				const menu = new MessageActionRow().addComponents(
 					new MessageSelectMenu()
-						.setCustomId('select-form')
+						.setCustomId('select-edit-form')
 						.setPlaceholder('Sélectionnez le formulaire')
 						.addOptions(arrayForms),
 				)

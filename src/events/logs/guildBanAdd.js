@@ -2,10 +2,10 @@ import { convertDateForDiscord, diffDate } from '../../util/util.js'
 import { Util, GuildAuditLogs } from 'discord.js'
 
 export default async (ban, client) => {
-	if (ban.user.bot || ban.guild.id !== client.config.guildID || !ban.guild.available) return
+	if (ban.user.bot || ban.guild.id !== client.config.guild.guildID || !ban.guild.available) return
 
 	// Acquisition du salon de logs
-	const logsChannel = ban.guild.channels.cache.get(client.config.logsBansChannelID)
+	const logsChannel = ban.guild.channels.cache.get(client.config.guild.channels.logsBansChannelID)
 	if (!logsChannel) return
 
 	// Fetch de l'event de ban

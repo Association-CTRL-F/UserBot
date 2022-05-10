@@ -1,7 +1,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { db, convertDateForDiscord } from '../../util/util.js'
+import { convertDateForDiscord } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
 
 export default {
@@ -29,7 +29,7 @@ export default {
 		),
 	interaction: async (interaction, client) => {
 		// Acquisition de la base de données
-		const bdd = await db(client, client.config.dbName)
+		const bdd = client.config.db.pools.userbot
 		if (!bdd)
 			return interaction.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
@@ -65,24 +65,9 @@ export default {
 							ephemeral: true,
 						})
 
-					// Récupération de la commande
-					let command = {}
-					try {
-						const sqlView = 'SELECT * FROM commands WHERE name = ?'
-						const dataView = [nom]
-						const [resultCommand] = await bdd.execute(sqlView, dataView)
-						command = resultCommand[0]
-					} catch (error) {
-						return interaction.reply({
-							content:
-								'Une erreur est survenue lors de la récupération des commandes 😕',
-							ephemeral: true,
-						})
-					}
-
-					const commandAuthor = interaction.guild.members.cache.get(command.author)
+					const commandAuthor = interaction.guild.members.cache.get(commandBdd.author)
 					const commandEditor = interaction.guild.members.cache.get(
-						command.lastModificationBy,
+						commandBdd.lastModificationBy,
 					)
 
 					let creationText = ''
@@ -91,35 +76,35 @@ export default {
 					if (commandAuthor)
 						creationText = `Créée par ${
 							commandAuthor.user.tag
-						} (${convertDateForDiscord(command.createdAt * 1000)})\n`
+						} (${convertDateForDiscord(commandBdd.createdAt * 1000)})\n`
 					else
 						creationText = `Créée le ${convertDateForDiscord(
-							command.createdAt * 1000,
+							commandBdd.createdAt * 1000,
 						)}\n`
 
-					if (command.lastModificationAt !== null && commandEditor)
+					if (commandBdd.lastModificationAt !== null && commandEditor)
 						modificationText = `Dernière modification par ${
 							commandEditor.user.tag
-						} (${convertDateForDiscord(command.lastModificationAt * 1000)})\n`
-					else if (command.lastModificationAt !== null)
+						} (${convertDateForDiscord(commandBdd.lastModificationAt * 1000)})\n`
+					else if (commandBdd.lastModificationAt !== null)
 						modificationText = `Dernière modification le ${convertDateForDiscord(
-							command.lastModificationAt * 1000,
+							commandBdd.lastModificationAt * 1000,
 						)}\n`
 
 					const embed = {
 						color: 'C27C0E',
-						title: `Commande personnalisée "${command.name}"`,
+						title: `Commande personnalisée "${commandBdd.name}"`,
 						fields: [
 							{
 								name: 'Contenu',
-								value: `\`\`\`${command.content}\`\`\``,
+								value: `\`\`\`${commandBdd.content}\`\`\``,
 							},
 						],
 					}
 
 					embed.fields.push({
 						name: 'Historique',
-						value: `${creationText}${modificationText}Utilisée ${command.numberOfUses} fois`,
+						value: `${creationText}${modificationText}Utilisée ${commandBdd.numberOfUses} fois`,
 					})
 
 					return interaction.reply({ embeds: [embed] })
@@ -189,7 +174,7 @@ export default {
 
 				paginationView.setTitle('Commandes personnalisées')
 				paginationView.setDescription(
-					`**Total : ${commands.length}\nPréfixe : \`${client.config.prefix}\`**`,
+					`**Total : ${commands.length}\nPréfixe : \`${client.config.bot.prefix}\`**`,
 				)
 				paginationView.setColor('#C27C0E')
 				paginationView.setFields(fieldsEmbedView)
@@ -269,7 +254,7 @@ export default {
 
 				paginationSearch.setTitle('Résultats de la recherche')
 				paginationSearch.setDescription(
-					`**Total : ${commandsSearch.length}\nPréfixe : \`${client.config.prefix}\`**`,
+					`**Total : ${commandsSearch.length}\nPréfixe : \`${client.config.bot.prefix}\`**`,
 				)
 				paginationSearch.setColor('#C27C0E')
 				paginationSearch.setFields(fieldsEmbedSearch)

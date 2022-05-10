@@ -2,7 +2,7 @@
 /* eslint-disable max-len */
 /* eslint-disable no-mixed-operators */
 import { GuildMember, Client, User } from 'discord.js'
-import mysql from 'mysql2/promise'
+import mysql from 'mysql2'
 
 /**
  * Gère l'ajout de "s" à la fin d'un mot en fonction de la quantité
@@ -219,23 +219,25 @@ export const closeGracefully = (signal, client) => {
 export const convertDateForDiscord = date => `<t:${Math.round(new Date(date) / 1000)}>`
 
 /**
- * Crée une connexion à la base de données
+ * Crée un pool de connexion à la base de données
  * @param {Client} client Discord.js
  * @param {string} dbName nom de la base de données à utiliser
  */
-export const db = async (client, dbName) => {
+export const pool = async client => {
 	try {
-		const pool = await mysql.createPool({
-			host: client.config.dbHost,
-			user: client.config.dbUser,
-			password: client.config.dbPass,
-			database: dbName,
+		const createPool = await mysql.createPool({
+			host: client.dbHost,
+			user: client.dbUser,
+			password: client.dbPass,
+			database: client.dbName,
 			waitForConnections: true,
-			connectionLimit: 100,
+			connectionLimit: 10,
 			queueLimit: 0,
 		})
 
-		return pool
+		const promisePool = createPool.promise()
+
+		return promisePool
 	} catch (error) {
 		console.error(error)
 		return false

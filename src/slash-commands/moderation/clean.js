@@ -44,7 +44,7 @@ export default {
 
 		// Acquisition du salon de logs
 		const logsChannel = interaction.guild.channels.cache.get(
-			client.config.logsMessagesChannelID,
+			client.config.guild.channels.logsMessagesChannelID,
 		)
 		if (!logsChannel)
 			return interaction.reply({
