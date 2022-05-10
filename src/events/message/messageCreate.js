@@ -44,10 +44,8 @@ export default async (message, client) => {
 	// Partie domaines
 
 	let hasRole = 0
-	message.member.roles.cache.forEach(role => {
-		if (role.name === '@everyone') return
-
-		if (client.config.guild.managers.staffRolesManagerIDs.includes(role.id)) hasRole += 1
+	client.config.guild.managers.staffRolesManagerIDs.forEach(role => {
+		if (message.member.roles.cache.has(role)) hasRole += 1
 	})
 
 	if (hasRole === 0) {
@@ -60,17 +58,22 @@ export default async (message, client) => {
 			return console.error(error)
 		}
 
-		if (domains.length > 0)
+		if (domains.length > 0) {
+			let isBlacklisted = 0
+			const sentMessage = await message.fetch()
+			const guildMember = await message.guild.members.fetch(sentMessage.author)
+
 			domains.forEach(async domain => {
 				const regexDomain = String.raw`(http[s]?:\/\/)?(www\.)?((${domain.domain})[\w]*){1}\.([a-z]{2,})`
 
 				const matchesRegex = message.content.match(regexDomain)
 				if (!matchesRegex) return
 
-				const sentMessage = await message.fetch()
-				const guildMember = await message.guild.members.fetch(sentMessage.author)
-				await message.delete()
+				isBlacklisted += 1
+				await sentMessage.delete()
+			})
 
+			if (isBlacklisted > 0) {
 				// Acquisition du message de bannissement
 				let banDM = ''
 				try {
@@ -133,12 +136,13 @@ export default async (message, client) => {
 				// Si pas d'erreur
 				if (banAction instanceof GuildMember) return
 
-				// Si au moins une erreur, throw
 				if (banAction instanceof Error || DMMessageBan instanceof Error)
+					// Si au moins une erreur, throw
 					throw new Error(
 						"L'envoi d'un message et / ou le bannissement d'un membre a échoué. Voir les logs précédents pour plus d'informations.",
 					)
-			})
+			}
+		}
 	}
 
 	// Partie règles
@@ -382,9 +386,9 @@ export default async (message, client) => {
 				const sentMessage = await message.reply({
 					content: `Merci d'attendre ${(timeLeft / 1000).toFixed(
 						1,
-					)} seconde(s) de plus avant de réutiliser la commande \`${
+					)} seconde(s) de plus avant de réutiliser la commande **${
 						rowsCheckName[0].name
-					}\` 😬`,
+					}** 😬`,
 				})
 
 				// Suppression du message
