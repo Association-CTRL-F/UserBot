@@ -6,7 +6,7 @@ export default {
 		// Acquisition du type, du nom, de la regex
 		// et de la raison envoyée en message privé
 		const type = modal.getTextInputValue('rule-create-type').trim().toLowerCase()
-		const customId = modal.getTextInputValue('rule-create-id').trim()
+		const customId = modal.getTextInputValue('rule-create-id').trim().replace(/\s+/g, '-')
 		const regex = modal.getTextInputValue('rule-create-regex').trim()
 		const ignoredRoles = modal.getTextInputValue('rule-create-ignored-roles').trim()
 		const reason = modal.getTextInputValue('rule-create-reason').trim()

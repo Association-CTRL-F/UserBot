@@ -4,8 +4,8 @@ export default {
 	},
 	interaction: async (modal, client) => {
 		// Acquisition du nom et du contenu
-		const nom = modal.getTextInputValue('name-form').trim().replace(/\s+/g, '-')
-		const contenu = modal.getTextInputValue('content-form').trim()
+		const nom = modal.getTextInputValue('form-create-name').trim().replace(/\s+/g, '-')
+		const contenu = modal.getTextInputValue('form-create-content').trim()
 
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot

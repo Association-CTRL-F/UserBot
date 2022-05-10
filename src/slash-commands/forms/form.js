@@ -23,7 +23,7 @@ export default {
 					.setTitle("Création d'un nouveau formulaire")
 					.addComponents(
 						new TextInputComponent()
-							.setCustomId('name-form')
+							.setCustomId('form-create-name')
 							.setLabel('Nom')
 							.setStyle('SHORT')
 							.setMinLength(1)
@@ -32,7 +32,7 @@ export default {
 					)
 					.addComponents(
 						new TextInputComponent()
-							.setCustomId('content-form')
+							.setCustomId('form-create-content')
 							.setLabel('Contenu')
 							.setStyle('LONG')
 							.setMinLength(1)

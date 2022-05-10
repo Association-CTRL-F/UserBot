@@ -4,7 +4,11 @@ export default {
 	},
 	interaction: async (modal, client) => {
 		// Acquisition du nom et du contenu
-		const nom = modal.getTextInputValue('name-command-create').trim().replace(/\s+/g, '-')
+		const nom = modal
+			.getTextInputValue('name-command-create')
+			.trim()
+			.toLowerCase()
+			.replace(/\s+/g, '-')
 		const contenu = modal.getTextInputValue('content-command-create').trim()
 
 		// Acquisition de la base de données
