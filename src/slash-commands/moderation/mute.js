@@ -8,7 +8,7 @@ import { convertMinutesToString } from '../../util/util.js'
 export default {
 	data: new SlashCommandBuilder()
 		.setName('mute')
-		.setDescription('Mute un ou des membres')
+		.setDescription('Mute un ou plusieurs membres')
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('member')
@@ -29,7 +29,7 @@ export default {
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('members')
-				.setDescription('Mute des membres')
+				.setDescription('Mute plusieurs membres')
 				.addStringOption(option =>
 					option.setName('membres').setDescription('Membres').setRequired(true),
 				)

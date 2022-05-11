@@ -6,11 +6,11 @@ import { Constants, GuildMember } from 'discord.js'
 export default {
 	data: new SlashCommandBuilder()
 		.setName('unmute')
-		.setDescription('Unmute un membre')
+		.setDescription("Lève le mute d'un ou plusieurs membres")
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('member')
-				.setDescription('Mute un membre')
+				.setDescription("Lève le mute d'un membre")
 				.addUserOption(option =>
 					option.setName('membre').setDescription('Membre').setRequired(true),
 				),
@@ -18,7 +18,7 @@ export default {
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('members')
-				.setDescription('Unmute des membres')
+				.setDescription('Lève le mute de plusieurs membres')
 				.addStringOption(option =>
 					option.setName('membres').setDescription('Membres').setRequired(true),
 				),

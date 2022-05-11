@@ -39,7 +39,7 @@ export default {
 				.addSubcommand(subcommand =>
 					subcommand
 						.setName('view')
-						.setDescription("Ajouter une règle d'Automod")
+						.setDescription("Voir une règle d'Automod")
 						.addStringOption(option =>
 							option.setName('id').setDescription('ID de la règle'),
 						),

@@ -11,7 +11,7 @@ export default {
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('view')
-				.setDescription('Voir les avertissements')
+				.setDescription("Voir les avertissements d'un membre")
 				.addUserOption(option =>
 					option.setName('membre').setDescription('Membre').setRequired(true),
 				),
@@ -41,7 +41,7 @@ export default {
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('clear')
-				.setDescription('Supprime tous les avertissements')
+				.setDescription("Supprime tous les avertissements d'un membre")
 				.addUserOption(option =>
 					option.setName('membre').setDescription('Membre').setRequired(true),
 				),

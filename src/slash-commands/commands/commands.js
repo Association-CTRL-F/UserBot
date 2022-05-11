@@ -23,7 +23,7 @@ export default {
 				.addStringOption(option =>
 					option
 						.setName('keyword')
-						.setDescription('Mot clé de la recherche (par nom)')
+						.setDescription('Mot clé de la recherche')
 						.setRequired(true),
 				),
 		),

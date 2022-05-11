@@ -11,7 +11,7 @@ export default {
 		.setName('remind')
 		.setDescription('Gère les rappels')
 		.addSubcommand(subcommand =>
-			subcommand.setName('view').setDescription('Voir la liste des rappels'),
+			subcommand.setName('view').setDescription('Voir la liste de ses rappels'),
 		)
 		.addSubcommand(subcommand =>
 			subcommand
