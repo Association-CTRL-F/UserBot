@@ -213,7 +213,7 @@ export default {
 
 				// Message de confirmation
 				return interaction.reply({
-					content: `⚠️ \`${member.user.tag}\` a reçu un avertissement : ${reason}${errorDM}`,
+					content: `⚠️ \`${member.user.tag}\` a reçu un avertissement\n\nRaison : ${reason}${errorDM}`,
 				})
 
 			// Supprime un avertissement

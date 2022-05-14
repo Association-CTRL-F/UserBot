@@ -45,7 +45,11 @@ export default async (message, client) => {
 
 	let hasRole = 0
 	client.config.guild.managers.staffRolesManagerIDs.forEach(role => {
-		if (message.member.roles.cache.has(role)) hasRole += 1
+		try {
+			if (message.member.roles.cache.has(role)) hasRole += 1
+		} catch (error) {
+			console.error(error)
+		}
 	})
 
 	if (hasRole === 0) {

@@ -56,6 +56,7 @@ export default {
 		}
 
 		// Envoi du message de bannissement en message privé
+		let errorDM = ''
 		const DMMessage = await member
 			.send({
 				embeds: [
@@ -79,6 +80,8 @@ export default {
 			})
 			.catch(error => {
 				console.error(error)
+				errorDM =
+					"\n\nℹ️ Le message privé n'a pas été envoyé car l'utilisateur les a bloqué"
 			})
 
 		// Ban du membre
@@ -105,7 +108,7 @@ export default {
 		// Si pas d'erreur, message de confirmation du bannissement
 		if (banAction instanceof GuildMember)
 			return interaction.reply({
-				content: `🔨 \`${member.user.tag}\` a été définitivement banni`,
+				content: `🔨 \`${member.user.tag}\` a été banni définitivement\n\nRaison : ${reason}${errorDM}`,
 			})
 
 		// Si au moins une erreur, throw
