@@ -186,36 +186,18 @@ export default {
 
 				// Boucle d'ajout des champs
 				const fieldsEmbedSearch = []
+
 				commandsSearch.forEach(command => {
-					const commandAuthor = interaction.guild.members.cache.get(command.author)
-					const commandEditor = interaction.guild.members.cache.get(
-						command.lastModificationBy,
-					)
+					const commandContent = String.raw`${command.content}`
+					let commandContentCut = ''
 
-					let creationText = ''
-					let modificationText = ''
-
-					if (commandAuthor)
-						creationText = `Créée par ${
-							commandAuthor.user.tag
-						} (${convertDateForDiscord(command.createdAt * 1000)})\n`
-					else
-						creationText = `Créée le ${convertDateForDiscord(
-							command.createdAt * 1000,
-						)}\n`
-
-					if (command.lastModificationAt !== null && commandEditor)
-						modificationText = `Dernière modification par ${
-							commandEditor.user.tag
-						} (${convertDateForDiscord(command.lastModificationAt * 1000)})\n`
-					else if (command.lastModificationAt !== null)
-						modificationText = `Dernière modification le ${convertDateForDiscord(
-							command.lastModificationAt * 1000,
-						)}\n`
+					if (commandContent.length < 100)
+						commandContentCut = `${command.content.substr(0, 100)}`
+					else commandContentCut = `${command.content.substr(0, 100)} [...]`
 
 					fieldsEmbedSearch.push({
 						name: command.name,
-						value: `${creationText}${modificationText}`,
+						value: `${commandContentCut}`,
 					})
 				})
 
