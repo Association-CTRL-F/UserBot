@@ -86,7 +86,7 @@ export default {
 
 		// Ban du membre
 		const banAction = await member
-			.ban({ days: 7, reason: `${interaction.user.tag}: ${reason}` })
+			.ban({ days: 0, reason: `${interaction.user.tag} : ${reason}` })
 			.catch(error => {
 				// Suppression du message privé envoyé
 				// car action de bannissement non réalisée
