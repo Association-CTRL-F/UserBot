@@ -64,8 +64,12 @@ export default async (message, client) => {
 
 		if (domains.length > 0) {
 			let isBlacklisted = 0
-			const sentMessage = await message.fetch()
-			const guildMember = await message.guild.members.fetch(sentMessage.author)
+			const sentMessage = await message.fetch().catch(() => false)
+			const guildMember = await message.guild.members
+				.fetch(sentMessage.author)
+				.catch(() => false)
+
+			if (!sentMessage || !guildMember) return
 
 			domains.forEach(async domain => {
 				const regexDomain = String.raw`(http[s]?:\/\/)?(www\.)?((${domain.domain})[\w]*){1}\.([a-z]{2,})`
