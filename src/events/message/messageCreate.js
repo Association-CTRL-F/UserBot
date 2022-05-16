@@ -174,12 +174,17 @@ export default async (message, client) => {
 		rules.forEach(async rule => {
 			let hasIgnoredRole = 0
 			const ignoredRoles = rule.ignoredRoles.split(',')
-			ignoredRoles.forEach(ignoredRole => {
-				message.member.roles.cache.forEach(role => {
-					if (role.name === '@everyone') return
-					if (role.id === ignoredRole) hasIgnoredRole += 1
+
+			try {
+				ignoredRoles.forEach(ignoredRole => {
+					message.member.roles.cache.forEach(role => {
+						if (role.name === '@everyone') return
+						if (role.id === ignoredRole) hasIgnoredRole += 1
+					})
 				})
-			})
+			} catch (error) {
+				console.log(error)
+			}
 
 			if (hasIgnoredRole === 0) {
 				const regexRule = rule.regex
