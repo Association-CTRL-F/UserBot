@@ -64,10 +64,14 @@ export default async (message, client) => {
 
 		if (domains.length > 0) {
 			let isBlacklisted = 0
+
 			const sentMessage = await message.fetch().catch(() => false)
-			const guildMember = await message.guild.members
-				.fetch(sentMessage.author)
-				.catch(() => false)
+
+			let guildMember = {}
+			if (message.guild)
+				guildMember = await message.guild.members
+					.fetch(sentMessage.author)
+					.catch(() => false)
 
 			if (!sentMessage || !guildMember) return
 
@@ -184,8 +188,16 @@ export default async (message, client) => {
 				const matchesRegex = message.content.match(regexRule)
 				if (!matchesRegex) return
 
-				const sentMessage = await message.fetch()
-				const guildMember = await message.guild.members.fetch(sentMessage.author)
+				const sentMessage = await message.fetch().catch(() => false)
+
+				let guildMember = {}
+				if (message.guild)
+					guildMember = await message.guild.members
+						.fetch(sentMessage.author)
+						.catch(() => false)
+
+				if (!sentMessage || !guildMember) return
+
 				await message.delete()
 
 				// Switch sur les types de règles
