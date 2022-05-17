@@ -4,17 +4,16 @@ export default {
 	},
 	interaction: async (modal, client) => {
 		// Acquisition du nom et du contenu
-		const nom = modal.getTextInputValue('form-edit-name').trim().replace(/\s+/g, '-')
-		const contenu = modal.getTextInputValue('form-edit-content').trim()
+		const nom = modal.fields.getTextInputValue('form-edit-name').trim().replace(/\s+/g, '-')
+		const contenu = modal.fields.getTextInputValue('form-edit-content').trim()
 
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
-		if (!bdd) {
-			await modal.deferReply({ ephemeral: true })
-			return modal.followUp({
+		if (!bdd)
+			return modal.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
+				ephemeral: true,
 			})
-		}
 
 		// Vérification si le formulaire existe
 		let form = {}
@@ -24,19 +23,18 @@ export default {
 			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 			form = resultCheckName[0]
 		} catch (error) {
-			await modal.deferReply({ ephemeral: true })
-			return modal.followUp({
+			return modal.reply({
 				content: 'Une erreur est survenue lors de la vérification du nom du formulaire 😕',
+				ephemeral: true,
 			})
 		}
 
 		// Vérification si le formulaire existe bien
-		if (!form) {
-			await modal.deferReply({ ephemeral: true })
-			return modal.followUp({
+		if (!form)
+			return modal.reply({
 				content: `Le formulaire **${nom}** n'existe pas 😕`,
+				ephemeral: true,
 			})
-		}
 
 		// Sinon, mise à jour du formulaire en base de données
 		try {
@@ -45,10 +43,10 @@ export default {
 
 			await bdd.execute(sqlUpdate, dataUpdate)
 		} catch (error) {
-			await modal.deferReply({ ephemeral: true })
-			return modal.followUp({
+			return modal.reply({
 				content:
 					'Une erreur est survenue lors de la mise à jour du formulaire en base de données 😕',
+				ephemeral: true,
 			})
 		}
 

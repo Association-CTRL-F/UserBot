@@ -1,8 +1,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-import { MessageActionRow, MessageSelectMenu } from 'discord.js'
+import { MessageActionRow, MessageSelectMenu, Modal, TextInputComponent } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { Modal, TextInputComponent, showModal } from 'discord-modals'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -22,27 +21,28 @@ export default {
 					.setCustomId('form-create')
 					.setTitle("Création d'un nouveau formulaire")
 					.addComponents(
-						new TextInputComponent()
-							.setCustomId('form-create-name')
-							.setLabel('Nom')
-							.setStyle('SHORT')
-							.setMinLength(1)
-							.setMaxLength(255)
-							.setRequired(true),
+						new MessageActionRow().addComponents(
+							new TextInputComponent()
+								.setCustomId('form-create-name')
+								.setLabel('Nom')
+								.setStyle('SHORT')
+								.setMinLength(1)
+								.setMaxLength(255)
+								.setRequired(true),
+						),
 					)
 					.addComponents(
-						new TextInputComponent()
-							.setCustomId('form-create-content')
-							.setLabel('Contenu')
-							.setStyle('LONG')
-							.setMinLength(1)
-							.setRequired(true),
+						new MessageActionRow().addComponents(
+							new TextInputComponent()
+								.setCustomId('form-create-content')
+								.setLabel('Contenu')
+								.setStyle('PARAGRAPH')
+								.setMinLength(1)
+								.setRequired(true),
+						),
 					)
 
-				return showModal(modalConfig, {
-					client: client,
-					interaction: interaction,
-				})
+				return interaction.showModal(modalConfig)
 
 			// Modification d'un formulaire
 			case 'edit':

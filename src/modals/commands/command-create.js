@@ -4,21 +4,20 @@ export default {
 	},
 	interaction: async (modal, client) => {
 		// Acquisition du nom et du contenu
-		const nom = modal
+		const nom = modal.fields
 			.getTextInputValue('name-command-create')
 			.trim()
 			.toLowerCase()
 			.replace(/\s+/g, '-')
-		const contenu = modal.getTextInputValue('content-command-create').trim()
+		const contenu = modal.fields.getTextInputValue('content-command-create').trim()
 
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
-		if (!bdd) {
-			await modal.deferReply({ ephemeral: true })
-			return modal.followUp({
+		if (!bdd)
+			return modal.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
+				ephemeral: true,
 			})
-		}
 
 		// Vérification si la commande existe
 		let command = {}
@@ -28,19 +27,18 @@ export default {
 			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 			command = resultCheckName[0]
 		} catch (error) {
-			await modal.deferReply({ ephemeral: true })
-			return modal.followUp({
+			return modal.reply({
 				content: 'Une erreur est survenue lors de la vérification du nom de la commande 😕',
+				ephemeral: true,
 			})
 		}
 
 		// Vérification si la commande existe déjà
-		if (command) {
-			await modal.deferReply({ ephemeral: true })
-			return modal.followUp({
+		if (command)
+			return modal.reply({
 				content: `La commande **${nom}** existe déjà 😕`,
+				ephemeral: true,
 			})
-		}
 
 		// Sinon, création de la nouvelle commande en base de données
 		try {
@@ -59,10 +57,10 @@ export default {
 
 			await bdd.execute(sqlInsert, dataInsert)
 		} catch (error) {
-			await modal.deferReply({ ephemeral: true })
-			return modal.followUp({
+			return modal.reply({
 				content:
 					'Une erreur est survenue lors de la création de la commande en base de données 😕',
+				ephemeral: true,
 			})
 		}
 

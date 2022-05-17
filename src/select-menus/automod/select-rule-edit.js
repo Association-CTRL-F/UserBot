@@ -1,4 +1,4 @@
-import { Modal, TextInputComponent, showModal } from 'discord-modals'
+import { Modal, TextInputComponent, MessageActionRow } from 'discord.js'
 
 export default {
 	data: {
@@ -39,56 +39,63 @@ export default {
 			.setCustomId('rule-edit')
 			.setTitle("Modification d'une règle")
 			.addComponents(
-				new TextInputComponent()
-					.setCustomId('rule-edit-type')
-					.setLabel('Type de la règle')
-					.setStyle('SHORT')
-					.setMinLength(1)
-					.setMaxLength(255)
-					.setDefaultValue(rule.type)
-					.setRequired(true),
+				new MessageActionRow().addComponents(
+					new TextInputComponent()
+						.setCustomId('rule-edit-type')
+						.setLabel('Type de la règle')
+						.setStyle('SHORT')
+						.setMinLength(1)
+						.setMaxLength(255)
+						.setValue(rule.type)
+						.setRequired(true),
+				),
 			)
 			.addComponents(
-				new TextInputComponent()
-					.setCustomId('rule-edit-id')
-					.setLabel('ID de la règle')
-					.setStyle('SHORT')
-					.setMinLength(1)
-					.setMaxLength(255)
-					.setDefaultValue(rule.customId)
-					.setRequired(true),
+				new MessageActionRow().addComponents(
+					new TextInputComponent()
+						.setCustomId('rule-edit-id')
+						.setLabel('ID de la règle')
+						.setStyle('SHORT')
+						.setMinLength(1)
+						.setMaxLength(255)
+						.setValue(rule.customId)
+						.setRequired(true),
+				),
 			)
 			.addComponents(
-				new TextInputComponent()
-					.setCustomId('rule-edit-regex')
-					.setLabel('Regex de la règle')
-					.setStyle('LONG')
-					.setMinLength(1)
-					.setDefaultValue(rule.regex)
-					.setRequired(true),
+				new MessageActionRow().addComponents(
+					new TextInputComponent()
+						.setCustomId('rule-edit-regex')
+						.setLabel('Regex de la règle')
+						.setStyle('PARAGRAPH')
+						.setMinLength(1)
+						.setValue(rule.regex)
+						.setRequired(true),
+				),
 			)
 			.addComponents(
-				new TextInputComponent()
-					.setCustomId('rule-edit-ignored-roles')
-					.setLabel('Rôles à ignorer')
-					.setStyle('LONG')
-					.setMinLength(1)
-					.setDefaultValue(rule.ignoredRoles)
-					.setRequired(true),
+				new MessageActionRow().addComponents(
+					new TextInputComponent()
+						.setCustomId('rule-edit-ignored-roles')
+						.setLabel('Rôles à ignorer')
+						.setStyle('PARAGRAPH')
+						.setMinLength(1)
+						.setValue(rule.ignoredRoles)
+						.setRequired(true),
+				),
 			)
 			.addComponents(
-				new TextInputComponent()
-					.setCustomId('rule-edit-reason')
-					.setLabel('Raison')
-					.setStyle('LONG')
-					.setMinLength(1)
-					.setDefaultValue(rule.reason)
-					.setRequired(true),
+				new MessageActionRow().addComponents(
+					new TextInputComponent()
+						.setCustomId('rule-edit-reason')
+						.setLabel('Raison')
+						.setStyle('PARAGRAPH')
+						.setMinLength(1)
+						.setValue(rule.reason)
+						.setRequired(true),
+				),
 			)
 
-		return showModal(modalCreate, {
-			client: client,
-			interaction: menu,
-		})
+		return menu.showModal(modalCreate)
 	},
 }

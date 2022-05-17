@@ -5,29 +5,29 @@ export default {
 	interaction: async (modal, client) => {
 		// Acquisition du type, du nom, de la regex
 		// et de la raison envoyée en message privé
-		const type = modal.getTextInputValue('rule-create-type').trim().toLowerCase()
-		const customId = modal.getTextInputValue('rule-create-id').trim().replace(/\s+/g, '-')
-		const regex = modal.getTextInputValue('rule-create-regex').trim()
-		const ignoredRoles = modal.getTextInputValue('rule-create-ignored-roles').trim()
-		const reason = modal.getTextInputValue('rule-create-reason').trim()
+		const type = modal.fields.getTextInputValue('rule-create-type').trim().toLowerCase()
+		const customId = modal.fields
+			.getTextInputValue('rule-create-id')
+			.trim()
+			.replace(/\s+/g, '-')
+		const regex = modal.fields.getTextInputValue('rule-create-regex').trim()
+		const ignoredRoles = modal.fields.getTextInputValue('rule-create-ignored-roles').trim()
+		const reason = modal.fields.getTextInputValue('rule-create-reason').trim()
 
 		// Vérification du type de règle
-		if (type !== 'warn' && type !== 'ban') {
-			await modal.deferReply({ ephemeral: true })
+		if (type !== 'warn' && type !== 'ban')
 			return modal.reply({
 				content: `Le type **${type}** n'est pas pris en charge 😕`,
 				ephemeral: true,
 			})
-		}
 
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
-		if (!bdd) {
-			await modal.deferReply({ ephemeral: true })
-			return modal.followUp({
+		if (!bdd)
+			return modal.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
+				ephemeral: true,
 			})
-		}
 
 		// Vérification si la règle existe
 		let rule = {}
@@ -37,19 +37,18 @@ export default {
 			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 			rule = resultCheckName[0]
 		} catch (error) {
-			await modal.deferReply({ ephemeral: true })
-			return modal.followUp({
+			return modal.reply({
 				content: 'Une erreur est survenue lors de la vérification du nom de la règle 😕',
+				ephemeral: true,
 			})
 		}
 
 		// Vérification si la règle existe déjà
-		if (rule) {
-			await modal.deferReply({ ephemeral: true })
-			return modal.followUp({
+		if (rule)
+			return modal.reply({
 				content: `La règle ayant l'id **${customId}** existe déjà 😕`,
+				ephemeral: true,
 			})
-		}
 
 		// Sinon, création de la règle en base de données
 		try {
@@ -59,10 +58,10 @@ export default {
 
 			await bdd.execute(sqlInsert, dataInsert)
 		} catch (error) {
-			await modal.deferReply({ ephemeral: true })
-			return modal.followUp({
+			return modal.reply({
 				content:
 					'Une erreur est survenue lors de la création de la règle en base de données 😕',
+				ephemeral: true,
 			})
 		}
 

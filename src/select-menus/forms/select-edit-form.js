@@ -1,4 +1,4 @@
-import { Modal, TextInputComponent, showModal } from 'discord-modals'
+import { Modal, TextInputComponent, MessageActionRow } from 'discord.js'
 
 export default {
 	data: {
@@ -35,32 +35,33 @@ export default {
 				ephemeral: true,
 			})
 
-		const modalCreate = new Modal()
+		const modalEdit = new Modal()
 			.setCustomId('form-edit')
 			.setTitle("Modification d'un formulaire")
 			.addComponents(
-				new TextInputComponent()
-					.setCustomId('form-edit-name')
-					.setLabel('Nom du formulaire')
-					.setStyle('SHORT')
-					.setMinLength(1)
-					.setMaxLength(255)
-					.setDefaultValue(form.name)
-					.setRequired(true),
+				new MessageActionRow().addComponents(
+					new TextInputComponent()
+						.setCustomId('form-edit-name')
+						.setLabel('Nom du formulaire')
+						.setStyle('SHORT')
+						.setMinLength(1)
+						.setMaxLength(255)
+						.setValue(form.name)
+						.setRequired(true),
+				),
 			)
 			.addComponents(
-				new TextInputComponent()
-					.setCustomId('form-edit-content')
-					.setLabel('Nouveau contenu du formulaire')
-					.setStyle('LONG')
-					.setMinLength(1)
-					.setDefaultValue(form.content)
-					.setRequired(true),
+				new MessageActionRow().addComponents(
+					new TextInputComponent()
+						.setCustomId('form-edit-content')
+						.setLabel('Nouveau contenu du formulaire')
+						.setStyle('PARAGRAPH')
+						.setMinLength(1)
+						.setValue(form.content)
+						.setRequired(true),
+				),
 			)
 
-		return showModal(modalCreate, {
-			client: client,
-			interaction: menu,
-		})
+		return menu.showModal(modalEdit)
 	},
 }

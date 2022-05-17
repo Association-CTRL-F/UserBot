@@ -1,7 +1,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { Modal, TextInputComponent, showModal } from 'discord-modals'
+import { Modal, TextInputComponent, MessageActionRow } from 'discord.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -66,27 +66,28 @@ export default {
 					.setCustomId('command-create')
 					.setTitle("Création d'une nouvelle commande")
 					.addComponents(
-						new TextInputComponent()
-							.setCustomId('name-command-create')
-							.setLabel('Nom de la commande')
-							.setStyle('SHORT')
-							.setMinLength(1)
-							.setMaxLength(255)
-							.setRequired(true),
+						new MessageActionRow().addComponents(
+							new TextInputComponent()
+								.setCustomId('name-command-create')
+								.setLabel('Nom de la commande')
+								.setStyle('SHORT')
+								.setMinLength(1)
+								.setMaxLength(255)
+								.setRequired(true),
+						),
 					)
 					.addComponents(
-						new TextInputComponent()
-							.setCustomId('content-command-create')
-							.setLabel('Contenu de la commande')
-							.setStyle('LONG')
-							.setMinLength(1)
-							.setRequired(true),
+						new MessageActionRow().addComponents(
+							new TextInputComponent()
+								.setCustomId('content-command-create')
+								.setLabel('Contenu de la commande')
+								.setStyle('PARAGRAPH')
+								.setMinLength(1)
+								.setRequired(true),
+						),
 					)
 
-				return showModal(modalCreate, {
-					client: client,
-					interaction: interaction,
-				})
+				return interaction.showModal(modalCreate)
 
 			// Modifie une commande
 			case 'edit':
@@ -101,29 +102,30 @@ export default {
 					.setCustomId('command-edit')
 					.setTitle("Modification d'une commande")
 					.addComponents(
-						new TextInputComponent()
-							.setCustomId('name-command-edit')
-							.setLabel('Nom de la commande')
-							.setStyle('SHORT')
-							.setDefaultValue(commandBdd.name)
-							.setMinLength(1)
-							.setMaxLength(255)
-							.setRequired(true),
+						new MessageActionRow().addComponents(
+							new TextInputComponent()
+								.setCustomId('name-command-edit')
+								.setLabel('Nom de la commande')
+								.setStyle('SHORT')
+								.setValue(commandBdd.name)
+								.setMinLength(1)
+								.setMaxLength(255)
+								.setRequired(true),
+						),
 					)
 					.addComponents(
-						new TextInputComponent()
-							.setCustomId('content-command-edit')
-							.setLabel('Nouveau contenu de la commande')
-							.setStyle('LONG')
-							.setDefaultValue(commandBdd.content)
-							.setMinLength(1)
-							.setRequired(true),
+						new MessageActionRow().addComponents(
+							new TextInputComponent()
+								.setCustomId('content-command-edit')
+								.setLabel('Nouveau contenu de la commande')
+								.setStyle('PARAGRAPH')
+								.setValue(commandBdd.content)
+								.setMinLength(1)
+								.setRequired(true),
+						),
 					)
 
-				return showModal(modalEdit, {
-					client: client,
-					interaction: interaction,
-				})
+				return interaction.showModal(modalEdit)
 
 			// Supprime une commande
 			case 'del':

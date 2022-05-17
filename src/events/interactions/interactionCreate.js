@@ -20,4 +20,15 @@ export default (interaction, client) => {
 
 		return menu.interaction(interaction, client)
 	}
+
+	if (interaction.isModalSubmit()) {
+		const modal = client.modals.get(interaction.customId)
+		if (!modal)
+			return interaction.reply({
+				content: `Impossible de trouver la modal "${interaction.customId}"`,
+				ephemeral: true,
+			})
+
+		return modal.interaction(interaction, client)
+	}
 }

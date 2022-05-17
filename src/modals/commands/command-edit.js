@@ -4,17 +4,16 @@ export default {
 	},
 	interaction: async (modal, client) => {
 		// Acquisition du nom et du contenu
-		const nom = modal.getTextInputValue('name-command-edit').trim().replace(/\s+/g, '-')
-		const contenu = modal.getTextInputValue('content-command-edit').trim()
+		const nom = modal.fields.getTextInputValue('name-command-edit').trim().replace(/\s+/g, '-')
+		const contenu = modal.fields.getTextInputValue('content-command-edit').trim()
 
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
-		if (!bdd) {
-			await modal.deferReply({ ephemeral: true })
-			return modal.followUp({
+		if (!bdd)
+			return modal.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
+				ephemeral: true,
 			})
-		}
 
 		// Vérification si la commande existe
 		let command = {}
@@ -24,19 +23,18 @@ export default {
 			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 			command = resultCheckName[0]
 		} catch (error) {
-			await modal.deferReply({ ephemeral: true })
-			return modal.followUp({
+			return modal.reply({
 				content: 'Une erreur est survenue lors de la vérification du nom de la commande 😕',
+				ephemeral: true,
 			})
 		}
 
 		// Vérification que la commande existe bien
-		if (!command) {
-			await modal.deferReply({ ephemeral: true })
-			return modal.followUp({
+		if (!command)
+			return modal.reply({
 				content: `La commande **${nom}** n'existe pas 😕`,
+				ephemeral: true,
 			})
-		}
 
 		// Sinon, mise à jour de la commande en base de données
 		try {
@@ -46,10 +44,10 @@ export default {
 
 			await bdd.execute(sqlEdit, dataEdit)
 		} catch (error) {
-			await modal.deferReply({ ephemeral: true })
-			return modal.followUp({
+			return modal.reply({
 				content:
 					'Une erreur est survenue lors de la modification de la commande en base de données 😕',
+				ephemeral: true,
 			})
 		}
 

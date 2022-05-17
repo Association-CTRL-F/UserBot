@@ -45,7 +45,7 @@ export default {
 						),
 				)
 				.addSubcommand(subcommand =>
-					subcommand.setName('add').setDescription("Ajouter une règle d'Automod"),
+					subcommand.setName('create').setDescription("Créer une règle d'Automod"),
 				)
 				.addSubcommand(subcommand =>
 					subcommand.setName('edit').setDescription("Modifier une règle d'Automod"),
@@ -202,8 +202,8 @@ export default {
 						// Envoi de l'embed
 						return pagination.render()
 
-					// Ajouter une règle d'automod
-					case 'add':
+					// Créer une règle d'automod
+					case 'create':
 						const menuType = new MessageActionRow().addComponents(
 							new MessageSelectMenu()
 								.setCustomId('select-rule-create')
