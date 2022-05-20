@@ -15,6 +15,6 @@ export default {
 			},
 		}
 
-		return interaction.reply({ embeds: [embed], files: [`./assets/commands/dé/${random}.png`] })
+		return interaction.reply({ embeds: [embed], files: [`./config/commands/dé/${random}.png`] })
 	},
 }

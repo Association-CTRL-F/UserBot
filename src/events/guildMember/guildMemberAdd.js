@@ -54,7 +54,7 @@ export default async (guildMember, client) => {
 	if (!guildMember.bannable) return sentMessage.react('🚫')
 
 	// Lecture du fichier de configuration
-	const emotesConfig = new Map(JSON.parse(await readFile('./config/banEmotesAtJoin.json')))
+	const emotesConfig = new Map(JSON.parse(await readFile('./config/env/banEmotesAtJoin.json')))
 
 	const reactionsList = []
 	for (const [emoji] of emotesConfig) {
@@ -123,7 +123,24 @@ export default async (guildMember, client) => {
 	const reason = emotesConfig.get(banReactionEmoji.name) || emotesConfig.get(banReactionEmoji.id)
 
 	// Lecture du message de ban
-	const banDM = await readFile('./forms/ban.md', { encoding: 'utf8' })
+	// Acquisition de la base de données
+	const bdd = client.config.db.pools.userbot
+	if (!bdd)
+		return console.log('Une erreur est survenue lors de la connexion à la base de données 😕')
+
+	// Acquisition du message de bannissement
+	let banDM = ''
+	try {
+		const sqlSelectBan = 'SELECT * FROM forms WHERE name = ?'
+		const dataSelectBan = ['ban']
+		const [resultSelectBan] = await bdd.execute(sqlSelectBan, dataSelectBan)
+
+		banDM = resultSelectBan[0].content
+	} catch {
+		return console.log(
+			'Une erreur est survenue lors de la récupération du message de bannissement en base de données 😬',
+		)
+	}
 
 	// Envoi du message de bannissement en message privé
 	const DMMessage = await guildMember

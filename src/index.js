@@ -12,7 +12,7 @@ const run = async () => {
 	// n'est pas "production"
 	if (process.env.NODE_ENV !== 'production') {
 		const dotenv = await import('dotenv')
-		dotenv.config({ path: './config/bot.env' })
+		dotenv.config({ path: './config/env/bot.env' })
 	}
 
 	const client = await prepareClient()

@@ -10,7 +10,7 @@ export default async client => {
 
 	// Lecture et en place du système de réactions
 	// puis ajout des émojis (peut prendre du temps)
-	const reactionRoleConfig = JSON.parse(await readFile('./config/reactionRoleConfig.json'))
+	const reactionRoleConfig = JSON.parse(await readFile('./config/env/reactionRoleConfig.json'))
 	client.reactionRoleMap = new Map()
 
 	// Pour chaque salon
