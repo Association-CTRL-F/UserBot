@@ -29,10 +29,12 @@ export default async (message, client) => {
 
 	// Fetch du message supprimé
 	const fetchedLog = (
-		await message.guild.fetchAuditLogs({
-			type: GuildAuditLogs.Actions.MESSAGE_DELETE,
-			limit: 1,
-		})
+		await message.guild
+			.fetchAuditLogs({
+				type: GuildAuditLogs.Actions.MESSAGE_DELETE,
+				limit: 1,
+			})
+			.catch(() => false)
 	).entries.first()
 	if (!fetchedLog) return
 

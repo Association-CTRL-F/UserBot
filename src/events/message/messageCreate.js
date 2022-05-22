@@ -356,7 +356,7 @@ export default async (message, client) => {
 			`<@${message.author.id}>, tu dois mettre une image / vidéo 😕`,
 		)
 		return Promise.all([
-			message.delete(),
+			await message.delete().catch(() => false),
 			setTimeout(
 				() =>
 					sentMessage.delete().catch(error => {
