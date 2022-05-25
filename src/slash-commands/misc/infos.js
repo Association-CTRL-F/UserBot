@@ -2,6 +2,7 @@
 /* eslint-disable no-case-declarations */
 import { convertDateForDiscord, diffDate } from '../../util/util.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
+import discordjs from 'discord.js'
 
 // import nodePackage from '../../../package.json'
 import { readFileSync } from 'fs'
@@ -40,6 +41,10 @@ export default {
 						{
 							name: 'Version',
 							value: version,
+						},
+						{
+							name: 'Version Discord.js',
+							value: discordjs.version,
 						},
 					],
 				}
