@@ -20,7 +20,7 @@ export default {
 				.addStringOption(option =>
 					option
 						.setName('temps')
-						.setDescription('Temps avant le rappel')
+						.setDescription('Temps avant le rappel (1m, 2h, 3d, etc.)')
 						.setRequired(true),
 				)
 				.addStringOption(option =>
