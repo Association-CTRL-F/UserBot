@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: May 10, 2022 at 01:20 PM
+-- Generation Time: May 27, 2022 at 01:40 PM
 -- Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal
 -- PHP Version: 7.4.23
 
@@ -24,10 +24,10 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `automodDomains`
+-- Table structure for table `automod_domains`
 --
 
-CREATE TABLE `automodDomains` (
+CREATE TABLE `automod_domains` (
   `id` int(11) NOT NULL,
   `domain` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -35,10 +35,10 @@ CREATE TABLE `automodDomains` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `automodRules`
+-- Table structure for table `automod_rules`
 --
 
-CREATE TABLE `automodRules` (
+CREATE TABLE `automod_rules` (
   `id` int(11) NOT NULL,
   `customId` varchar(255) NOT NULL,
   `regex` text NOT NULL,
@@ -74,6 +74,25 @@ CREATE TABLE `forms` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
   `content` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `giveaways`
+--
+
+CREATE TABLE `giveaways` (
+  `id` int(11) NOT NULL,
+  `prize` varchar(255) NOT NULL,
+  `winnersCount` int(11) NOT NULL,
+  `channel` varchar(255) NOT NULL,
+  `timestampEnd` varchar(255) NOT NULL,
+  `hostedBy` varchar(255) NOT NULL,
+  `messageId` varchar(255) DEFAULT NULL,
+  `excludedIds` varchar(255) NOT NULL,
+  `started` tinyint(1) NOT NULL,
+  `ended` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -123,15 +142,15 @@ CREATE TABLE `warnings` (
 --
 
 --
--- Indexes for table `automodDomains`
+-- Indexes for table `automod_domains`
 --
-ALTER TABLE `automodDomains`
+ALTER TABLE `automod_domains`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `automodRules`
+-- Indexes for table `automod_rules`
 --
-ALTER TABLE `automodRules`
+ALTER TABLE `automod_rules`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -146,6 +165,12 @@ ALTER TABLE `commands` ADD FULLTEXT KEY `content` (`content`);
 -- Indexes for table `forms`
 --
 ALTER TABLE `forms`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `giveaways`
+--
+ALTER TABLE `giveaways`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -171,15 +196,15 @@ ALTER TABLE `warnings`
 --
 
 --
--- AUTO_INCREMENT for table `automodDomains`
+-- AUTO_INCREMENT for table `automod_domains`
 --
-ALTER TABLE `automodDomains`
+ALTER TABLE `automod_domains`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `automodRules`
+-- AUTO_INCREMENT for table `automod_rules`
 --
-ALTER TABLE `automodRules`
+ALTER TABLE `automod_rules`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -192,6 +217,12 @@ ALTER TABLE `commands`
 -- AUTO_INCREMENT for table `forms`
 --
 ALTER TABLE `forms`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `giveaways`
+--
+ALTER TABLE `giveaways`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
