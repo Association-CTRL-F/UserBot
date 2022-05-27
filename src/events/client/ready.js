@@ -318,43 +318,63 @@ export default async client => {
 	if (giveaways)
 		giveaways.forEach(async giveaway => {
 			// Vérification si le tirage est déjà lancé
-			if (giveaway.started === 0) return
+			if (giveaway.started === 0 || giveaway.ended === 1) return
 
 			const sentMessage = await guild.channels.cache
 				.get(giveaway.channel)
 				.messages.fetch(giveaway.messageId)
+				.catch(() => false)
+
+			if (!sentMessage) {
+				try {
+					const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
+					const data = [1, giveaway.id]
+					await bdd.execute(sql, data)
+					// eslint-disable-next-line no-empty
+				} catch (error) {}
+
+				return
+			}
 
 			const organisator = await guild.members.fetch(giveaway.hostedBy)
 
 			setTimeout(async () => {
-				const usersReactions = await sentMessage.reactions.cache.get('🎉').users.fetch()
-				const excludedIdsArray = giveaway.excludedIds.split(',')
 				let excludedIds = giveaway.excludedIds
 				let winnersTirageString = ''
+				let usersReactions = {}
+
+				try {
+					usersReactions = await sentMessage.reactions.cache.get('🎉').users.fetch()
+					// eslint-disable-next-line no-empty
+				} catch (error) {}
+
+				const excludedIdsArray = giveaway.excludedIds.split(',')
 
 				let i = 0
-				while (i < giveaway.winnersCount) {
-					const winnerTirage = await usersReactions
-						.filter(user => !user.bot && !excludedIdsArray.includes(user.id))
-						.random()
+				if (usersReactions.size > 0) {
+					while (i < giveaway.winnersCount) {
+						const winnerTirage = await usersReactions
+							.filter(user => !user.bot && !excludedIdsArray.includes(user.id))
+							.random()
 
-					if (!winnerTirage) break
+						if (!winnerTirage) break
 
-					winnersTirageString = winnersTirageString.concat(' ', `${winnerTirage},`)
-					excludedIds = excludedIds.concat(',', winnerTirage.id)
-					usersReactions.sweep(user => user.id === winnerTirage.id)
+						winnersTirageString = winnersTirageString.concat(' ', `${winnerTirage},`)
+						excludedIds = excludedIds.concat(',', winnerTirage.id)
+						usersReactions.sweep(user => user.id === winnerTirage.id)
 
-					try {
-						const sql = 'UPDATE giveaways SET excludedIds = ? WHERE id = ?'
-						const data = [excludedIds, giveaway.id]
-						await bdd.execute(sql, data)
-						// eslint-disable-next-line no-empty
-					} catch (error) {}
+						try {
+							const sql = 'UPDATE giveaways SET excludedIds = ? WHERE id = ?'
+							const data = [excludedIds, giveaway.id]
+							await bdd.execute(sql, data)
+							// eslint-disable-next-line no-empty
+						} catch (error) {}
 
-					i += 1
+						i += 1
+					}
+
+					winnersTirageString = winnersTirageString.trim().slice(0, -1)
 				}
-
-				winnersTirageString = winnersTirageString.trim().slice(0, -1)
 
 				// Modification de l'embed
 				const embedWin = {
@@ -372,7 +392,14 @@ export default async client => {
 					],
 				}
 
-				if (winnersTirageString === '') {
+				try {
+					const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
+					const data = [1, giveaway.id]
+					await bdd.execute(sql, data)
+					// eslint-disable-next-line no-empty
+				} catch (error) {}
+
+				if (winnersTirageString === '' || !usersReactions) {
 					embedWin.fields.push({
 						name: '0 gagnant',
 						value: 'Pas de participants',
