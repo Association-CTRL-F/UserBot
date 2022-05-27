@@ -121,8 +121,7 @@ export default {
 
 				if (delay.toString(2).length > 32)
 					return interaction.reply({
-						content:
-							'Le délai est trop grand et dépasse la limite autorisée de 32 bits 😬',
+						content: 'Le délai est trop grand : supérieur à 24 jours 😬',
 						ephemeral: true,
 					})
 
