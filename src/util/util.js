@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable max-len */
-/* eslint-disable no-mixed-operators */
+
 import { GuildMember, Client, User } from 'discord.js'
 import mysql from 'mysql2'
 
@@ -81,17 +81,20 @@ export const diffDate = date => {
 }
 
 /**
- * Converti un nombre de secondes au format H heures M minutes S secondes
- * @param {Number} secondsInput nombre de secondes à convertir
- * @returns nombre de secondes au format H heures M minutes S secondes
- * @example convertSecondsToString(8590) => '2 heures 23 minutes 10 secondes'
+ * Converti un nombre de millisecondes au format J jours H heures M minutes
+ * @param {Number} msInput nombre de millisecondes à convertir
+ * @returns nombre de millisecondes au format J jours H heures M minutes
+ * @example convertMsToString(123) => '2 heures 3 minutes'
  */
-export const convertSecondsToString = secondsInput => {
-	const hours = Math.floor(secondsInput / 3600)
-	const minutes = Math.floor((secondsInput - hours * 3600) / 60)
-	const seconds = secondsInput - hours * 3600 - minutes * 60
+export const convertMsToString = msInput => {
+	const date = new Date(0, 0, 0, 0, 0, 0, msInput)
+	const days = date.getDay()
+	const hours = date.getHours()
+	const minutes = date.getMinutes()
+	const seconds = date.getSeconds()
 
 	const total = []
+	if (days) total.push(pluralize('jour', days))
 	if (hours) total.push(pluralize('heure', hours))
 	if (minutes) total.push(pluralize('minute', minutes))
 	if (seconds) total.push(pluralize('seconde', seconds))
@@ -100,16 +103,41 @@ export const convertSecondsToString = secondsInput => {
 }
 
 /**
- * Converti un nombre de minutes au format H heures M minutes
+ * Converti un nombre de secondes au format J jours H heures M minutes S secondes
+ * @param {Number} secondsInput nombre de secondes à convertir
+ * @returns nombre de secondes au format J jours H heures M minutes S secondes
+ * @example convertSecondsToString(8590) => '2 heures 23 minutes 10 secondes'
+ */
+export const convertSecondsToString = secondsInput => {
+	const date = new Date(0, 0, 0, 0, 0, secondsInput, 0)
+	const days = date.getDay()
+	const hours = date.getHours()
+	const minutes = date.getMinutes()
+	const seconds = date.getSeconds()
+
+	const total = []
+	if (days) total.push(pluralize('jour', days))
+	if (hours) total.push(pluralize('heure', hours))
+	if (minutes) total.push(pluralize('minute', minutes))
+	if (seconds) total.push(pluralize('seconde', seconds))
+
+	return total.join(' ')
+}
+
+/**
+ * Converti un nombre de minutes au format J jours H heures M minutes
  * @param {Number} minutesInput nombre de minutes à convertir
- * @returns nombre de minutes au format H heures M minutes
+ * @returns nombre de minutes au format J jours H heures M minutes
  * @example convertMinutesToString(123) => '2 heures 3 minutes'
  */
 export const convertMinutesToString = minutesInput => {
-	const hours = Math.floor(minutesInput / 60)
-	const minutes = Math.floor(minutesInput % 60)
+	const date = new Date(0, 0, 0, 0, minutesInput, 0, 0)
+	const days = date.getDay()
+	const hours = date.getHours()
+	const minutes = date.getMinutes()
 
 	const total = []
+	if (days) total.push(pluralize('jour', days))
 	if (hours) total.push(pluralize('heure', hours))
 	if (minutes) total.push(pluralize('minute', minutes))
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-empty */
 /* eslint-disable default-case */
 /* eslint-disable no-case-declarations */
 import { Collection, Constants, GuildMember } from 'discord.js'
@@ -47,15 +48,13 @@ export default async (message, client) => {
 	client.config.guild.managers.staffRolesManagerIDs.forEach(role => {
 		try {
 			if (message.member.roles.cache.has(role)) hasRole += 1
-		} catch (error) {
-			console.error(error)
-		}
+		} catch (error) {}
 	})
 
 	if (hasRole === 0) {
 		let domains = []
 		try {
-			const sqlDomains = 'SELECT * FROM automodDomains'
+			const sqlDomains = 'SELECT * FROM automod_domains'
 			const [resultsDomains] = await bdd.execute(sqlDomains)
 			domains = resultsDomains
 		} catch (error) {
@@ -162,7 +161,7 @@ export default async (message, client) => {
 	// Acquisition des règles depuis la base de données
 	let rules = []
 	try {
-		const sqlRules = 'SELECT * FROM automodRules'
+		const sqlRules = 'SELECT * FROM automod_rules'
 		const [resultsRules] = await bdd.execute(sqlRules)
 		rules = resultsRules
 	} catch (error) {
@@ -182,9 +181,7 @@ export default async (message, client) => {
 						if (role.id === ignoredRole) hasIgnoredRole += 1
 					})
 				})
-			} catch (error) {
-				console.log(error)
-			}
+			} catch (error) {}
 
 			if (hasIgnoredRole === 0) {
 				const regexRule = rule.regex

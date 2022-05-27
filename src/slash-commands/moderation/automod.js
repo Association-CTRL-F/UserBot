@@ -69,7 +69,7 @@ export default {
 		// Vérification si le domaine existe
 		let domainBdd = {}
 		try {
-			const sqlCheckName = 'SELECT * FROM automodDomains WHERE domain = ?'
+			const sqlCheckName = 'SELECT * FROM automod_domains WHERE domain = ?'
 			const dataCheckName = [domainString]
 			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 			domainBdd = resultCheckName[0]
@@ -87,7 +87,7 @@ export default {
 				// Récupération des règles
 				let rules = []
 				try {
-					const sqlSelect = 'SELECT * FROM automodRules'
+					const sqlSelect = 'SELECT * FROM automod_rules'
 					const [resultSelect] = await bdd.execute(sqlSelect)
 					rules = resultSelect
 				} catch {
@@ -116,7 +116,7 @@ export default {
 						// Vérification si la règle existe
 						let ruleBdd = {}
 						try {
-							const sqlCheckName = 'SELECT * FROM automodRules WHERE id = ?'
+							const sqlCheckName = 'SELECT * FROM automod_rules WHERE id = ?'
 							const dataCheckName = [ruleId]
 							const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 							ruleBdd = resultCheckName[0]
@@ -267,7 +267,7 @@ export default {
 					case 'view':
 						let domainsView = []
 						try {
-							const sqlCheckName = 'SELECT * FROM automodDomains'
+							const sqlCheckName = 'SELECT * FROM automod_domains'
 							const [resultCheckName] = await bdd.execute(sqlCheckName)
 							domainsView = resultCheckName
 						} catch (error) {
@@ -302,7 +302,7 @@ export default {
 
 						// Ajout du domaine en base de données
 						try {
-							const sqlInsert = 'INSERT INTO automodDomains (domain) VALUES (?)'
+							const sqlInsert = 'INSERT INTO automod_domains (domain) VALUES (?)'
 							const dataInsert = [domainString]
 
 							await bdd.execute(sqlInsert, dataInsert)
@@ -330,7 +330,7 @@ export default {
 						// Si oui, alors suppression du domaine
 						// en base de données
 						try {
-							const sqlDelete = 'DELETE FROM automodDomains WHERE domain = ?'
+							const sqlDelete = 'DELETE FROM automod_domains WHERE domain = ?'
 							const dataDelete = [domainString]
 
 							await bdd.execute(sqlDelete, dataDelete)

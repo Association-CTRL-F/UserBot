@@ -1,6 +1,6 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-/* eslint-disable no-mixed-operators */
+
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { convertDateForDiscord } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
@@ -20,7 +20,9 @@ export default {
 				.addStringOption(option =>
 					option
 						.setName('temps')
-						.setDescription('Temps avant le rappel (1m, 2h, 3d, etc.)')
+						.setDescription(
+							"Temps avant le rappel (précisez l'unité de temps en minutes / heures / jours : 1m, 2h, 3d)",
+						)
 						.setRequired(true),
 				)
 				.addStringOption(option =>
@@ -105,11 +107,17 @@ export default {
 				const rappel = interaction.options.getString('rappel')
 				const prive = interaction.options.getBoolean('private')
 
-				// Insertion du rappel en base de données
-				const timestampStart = Math.round(Date.now() / 1000)
-				const timestampEnd = Math.round(Date.now() / 1000) + ms(temps) / 1000
+				if (isNaN(ms(temps)))
+					return interaction.reply({
+						content: 'Le délai est invalide 😬',
+						ephemeral: true,
+					})
 
-				const delay = (timestampEnd - timestampStart) * 1000
+				// Insertion du rappel en base de données
+				const timestampStart = Math.round(Date.now() / 1000) * 1000
+				const timestampEnd = new Date().setMilliseconds(ms(temps))
+
+				const delay = timestampEnd - timestampStart
 
 				if (delay.toString(2).length > 32)
 					return interaction.reply({
@@ -170,7 +178,7 @@ export default {
 
 				return interaction.reply({
 					content: `Rappel créé 👌\nRappel : ${rappel}\nProgrammé le ${convertDateForDiscord(
-						timestampEnd * 1000,
+						timestampEnd,
 					)}`,
 					ephemeral: prive,
 				})

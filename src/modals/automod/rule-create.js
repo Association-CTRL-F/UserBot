@@ -32,7 +32,7 @@ export default {
 		// Vérification si la règle existe
 		let rule = {}
 		try {
-			const sqlCheckName = 'SELECT * FROM automodRules WHERE customId = ?'
+			const sqlCheckName = 'SELECT * FROM automod_rules WHERE customId = ?'
 			const dataCheckName = [customId]
 			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 			rule = resultCheckName[0]
@@ -53,7 +53,7 @@ export default {
 		// Sinon, création de la règle en base de données
 		try {
 			const sqlInsert =
-				'INSERT INTO automodRules (customId, regex, type, ignoredRoles, reason) VALUES (?, ?, ?, ?, ?)'
+				'INSERT INTO automod_rules (customId, regex, type, ignoredRoles, reason) VALUES (?, ?, ?, ?, ?)'
 			const dataInsert = [customId, regex, type, ignoredRoles, reason]
 
 			await bdd.execute(sqlInsert, dataInsert)

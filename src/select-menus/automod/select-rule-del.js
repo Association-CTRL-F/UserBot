@@ -14,7 +14,7 @@ export default {
 		// Vérification si la règle existe
 		let rule = {}
 		try {
-			const sqlCheckName = 'SELECT * FROM automodRules WHERE customId = ?'
+			const sqlCheckName = 'SELECT * FROM automod_rules WHERE customId = ?'
 			const dataCheckName = [menu.values[0]]
 			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 			rule = resultCheckName[0]
@@ -35,7 +35,7 @@ export default {
 
 		// Si oui, alors suppression en base de données
 		try {
-			const sqlDelete = 'DELETE FROM automodRules WHERE customId = ?'
+			const sqlDelete = 'DELETE FROM automod_rules WHERE customId = ?'
 			const dataDelete = [rule.customId]
 
 			await bdd.execute(sqlDelete, dataDelete)
