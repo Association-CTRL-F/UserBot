@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: May 27, 2022 at 01:40 PM
+-- Generation Time: May 30, 2022 at 03:35 PM
 -- Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal
 -- PHP Version: 7.4.23
 
@@ -92,7 +92,8 @@ CREATE TABLE `giveaways` (
   `messageId` varchar(255) DEFAULT NULL,
   `excludedIds` varchar(255) NOT NULL,
   `started` tinyint(1) NOT NULL,
-  `ended` tinyint(1) NOT NULL
+  `ended` tinyint(1) NOT NULL,
+  `timeoutId` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -120,7 +121,19 @@ CREATE TABLE `reminders` (
   `reminder` text NOT NULL,
   `timestampEnd` varchar(255) NOT NULL,
   `channel` varchar(255) NOT NULL,
-  `private` tinyint(1) NOT NULL
+  `private` tinyint(1) NOT NULL,
+  `timeoutId` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vocal`
+--
+
+CREATE TABLE `vocal` (
+  `id` int(11) NOT NULL,
+  `channel` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -186,6 +199,12 @@ ALTER TABLE `reminders`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `vocal`
+--
+ALTER TABLE `vocal`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `warnings`
 --
 ALTER TABLE `warnings`
@@ -235,6 +254,12 @@ ALTER TABLE `mute`
 -- AUTO_INCREMENT for table `reminders`
 --
 ALTER TABLE `reminders`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `vocal`
+--
+ALTER TABLE `vocal`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
