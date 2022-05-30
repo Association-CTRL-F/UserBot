@@ -299,6 +299,7 @@ export default {
 					})
 
 					await thread.members.add(member.id)
+					await thread.members.add(interaction.user.id)
 
 					return interaction.reply({
 						content: `🔇 \`${
