@@ -184,7 +184,7 @@ export default {
 							nextEmoji: '▶️',
 							lastEmoji: '⏭',
 							limit: 5,
-							idle: 30000,
+							idle: 120000,
 							ephemeral: false,
 							prevDescription: '',
 							postDescription: '',
