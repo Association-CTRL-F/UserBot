@@ -6,7 +6,7 @@ import slashCommandsLoader from './slash-commands/loader.js'
 import { closeGracefully } from './util/util.js'
 
 const run = async () => {
-	console.log('Starting the app...')
+	console.log(`Starting the app...\n`)
 
 	// Chargement des variables d'environnement si l'environnement
 	// n'est pas "production"
@@ -16,18 +16,21 @@ const run = async () => {
 	}
 
 	const client = await prepareClient()
+	console.log('Client ✅')
 
 	await eventsLoader(client)
+	console.log('Events ✅')
 
 	await modalsLoader(client)
+	console.log('Modals ✅')
 
 	await menusLoader(client)
+	console.log('Menus ✅')
 
 	await client.login(process.env.DISCORD_TOKEN)
 
 	await slashCommandsLoader(client)
-
-	console.log('Setup finished')
+	console.log('Slash commands ✅\n')
 
 	process.on('SIGINT', signal => closeGracefully(signal, client))
 	process.on('SIGTERM', signal => closeGracefully(signal, client))

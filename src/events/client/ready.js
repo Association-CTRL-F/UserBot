@@ -7,8 +7,6 @@ import ms from 'ms'
 export const once = true
 
 export default async client => {
-	console.log('The client is ready to start working')
-
 	// Lecture et en place du système de réactions
 	// puis ajout des émojis (peut prendre du temps)
 	const reactionRoleConfig = JSON.parse(await readFile('./config/env/reactionRoleConfig.json'))
@@ -28,8 +26,6 @@ export default async client => {
 			for (const emoji of Object.keys(emojiRoleMap)) await message.react(emoji)
 		}
 	}
-
-	console.log('Startup finished !')
 
 	const richPresenceText = client.config.bot.richPresenceText
 	if (richPresenceText && richPresenceText !== '')
@@ -504,4 +500,8 @@ export default async client => {
 				console.log("Une erreur est survenue lors de la suppression d'un salon vocal")
 			}
 		})
+
+	console.log(
+		`Startup finished !\n\n\x1b[4m> Ready :\x1B[0m\n  - Version ${client.config.bot.version}\n  - Connected as ${client.user.username}`,
+	)
 }

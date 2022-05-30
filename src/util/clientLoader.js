@@ -1,5 +1,7 @@
 import { Client, Collection, Constants, Intents } from 'discord.js'
 import { pool } from './util.js'
+import { readFileSync } from 'fs'
+const { version } = JSON.parse(readFileSync('./package.json'))
 
 // Création du client et de ses propriétés
 export default async () => {
@@ -45,6 +47,7 @@ export default async () => {
 		bot: {
 			prefix: process.env.COMMANDS_PREFIX,
 			richPresenceText: process.env.RICH_PRESENCE_TEXT,
+			version: version,
 		},
 		guild: {
 			guildID: process.env.GUILD_ID,

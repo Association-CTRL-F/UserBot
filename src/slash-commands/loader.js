@@ -37,13 +37,9 @@ export default async client => {
 	).flat()
 
 	try {
-		console.log('Started refreshing application (/) commands')
-
 		await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
 			body: commands,
 		})
-
-		console.log('Successfully reloaded application (/) commands')
 	} catch (error) {
 		console.error(error)
 	}
