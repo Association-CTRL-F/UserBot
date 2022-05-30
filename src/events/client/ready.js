@@ -257,7 +257,7 @@ export default async client => {
 
 			// Sinon on réactive le timeout et on supprime en base de données
 			// puis on envoi le message privé
-			setTimeout(async () => {
+			const timeout = setTimeout(async () => {
 				let deletedReminder = {}
 				try {
 					// Suppression du rappel en base de données
@@ -301,6 +301,14 @@ export default async client => {
 						})
 				}
 			}, (reminder.timestampEnd - Math.round(Date.now() / 1000)) * 1000)
+
+			try {
+				const sql = 'UPDATE reminders SET timeoutId = ? WHERE id = ?'
+				const data = [Number(timeout), reminder.id]
+				await bdd.execute(sql, data)
+			} catch (error) {
+				console.error(error)
+			}
 		})
 
 	// Boucle giveaways //
@@ -338,7 +346,7 @@ export default async client => {
 
 			const organisator = await guild.members.fetch(giveaway.hostedBy)
 
-			setTimeout(async () => {
+			const timeout = setTimeout(async () => {
 				let excludedIds = giveaway.excludedIds
 				let winnersTirageString = ''
 				let usersReactions = {}
@@ -431,6 +439,13 @@ export default async client => {
 							content: `🎉 Félicitations à notre gagnant : ${winnersTirageString} !`,
 					  })
 			}, (giveaway.timestampEnd - Math.round(Date.now() / 1000)) * 1000)
+
+			try {
+				const sql = 'UPDATE giveaways SET timeoutId = ? WHERE id = ?'
+				const data = [Number(timeout), giveaway.id]
+				await bdd.execute(sql, data)
+				// eslint-disable-next-line no-empty
+			} catch (error) {}
 		})
 
 	// Boucle @Pas de blabla //

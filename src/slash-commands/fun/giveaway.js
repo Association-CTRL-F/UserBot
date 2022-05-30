@@ -604,7 +604,7 @@ export default {
 				// Vérification si le tirage est terminé
 				if (fetchGiveaway.ended === 1)
 					return interaction.reply({
-						content: 'Le giveaway est terminé 😕',
+						content: 'Le giveaway est déjà terminé 😕',
 						ephemeral: true,
 					})
 
