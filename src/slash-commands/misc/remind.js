@@ -1,3 +1,4 @@
+/* eslint-disable no-mixed-operators */
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 
@@ -114,10 +115,10 @@ export default {
 					})
 
 				// Insertion du rappel en base de données
-				const timestampStart = Math.round(Date.now() / 1000) * 1000
-				const timestampEnd = new Date().setMilliseconds(ms(temps))
+				const timestampStart = Math.round(Date.now() / 1000)
+				const timestampEnd = timestampStart + ms(temps) / 1000
 
-				const delay = timestampEnd - timestampStart
+				const delay = (timestampEnd - timestampStart) * 1000
 
 				if (delay.toString(2).length > 32)
 					return interaction.reply({
@@ -125,26 +126,7 @@ export default {
 						ephemeral: true,
 					})
 
-				try {
-					const sql =
-						'INSERT INTO reminders (discordID, reminder, timestampEnd, channel, private) VALUES (?, ?, ?, ?, ?)'
-					const data = [
-						interaction.user.id,
-						rappel,
-						timestampEnd,
-						interaction.channel.id,
-						prive ? 1 : 0,
-					]
-					await bdd.execute(sql, data)
-				} catch (error) {
-					return interaction.reply({
-						content:
-							'Une erreur est survenue lors de la création du rappel en base de données 😬',
-						ephemeral: true,
-					})
-				}
-
-				setTimeout(async () => {
+				const timeout = setTimeout(async () => {
 					try {
 						const sqlDelete = 'DELETE FROM reminders WHERE timestampEnd = ?'
 						const dataDelete = [timestampEnd]
@@ -166,18 +148,34 @@ export default {
 						return interaction.channel.send({
 							content: `Rappel pour ${interaction.user} : ${rappel}`,
 						})
-					} catch {
-						return interaction.reply({
-							content:
-								'Une erreur est survenue lors de la suppression du rappel en base de données 😬',
-							ephemeral: true,
-						})
+					} catch (error) {
+						console.log(error)
 					}
 				}, delay)
 
+				try {
+					const sql =
+						'INSERT INTO reminders (discordID, reminder, timestampEnd, channel, private, timeoutId) VALUES (?, ?, ?, ?, ?, ?)'
+					const data = [
+						interaction.user.id,
+						rappel,
+						timestampEnd,
+						interaction.channel.id,
+						prive ? 1 : 0,
+						Number(timeout),
+					]
+					await bdd.execute(sql, data)
+				} catch (error) {
+					return interaction.reply({
+						content:
+							'Une erreur est survenue lors de la création du rappel en base de données 😬',
+						ephemeral: true,
+					})
+				}
+
 				return interaction.reply({
 					content: `Rappel créé 👌\nRappel : ${rappel}\nProgrammé le ${convertDateForDiscord(
-						timestampEnd,
+						timestampEnd * 1000,
 					)}`,
 					ephemeral: prive,
 				})
@@ -221,6 +219,8 @@ export default {
 						ephemeral: true,
 					})
 				}
+
+				clearTimeout(fetchReminder.timeoutId)
 
 				if (deletedReminder.affectedRows === 1)
 					return interaction.reply({
