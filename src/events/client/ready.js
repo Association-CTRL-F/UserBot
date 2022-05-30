@@ -456,4 +456,37 @@ export default async client => {
 			ms(timeoutJoin),
 		)
 	})
+
+	// Boucle vocaux //
+
+	// Acquisition des vocaux depuis la base de données
+	let voiceChannels = []
+	try {
+		const sqlCheckvoiceChannels = 'SELECT * FROM vocal'
+		const [resultCheckvoiceChannels] = await bdd.execute(sqlCheckvoiceChannels)
+		voiceChannels = resultCheckvoiceChannels
+	} catch (error) {
+		return console.error(error)
+	}
+
+	if (voiceChannels)
+		voiceChannels.forEach(async voiceChannel => {
+			try {
+				const channel = await guild.channels.cache.get(voiceChannel.channel)
+
+				if (channel && channel.members.size === 0) await channel.delete()
+
+				try {
+					const sqlDelete = 'DELETE FROM vocal WHERE channel = ?'
+					const dataDelete = [voiceChannel.channel]
+					bdd.execute(sqlDelete, dataDelete)
+				} catch (error) {
+					console.log(
+						'Une erreur est survenue lors de la suppression du salon vocal en base de données',
+					)
+				}
+			} catch {
+				console.log("Une erreur est survenue lors de la suppression d'un salon vocal")
+			}
+		})
 }

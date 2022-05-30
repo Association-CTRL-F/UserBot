@@ -1,4 +1,9 @@
 const handleLeave = (oldState, newState, client) => {
+	// Acquisition de la base de données
+	const bdd = client.config.db.pools.userbot
+	if (!bdd)
+		return console.log('Une erreur est survenue lors de la connexion à la base de données')
+
 	// S'il quitte un salon non personnalisé, on return
 	if (!client.voiceManager.has(oldState.channelId)) return
 
@@ -13,6 +18,16 @@ const handleLeave = (oldState, newState, client) => {
 
 		// On supprime le salon de la map
 		client.voiceManager.delete(oldState.channelId)
+
+		try {
+			const sqlDelete = 'DELETE FROM vocal WHERE channel = ?'
+			const dataDelete = [oldState.channel.id]
+			bdd.execute(sqlDelete, dataDelete)
+		} catch {
+			console.log(
+				'Une erreur est survenue lors de la suppression du salon vocal en base de données',
+			)
+		}
 
 		// Suppression du salon vocal
 		// Catch si le salon est déjà supprimé
@@ -29,6 +44,11 @@ const handleLeave = (oldState, newState, client) => {
 }
 
 const handleJoin = async (newState, client) => {
+	// Acquisition de la base de données
+	const bdd = client.config.db.pools.userbot
+	if (!bdd)
+		return console.log('Une erreur est survenue lors de la connexion à la base de données')
+
 	// S'il rejoint un salon qui doit créer un nouveau salon
 	if (client.config.guild.managers.voiceManagerChannelsIDs.includes(newState.channelId)) {
 		const member = newState.member
@@ -55,6 +75,16 @@ const handleJoin = async (newState, client) => {
 		// Si l'utilisateur ne peut pas être move dans le salon créé,
 		// on supprime le salon créé
 		if (!moveAction) return createdChannel.delete()
+
+		try {
+			const sql = 'INSERT INTO vocal (channel) VALUES (?)'
+			const data = [createdChannel.id]
+			await bdd.execute(sql, data)
+		} catch (error) {
+			console.log(
+				'Une erreur est survenue lors de la création du salon vocal en base de données',
+			)
+		}
 
 		// Ajout de l'id du salon vocal perso dans la liste
 		return client.voiceManager.set(createdChannel.id, null)
