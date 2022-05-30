@@ -10,6 +10,13 @@ export default {
 		)
 		.addStringOption(option =>
 			option.setName('raison').setDescription('Raison du bannissement').setRequired(true),
+		)
+		.addIntegerOption(option =>
+			option
+				.setName('messages')
+				.setDescription('Nombre de jours de messages à supprimer (0 à 7 inclus)')
+				.setMinValue(0)
+				.setMaxValue(7),
 		),
 	interaction: async (interaction, client) => {
 		// Acquisition du membre
@@ -85,8 +92,9 @@ export default {
 			})
 
 		// Ban du membre
+		const banDays = interaction.options.getInteger('messages') || 0
 		const banAction = await member
-			.ban({ days: 0, reason: `${interaction.user.tag} : ${reason}` })
+			.ban({ days: banDays, reason: `${interaction.user.tag} : ${reason}` })
 			.catch(error => {
 				// Suppression du message privé envoyé
 				// car action de bannissement non réalisée
