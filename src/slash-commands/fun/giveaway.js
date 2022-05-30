@@ -91,6 +91,14 @@ export default {
 		)
 		.addSubcommand(subcommand =>
 			subcommand
+				.setName('end')
+				.setDescription('Arrêter un giveaway')
+				.addStringOption(option =>
+					option.setName('id').setDescription('ID du giveaway').setRequired(true),
+				),
+		)
+		.addSubcommand(subcommand =>
+			subcommand
 				.setName('reroll')
 				.setDescription("Relancer le tirage d'un giveaway")
 				.addStringOption(option =>
@@ -208,15 +216,14 @@ export default {
 
 				if (delayCreate.toString(2).length > 32)
 					return interaction.reply({
-						content:
-							'La durée est trop grande et dépasse la limite autorisée de 32 bits 😬',
+						content: 'Le délai est trop grand : supérieur à 24 jours 😬',
 						ephemeral: true,
 					})
 
 				// Insertion du giveaway en base de données
 				try {
 					const sql =
-						'INSERT INTO giveaways (prize, winnersCount, channel, timestampEnd, hostedBy, excludedIds, messageId, started, ended) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+						'INSERT INTO giveaways (prize, winnersCount, channel, timestampEnd, hostedBy, excludedIds, messageId, started, ended, timeoutId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
 					const data = [
 						prize,
 						winners,
@@ -227,6 +234,7 @@ export default {
 						null,
 						0,
 						0,
+						null,
 					]
 					await bdd.execute(sql, data)
 				} catch (error) {
@@ -395,8 +403,7 @@ export default {
 
 				if (delayStart.toString(2).length > 32)
 					return interaction.reply({
-						content:
-							'La durée est trop grande et dépasse la limite autorisée de 32 bits 😬',
+						content: 'Le délai est trop grand : supérieur à 24 jours 😬',
 						ephemeral: true,
 					})
 
@@ -439,22 +446,7 @@ export default {
 
 				await sentMessage.react('🎉')
 
-				// Lancement du giveaway en base de données
-				try {
-					const sql =
-						'UPDATE giveaways SET timestampEnd = ?, messageId = ?, started = ? WHERE id = ?'
-					const data = [timestampEndStart, sentMessage.id, 1, id]
-					await bdd.execute(sql, data)
-				} catch (error) {
-					await sentMessage.delete()
-					return interaction.reply({
-						content:
-							'Une erreur est survenue lors du lancement du giveaway en base de données 😬',
-						ephemeral: true,
-					})
-				}
-
-				setTimeout(async () => {
+				const timeout = setTimeout(async () => {
 					const sentMessageFetch = await interaction.guild.channels.cache
 						.get(fetchGiveaway.channel)
 						.messages.fetch(sentMessage.id)
@@ -569,6 +561,21 @@ export default {
 						  })
 				}, (timestampEndStart - Math.round(Date.now() / 1000)) * 1000)
 
+				// Lancement du giveaway en base de données
+				try {
+					const sql =
+						'UPDATE giveaways SET timestampEnd = ?, messageId = ?, started = ?, timeoutId = ? WHERE id = ?'
+					const data = [timestampEndStart, sentMessage.id, 1, Number(timeout), id]
+					await bdd.execute(sql, data)
+				} catch (error) {
+					await sentMessage.delete()
+					return interaction.reply({
+						content:
+							'Une erreur est survenue lors du lancement du giveaway en base de données 😬',
+						ephemeral: true,
+					})
+				}
+
 				return interaction.reply({
 					content: `Giveaway lancé 👌\nPrix : ${
 						fetchGiveaway.prize
@@ -577,6 +584,154 @@ export default {
 					}\nSalon : ${channelStart}\nTirage programmé le ${convertDateForDiscord(
 						timestampEndStart * 1000,
 					)}`,
+				})
+
+			case 'end':
+				// Vérification que le giveaway existe bien
+				if (!fetchGiveaway)
+					return interaction.reply({
+						content: "Le giveaway n'existe pas 😕",
+						ephemeral: true,
+					})
+
+				// Vérification si le tirage est déjà lancé
+				if (fetchGiveaway.started === 0)
+					return interaction.reply({
+						content: "Le giveaway n'est pas lancé 😕",
+						ephemeral: true,
+					})
+
+				// Vérification si le tirage est terminé
+				if (fetchGiveaway.ended === 1)
+					return interaction.reply({
+						content: 'Le giveaway est terminé 😕',
+						ephemeral: true,
+					})
+
+				const sentMessageFetch = await interaction.guild.channels.cache
+					.get(fetchGiveaway.channel)
+					.messages.fetch(fetchGiveaway.messageId)
+					.catch(() => false)
+
+				if (!sentMessageFetch) {
+					try {
+						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
+						const data = [1, fetchGiveaway.id]
+						await bdd.execute(sql, data)
+						// eslint-disable-next-line no-empty
+					} catch (error) {}
+
+					return
+				}
+
+				let usersReactionsEnd = {}
+
+				try {
+					usersReactionsEnd = await sentMessageFetch.reactions.cache
+						.get('🎉')
+						.users.fetch()
+					// eslint-disable-next-line no-empty
+				} catch (error) {}
+
+				const excludedIdsArrayEnd = fetchGiveaway.excludedIds.split(',')
+				let excludedIdsEnd = fetchGiveaway.excludedIds
+				let winnersTirageStringEnd = ''
+
+				let iEnd = 0
+				if (usersReactionsEnd.size > 0) {
+					while (iEnd < fetchGiveaway.winnersCount) {
+						const winnerTirage = await usersReactionsEnd
+							.filter(user => !user.bot && !excludedIdsArrayEnd.includes(user.id))
+							.random()
+
+						if (!winnerTirage) break
+
+						winnersTirageStringEnd = winnersTirageStringEnd.concat(
+							' ',
+							`${winnerTirage},`,
+						)
+						excludedIdsEnd = excludedIdsEnd.concat(',', winnerTirage.id)
+						usersReactionsEnd.sweep(user => user.id === winnerTirage.id)
+
+						try {
+							const sql = 'UPDATE giveaways SET excludedIds = ? WHERE id = ?'
+							const data = [excludedIdsEnd, fetchGiveaway.id]
+							await bdd.execute(sql, data)
+							// eslint-disable-next-line no-empty
+						} catch (error) {}
+
+						iEnd += 1
+					}
+
+					winnersTirageStringEnd = winnersTirageStringEnd.trim().slice(0, -1)
+				}
+
+				// Modification de l'embed
+				const embedWinEnd = {
+					color: '#BB2528',
+					title: '🎁 GIVEAWAY 🎁',
+					fields: [
+						{
+							name: 'Organisateur',
+							value: interaction.user.toString(),
+						},
+						{
+							name: 'Prix',
+							value: fetchGiveaway.prize,
+						},
+					],
+				}
+
+				try {
+					const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
+					const data = [1, fetchGiveaway.id]
+					await bdd.execute(sql, data)
+					// eslint-disable-next-line no-empty
+				} catch (error) {}
+
+				if (winnersTirageStringEnd === '' || !usersReactionsEnd) {
+					embedWinEnd.fields.push({
+						name: '0 gagnant',
+						value: 'Pas de participants',
+					})
+
+					await sentMessageFetch.edit({ embeds: [embedWinEnd] })
+
+					clearTimeout(fetchGiveaway.timeoutId)
+
+					await sentMessageFetch.reply({
+						content: `🎉 Giveaway terminé, aucun participant enregistré !`,
+					})
+
+					return interaction.reply({
+						content: `Tirage terminé 👌`,
+					})
+				}
+
+				embedWinEnd.fields.push({
+					name: pluralize('gagnant', iEnd),
+					value: winnersTirageStringEnd,
+				})
+
+				if (iEnd < fetchGiveaway.winnersCount)
+					embedWinEnd.description =
+						'Le nombre de participants était inférieur au nombre de gagnants défini.'
+
+				await sentMessageFetch.edit({ embeds: [embedWinEnd] })
+
+				clearTimeout(fetchGiveaway.timeoutId)
+
+				if (iEnd > 1)
+					await sentMessageFetch.reply({
+						content: `🎉 Félicitations à nos gagnants : ${winnersTirageStringEnd} !`,
+					})
+				else
+					await sentMessageFetch.reply({
+						content: `🎉 Félicitations à notre gagnant : ${winnersTirageStringEnd} !`,
+					})
+
+				return interaction.reply({
+					content: `Tirage terminé 👌`,
 				})
 
 			case 'reroll':
