@@ -169,9 +169,9 @@ export default async (message, client) => {
 	}
 
 	// Boucle sur les règles
-	if (rules.length > 0)
+	if (rules.length > 0) {
+		let hasIgnoredRole = 0
 		rules.forEach(async rule => {
-			let hasIgnoredRole = 0
 			const ignoredRoles = rule.ignoredRoles.split(',')
 
 			try {
@@ -341,6 +341,7 @@ export default async (message, client) => {
 				}
 			}
 		})
+	}
 
 	// Fin Automod
 
@@ -546,7 +547,8 @@ export default async (message, client) => {
 		// on supprime le message, ne laissant que les embeds
 		if (
 			!message.content.replace(regexGlobal, '').trim() &&
-			sentMessages.length === matches.length
+			sentMessages.length === matches.length &&
+			!message.mentions.repliedUser
 		) {
 			client.cache.deleteMessagesID.add(message.id)
 			return message.delete()
