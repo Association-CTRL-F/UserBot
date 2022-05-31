@@ -47,6 +47,10 @@ const run = async () => {
 		`Startup finished !\n\n> Ready :\n  - Version ${client.config.bot.version}\n  - Connected as ${client.user.username}`,
 	)
 
+	process.on('unhandledRejection', error => {
+		console.error('Unhandled promise rejection : ', error)
+	})
+
 	process.on('SIGINT', signal => closeGracefully(signal, client))
 	process.on('SIGTERM', signal => closeGracefully(signal, client))
 }
