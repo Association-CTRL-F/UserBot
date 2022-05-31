@@ -278,18 +278,40 @@ export default {
 							})
 						}
 
-						let domainsViewList = ''
+						// Boucle d'ajout des champs
+						const fieldsEmbedView = []
+
 						domainsView.forEach(domain => {
-							domainsViewList = domainsViewList.concat('\n', `• ${domain.domain}`)
+							fieldsEmbedView.push({
+								name: `Domaine #${domain.id}`,
+								value: domain.domain,
+							})
 						})
 
-						const embed = {
-							color: 'C27C0E',
-							title: 'Domaines blacklistés',
-							description: domainsViewList,
-						}
+						// Configuration de l'embed
+						const paginationView = new Pagination(interaction, {
+							firstEmoji: '⏮',
+							prevEmoji: '◀️',
+							nextEmoji: '▶️',
+							lastEmoji: '⏭',
+							limit: 5,
+							idle: 120000,
+							ephemeral: false,
+							prevDescription: '',
+							postDescription: '',
+							buttonStyle: 'SECONDARY',
+							loop: false,
+						})
 
-						return interaction.reply({ embeds: [embed] })
+						paginationView.setTitle('Domaines blacklistés')
+						paginationView.setDescription(`**Total : ${domainsView.length}**`)
+						paginationView.setColor('#C27C0E')
+						paginationView.setFields(fieldsEmbedView)
+						paginationView.footer = { text: 'Page : {pageNumber} / {totalPages}' }
+						paginationView.paginateFields(true)
+
+						// Envoi de l'embed
+						return paginationView.render()
 
 					// Ajouter un domaine blacklisté
 					case 'add':
