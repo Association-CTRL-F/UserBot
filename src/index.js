@@ -43,6 +43,19 @@ const run = async () => {
 
 	await slashCommandsLoader(client)
 
+	const richPresenceText = client.config.bot.richPresenceText
+	if (richPresenceText && richPresenceText !== '')
+		await client.user.setPresence({
+			activities: [
+				{
+					name: richPresenceText,
+					type: 'PLAYING',
+				},
+			],
+			status: 'online',
+		})
+	else await client.user.setPresence({ activities: [], status: 'online' })
+
 	console.log(
 		`Startup finished !\n\n> Ready :\n  - Version ${client.config.bot.version}\n  - Connected as ${client.user.username}`,
 	)

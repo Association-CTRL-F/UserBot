@@ -27,19 +27,6 @@ export default async client => {
 		}
 	}
 
-	const richPresenceText = client.config.bot.richPresenceText
-	if (richPresenceText && richPresenceText !== '')
-		await client.user.setPresence({
-			activities: [
-				{
-					name: richPresenceText,
-					type: 'PLAYING',
-				},
-			],
-			status: 'online',
-		})
-	else await client.user.setPresence({ activities: [], status: 'online' })
-
 	// Réactivation ou désactivation des mutes / rappels
 	// s'il y en avait en fonction des durées
 
