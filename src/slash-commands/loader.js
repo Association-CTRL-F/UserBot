@@ -40,8 +40,8 @@ export default async client => {
 		await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
 			body: commands,
 		})
-		console.log('Slash command ✅\n')
+		console.log('Slash commands ✅\n')
 	} catch (error) {
-		console.log('Slash command ❌\n')
+		console.log('Slash commands ❌\n')
 	}
 }
