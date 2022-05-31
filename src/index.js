@@ -15,22 +15,37 @@ const run = async () => {
 		dotenv.config({ path: './config/env/bot.env' })
 	}
 
-	const client = await prepareClient()
-	console.log('Client ✅')
+	const client = await prepareClient().catch(() => console.log('Client ❌'))
+	if (client) console.log('Client ✅')
 
-	await eventsLoader(client)
-	console.log('Events ✅')
+	try {
+		await eventsLoader(client)
+		console.log('Events ✅')
+	} catch {
+		console.log('Events ❌')
+	}
 
-	await modalsLoader(client)
-	console.log('Modals ✅')
+	try {
+		await modalsLoader(client)
+		console.log('Modals ✅')
+	} catch {
+		console.log('Modals ❌')
+	}
 
-	await menusLoader(client)
-	console.log('Menus ✅')
+	try {
+		await menusLoader(client)
+		console.log('Menus ✅')
+	} catch {
+		console.log('Menus ❌')
+	}
 
 	await client.login(client.config.bot.token)
 
 	await slashCommandsLoader(client)
-	console.log('Slash commands ✅\n')
+
+	console.log(
+		`Startup finished !\n\n> Ready :\n  - Version ${client.config.bot.version}\n  - Connected as ${client.user.username}`,
+	)
 
 	process.on('SIGINT', signal => closeGracefully(signal, client))
 	process.on('SIGTERM', signal => closeGracefully(signal, client))

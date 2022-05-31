@@ -500,8 +500,4 @@ export default async client => {
 				console.log("Une erreur est survenue lors de la suppression d'un salon vocal")
 			}
 		})
-
-	console.log(
-		`Startup finished !\n\n\x1b[4m> Ready :\x1B[0m\n  - Version ${client.config.bot.version}\n  - Connected as ${client.user.username}`,
-	)
 }
