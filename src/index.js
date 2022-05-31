@@ -27,7 +27,7 @@ const run = async () => {
 	await menusLoader(client)
 	console.log('Menus ✅')
 
-	await client.login(process.env.DISCORD_TOKEN)
+	await client.login(client.config.bot.token)
 
 	await slashCommandsLoader(client)
 	console.log('Slash commands ✅\n')

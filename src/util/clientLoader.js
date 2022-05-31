@@ -44,46 +44,6 @@ export default async () => {
 			dbUser: process.env.DB_USER,
 			dbPass: process.env.DB_PASS,
 		},
-		bot: {
-			prefix: process.env.COMMANDS_PREFIX,
-			richPresenceText: process.env.RICH_PRESENCE_TEXT,
-			version: version,
-		},
-		guild: {
-			guildID: process.env.GUILD_ID,
-			timeoutJoin: process.env.TIMEOUT_JOIN,
-			roles: {
-				joinRoleID: process.env.JOIN_ROLE_ID,
-				mutedRoleID: process.env.MUTED_ROLE_ID,
-			},
-			channels: {
-				blablaChannelID: process.env.BLABLA_CHANNEL_ID,
-				configChannelID: process.env.CONFIG_CHANNEL_ID,
-				upgradeChannelID: process.env.UPGRADE_CHANNEL_ID,
-				reportChannelID: process.env.REPORT_CHANNEL,
-				leaveJoinChannelID: process.env.LEAVE_JOIN_CHANNEL_ID,
-				logsMessagesChannelID: process.env.LOGS_MESSAGES_CHANNEL,
-				logsBansChannelID: process.env.LOGS_BANS_CHANNEL,
-				tribunalChannelID: process.env.TRIBUNAL_CHANNEL_ID,
-			},
-			managers: {
-				voiceManagerChannelsIDs: process.env.VOICE_MANAGER_CHANNELS_IDS
-					? process.env.VOICE_MANAGER_CHANNELS_IDS.split(/, */)
-					: [],
-				noLogsManagerChannelIDs: process.env.NOLOGS_MANAGER_CHANNELS_IDS
-					? process.env.NOLOGS_MANAGER_CHANNELS_IDS.split(/, */)
-					: [],
-				noTextManagerChannelIDs: process.env.NOTEXT_MANAGER_CHANNELS_IDS
-					? process.env.NOTEXT_MANAGER_CHANNELS_IDS.split(/, */)
-					: [],
-				threadsManagerChannelIDs: process.env.THREADS_MANAGER_CHANNELS_IDS
-					? process.env.THREADS_MANAGER_CHANNELS_IDS.split(/, */)
-					: [],
-				staffRolesManagerIDs: process.env.STAFF_ROLES_MANAGER_IDS
-					? process.env.STAFF_ROLES_MANAGER_IDS.split(/, */)
-					: [],
-			},
-		},
 	}
 
 	// Création des pools
@@ -104,6 +64,64 @@ export default async () => {
 	} catch (error) {
 		console.error(error)
 	}
+
+	const bdd = client.config.db.pools.userbot
+	if (!bdd)
+		return console.log('Une erreur est survenue lors de la connexion à la base de données')
+
+	let config = {}
+	try {
+		const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
+		const dataSelect = [process.env.GUILD_ID]
+		const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
+		config = resultSelect[0]
+	} catch (error) {
+		return console.log(error)
+	}
+
+	Object.assign(client.config, {
+		bot: {
+			token: config.DISCORD_TOKEN,
+			prefix: config.COMMANDS_PREFIX,
+			richPresenceText: config.RICH_PRESENCE_TEXT,
+			version: version,
+		},
+		guild: {
+			guildID: config.GUILD_ID,
+			timeoutJoin: config.TIMEOUT_JOIN,
+			roles: {
+				joinRoleID: config.JOIN_ROLE_ID,
+				mutedRoleID: config.MUTED_ROLE_ID,
+			},
+			channels: {
+				blablaChannelID: config.BLABLA_CHANNEL_ID,
+				configChannelID: config.CONFIG_CHANNEL_ID,
+				upgradeChannelID: config.UPGRADE_CHANNEL_ID,
+				reportChannelID: config.REPORT_CHANNEL,
+				leaveJoinChannelID: config.LEAVE_JOIN_CHANNEL_ID,
+				logsMessagesChannelID: config.LOGS_MESSAGES_CHANNEL,
+				logsBansChannelID: config.LOGS_BANS_CHANNEL,
+				tribunalChannelID: config.TRIBUNAL_CHANNEL_ID,
+			},
+			managers: {
+				voiceManagerChannelsIDs: config.VOICE_MANAGER_CHANNELS_IDS
+					? config.VOICE_MANAGER_CHANNELS_IDS.split(/, */)
+					: [],
+				noLogsManagerChannelIDs: config.NOLOGS_MANAGER_CHANNELS_IDS
+					? config.NOLOGS_MANAGER_CHANNELS_IDS.split(/, */)
+					: [],
+				noTextManagerChannelIDs: config.NOTEXT_MANAGER_CHANNELS_IDS
+					? config.NOTEXT_MANAGER_CHANNELS_IDS.split(/, */)
+					: [],
+				threadsManagerChannelIDs: config.THREADS_MANAGER_CHANNELS_IDS
+					? config.THREADS_MANAGER_CHANNELS_IDS.split(/, */)
+					: [],
+				staffRolesManagerIDs: config.STAFF_ROLES_MANAGER_IDS
+					? config.STAFF_ROLES_MANAGER_IDS.split(/, */)
+					: [],
+			},
+		},
+	})
 
 	client.cache = {
 		// Messages supprimés par le bot pour ne pas
