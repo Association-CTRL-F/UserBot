@@ -178,7 +178,7 @@ export default async (guildMember, client) => {
 
 	// Ban du membre
 	const banAction = await guildMember
-		.ban({ days: 7, reason: `${client.user.tag} - ${reason}` })
+		.ban({ days: 7, reason: `${client.user.tag} : ${reason}` })
 		.catch(async error => {
 			console.error(error)
 			await sentMessage.react('❌')
