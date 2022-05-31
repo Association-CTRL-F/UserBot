@@ -212,7 +212,8 @@ export default {
 					)
 
 				// Message de confirmation
-				return interaction.reply({
+				await interaction.deferReply()
+				return interaction.editReply({
 					content: `⚠️ \`${member.user.tag}\` a reçu un avertissement\n\nRaison : ${reason}${errorDM}`,
 				})
 

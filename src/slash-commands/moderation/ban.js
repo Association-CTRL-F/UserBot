@@ -114,10 +114,12 @@ export default {
 			})
 
 		// Si pas d'erreur, message de confirmation du bannissement
-		if (banAction instanceof GuildMember)
-			return interaction.reply({
+		if (banAction instanceof GuildMember) {
+			await interaction.deferReply()
+			return interaction.editReply({
 				content: `🔨 \`${member.user.tag}\` a été banni définitivement\n\nRaison : ${reason}${errorDM}`,
 			})
+		}
 
 		// Si au moins une erreur, throw
 		if (banAction instanceof Error || DMMessage instanceof Error)

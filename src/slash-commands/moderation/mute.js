@@ -301,7 +301,8 @@ export default {
 					await thread.members.add(member.id)
 					await thread.members.add(interaction.user.id)
 
-					return interaction.reply({
+					await interaction.deferReply()
+					return interaction.editReply({
 						content: `🔇 \`${
 							member.user.tag
 						}\` est muté pendant \`${convertMinutesToString(
@@ -528,14 +529,17 @@ export default {
 				)
 
 				// Si pas d'erreur, message de confirmation du mute
-				if (muteMessage !== '')
-					return interaction.reply({
+				if (muteMessage !== '') {
+					await interaction.deferReply()
+					return interaction.editReply({
 						content: `🔇 ${muteMessage} sont mutés pendant \`${convertMinutesToString(
 							duration,
 						)}\`\n\nRaison : ${reason}${errorDMGroup}`,
 					})
+				}
 
-				return interaction.reply({
+				await interaction.deferReply()
+				return interaction.editReply({
 					content: `🔇 Les membres sont mutés pendant \`${convertMinutesToString(
 						duration,
 					)}\`\n\nRaison : ${reason}${errorDMGroup}`,

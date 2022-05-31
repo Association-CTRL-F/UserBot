@@ -48,9 +48,11 @@ export default {
 		})
 
 		// Si pas d'erreur, message de confirmation d'unban
-		if (unbanAction)
-			return interaction.reply({
+		if (unbanAction) {
+			await interaction.deferReply()
+			return interaction.editReply({
 				content: `🔓 Le bannissement de \`${user}\` a été levé`,
 			})
+		}
 	},
 }

@@ -94,9 +94,9 @@ export default {
 		// Ajout du salon dans la map
 		client.voiceManager.set(voiceChannel.id, noMicChannel)
 
-		return interaction.reply({
+		await interaction.deferReply({ ephemeral: true })
+		return interaction.editReply({
 			content: `Ton salon a bien été créé : ${noMicChannel} 👌`,
-			ephemeral: true,
 		})
 	},
 }

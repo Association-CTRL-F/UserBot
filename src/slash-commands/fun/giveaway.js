@@ -576,7 +576,8 @@ export default {
 					})
 				}
 
-				return interaction.reply({
+				await interaction.deferReply()
+				return interaction.editReply({
 					content: `Giveaway lancé 👌\nPrix : ${
 						fetchGiveaway.prize
 					}\nNombre de gagnants : ${
@@ -703,7 +704,8 @@ export default {
 						content: `🎉 Giveaway terminé, aucun participant enregistré !`,
 					})
 
-					return interaction.reply({
+					await interaction.deferReply()
+					return interaction.editReply({
 						content: `Tirage terminé 👌`,
 					})
 				}
@@ -730,7 +732,8 @@ export default {
 						content: `🎉 Félicitations à notre gagnant : ${winnersTirageStringEnd} !`,
 					})
 
-				return interaction.reply({
+				await interaction.deferReply()
+				return interaction.editReply({
 					content: `Tirage terminé 👌`,
 				})
 
@@ -847,7 +850,8 @@ export default {
 						content: `🎉 Giveaway terminé, aucun participant enregistré !`,
 					})
 
-					return interaction.reply({
+					await interaction.deferReply()
+					return interaction.editReply({
 						content: `Tirage relancé 👌`,
 					})
 				}
@@ -872,7 +876,8 @@ export default {
 						content: `🎉 Félicitations à notre gagnant : ${winnersTirageString} !`,
 					})
 
-				return interaction.reply({
+				await interaction.deferReply()
+				return interaction.editReply({
 					content: `Tirage relancé 👌`,
 				})
 		}

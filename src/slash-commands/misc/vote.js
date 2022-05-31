@@ -69,13 +69,16 @@ export default {
 				})
 
 				// Création automatique du thread associé
-				if (thread)
-					await sentMessage.startThread({
+				if (thread) {
+					const threadCreate = await sentMessage.startThread({
 						name: `Vote de ${interaction.member.displayName}`,
 						// Archivage après 24H
 						autoArchiveDuration: 24 * 60,
 						reason: proposition,
 					})
+
+					await threadCreate.members.add(interaction.user.id)
+				}
 
 				// Ajout des réactions pour voter
 				await sentMessage.react('✅')

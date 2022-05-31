@@ -175,10 +175,12 @@ export default {
 					})
 
 					// Si pas d'erreur, message de confirmation de l'unmute
-					if (unmuteAction instanceof GuildMember)
-						return interaction.reply({
+					if (unmuteAction instanceof GuildMember) {
+						await interaction.deferReply()
+						return interaction.editReply({
 							content: `🔊 \`${member.user.tag}\` est démuté`,
 						})
+					}
 
 					// Si au moins une erreur, throw
 					if (unmuteAction instanceof Error || DMMessage instanceof Error)
@@ -392,12 +394,15 @@ export default {
 				)
 
 				// Si pas d'erreur, message de confirmation du mute
-				if (unmuteMessage !== '')
-					return interaction.reply({
+				if (unmuteMessage !== '') {
+					await interaction.deferReply()
+					return interaction.editReply({
 						content: `🔊 ${unmuteMessage} sont démutés`,
 					})
+				}
 
-				return interaction.reply({
+				await interaction.deferReply()
+				return interaction.editReply({
 					content: `🔊 Les membres sont démutés`,
 				})
 		}

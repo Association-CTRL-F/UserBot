@@ -50,16 +50,17 @@ export default {
 			const { status_message, short_url = undefined } = await res.json()
 
 			// S'il y a une erreur en retour ou pas d'url
-			if (!res.ok || !short_url)
-				return interaction.reply({
+			if (!res.ok || !short_url) {
+				await interaction.deferReply({ ephemeral: true })
+				return interaction.editReply({
 					content: status_message,
-					ephemeral: true,
 				})
+			}
 
 			// Sinon on affiche l'url
-			return interaction.reply({
+			await interaction.deferReply({ ephemeral: true })
+			return interaction.editReply({
 				content: `<${short_url}>`,
-				ephemeral: true,
 			})
 		} catch (error) {
 			return interaction.reply({

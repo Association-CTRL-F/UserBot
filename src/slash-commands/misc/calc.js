@@ -8,12 +8,13 @@ export default {
 		.addStringOption(option =>
 			option.setName('calcul').setDescription('Calcul à effectuer').setRequired(true),
 		),
-	interaction: interaction => {
+	interaction: async interaction => {
 		const calcul = interaction.options.getString('calcul')
 		const math = create(all)
 
 		try {
-			return interaction.reply({
+			await interaction.deferReply()
+			return interaction.editReply({
 				content: `Calcul : ${calcul}\nRésultat : ${math.evaluate(calcul)}`,
 			})
 		} catch (error) {

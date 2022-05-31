@@ -98,11 +98,13 @@ export default {
 			})
 		}
 
-		if (member.user === interaction.user)
-			return interaction.reply({
+		if (member.user === interaction.user) {
+			await interaction.deferReply({ ephemeral: true })
+			return interaction.editReply({
 				content: 'Formulaire envoyé en message privé 👌',
 				ephemeral: true,
 			})
+		}
 
 		return upgradeChannel
 			? interaction.reply({
