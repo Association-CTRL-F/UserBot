@@ -18,7 +18,11 @@ export default {
 				content: `Calcul : ${calcul}\nRésultat : ${math.evaluate(calcul)}`,
 			})
 		} catch (error) {
-			return interaction.reply({ content: "Ce calcul n'est pas valide 😕", ephemeral: true })
+			return interaction.editReply({
+				content:
+					"Ce calcul n'est pas valide, vérifiez la syntaxe où les opérateurs utilisés 😕",
+				ephemeral: true,
+			})
 		}
 	},
 }
