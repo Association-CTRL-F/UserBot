@@ -20,7 +20,7 @@ export default {
 		} catch (error) {
 			return interaction.editReply({
 				content:
-					"Ce calcul n'est pas valide, vérifiez la syntaxe où les opérateurs utilisés 😕",
+					"Ce calcul n'est pas valide, vérifiez la syntaxe ou les opérateurs utilisés 😕",
 				ephemeral: true,
 			})
 		}
