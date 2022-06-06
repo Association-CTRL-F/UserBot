@@ -127,7 +127,7 @@ export default async (message, client) => {
 
 				// Ban du membre
 				const banAction = await guildMember
-					.ban({ days: 7, reason: `${client.user.tag}: Scam Nitro / Steam (Automod)` })
+					.ban({ days: 7, reason: `${client.user.tag} : Scam Nitro / Steam (Automod)` })
 					.catch(error => {
 						// Suppression du message privé envoyé
 						// car action de bannissement non réalisée
@@ -247,7 +247,7 @@ export default async (message, client) => {
 
 						// Ban du membre
 						const banAction = await guildMember
-							.ban({ days: 7, reason: `${client.user.tag}: ${rule.reason}` })
+							.ban({ days: 7, reason: `${client.user.tag} : ${rule.reason}` })
 							.catch(error => {
 								// Suppression du message privé envoyé
 								// car action de bannissement non réalisée
