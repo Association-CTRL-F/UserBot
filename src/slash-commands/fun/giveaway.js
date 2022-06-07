@@ -214,7 +214,7 @@ export default {
 
 				const delayCreate = (timestampEndCreate - timestampStartCreate) * 1000
 
-				if (delayCreate.toString(2).length > 32)
+				if (delayCreate.toString(2).length > 31)
 					return interaction.reply({
 						content: 'Le délai est trop grand : supérieur à 24 jours 😬',
 						ephemeral: true,
@@ -298,7 +298,7 @@ export default {
 
 				const delayEdit = (timestampEndEdit - timestampStartEdit) * 1000
 
-				if (delayEdit.toString(2).length > 32)
+				if (delayEdit.toString(2).length > 31)
 					return interaction.reply({
 						content:
 							'La durée est trop grande et dépasse la limite autorisée de 32 bits 😬',
@@ -401,7 +401,7 @@ export default {
 
 				const delayStart = (timestampEndStart - timestampStartStart) * 1000
 
-				if (delayStart.toString(2).length > 32)
+				if (delayStart.toString(2).length > 31)
 					return interaction.reply({
 						content: 'Le délai est trop grand : supérieur à 24 jours 😬',
 						ephemeral: true,

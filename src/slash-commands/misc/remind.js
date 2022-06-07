@@ -142,7 +142,7 @@ export default {
 
 				const delay = (timestampEnd - timestampStart) * 1000
 
-				if (delay.toString(2).length > 32)
+				if (delay.toString(2).length > 31)
 					return interaction.reply({
 						content: 'Le délai est trop grand : supérieur à 24 jours 😬',
 						ephemeral: true,

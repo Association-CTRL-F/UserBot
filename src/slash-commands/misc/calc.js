@@ -8,17 +8,16 @@ export default {
 		.addStringOption(option =>
 			option.setName('calcul').setDescription('Calcul à effectuer').setRequired(true),
 		),
-	interaction: async interaction => {
+	interaction: interaction => {
 		const calcul = interaction.options.getString('calcul')
 		const math = create(all)
 
 		try {
-			await interaction.deferReply()
-			return interaction.editReply({
-				content: `Calcul : ${calcul}\nRésultat : ${math.evaluate(calcul)}`,
+			return interaction.reply({
+				content: `Calcul : \`${calcul}\`\nRésultat : \`${math.evaluate(calcul)}\``,
 			})
 		} catch (error) {
-			return interaction.editReply({
+			return interaction.reply({
 				content:
 					"Ce calcul n'est pas valide, vérifiez la syntaxe ou les opérateurs utilisés 😕",
 				ephemeral: true,
