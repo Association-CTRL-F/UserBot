@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: May 30, 2022 at 03:35 PM
+-- Generation Time: Jun 07, 2022 at 03:42 PM
 -- Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal
 -- PHP Version: 7.4.23
 
@@ -62,6 +62,36 @@ CREATE TABLE `commands` (
   `lastModificationBy` varchar(255) DEFAULT NULL,
   `lastModificationAt` varchar(255) DEFAULT NULL,
   `numberOfUses` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `config`
+--
+
+CREATE TABLE `config` (
+  `DISCORD_TOKEN` varchar(255) DEFAULT NULL,
+  `COMMANDS_PREFIX` varchar(255) DEFAULT NULL,
+  `TIMEZONE` varchar(255) DEFAULT NULL,
+  `GUILD_ID` varchar(255) NOT NULL,
+  `LEAVE_JOIN_CHANNEL_ID` varchar(255) DEFAULT NULL,
+  `REPORT_CHANNEL` varchar(255) DEFAULT NULL,
+  `LOGS_MESSAGES_CHANNEL` varchar(255) DEFAULT NULL,
+  `LOGS_BANS_CHANNEL` varchar(255) DEFAULT NULL,
+  `JOIN_ROLE_ID` varchar(255) DEFAULT NULL,
+  `TIMEOUT_JOIN` varchar(255) DEFAULT NULL,
+  `MUTED_ROLE_ID` varchar(255) DEFAULT NULL,
+  `TRIBUNAL_CHANNEL_ID` varchar(255) DEFAULT NULL,
+  `CONFIG_CHANNEL_ID` varchar(255) DEFAULT NULL,
+  `UPGRADE_CHANNEL_ID` varchar(255) DEFAULT NULL,
+  `BLABLA_CHANNEL_ID` varchar(255) DEFAULT NULL,
+  `RICH_PRESENCE_TEXT` varchar(255) DEFAULT NULL,
+  `VOICE_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
+  `NOLOGS_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
+  `NOTEXT_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
+  `THREADS_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
+  `STAFF_ROLES_MANAGER_IDS` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -173,6 +203,12 @@ ALTER TABLE `commands`
   ADD PRIMARY KEY (`id`);
 ALTER TABLE `commands` ADD FULLTEXT KEY `name` (`name`);
 ALTER TABLE `commands` ADD FULLTEXT KEY `content` (`content`);
+
+--
+-- Indexes for table `config`
+--
+ALTER TABLE `config`
+  ADD PRIMARY KEY (`GUILD_ID`);
 
 --
 -- Indexes for table `forms`
