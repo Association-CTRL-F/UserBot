@@ -42,8 +42,8 @@ export default {
 			subcommand
 				.setName('clear')
 				.setDescription("Supprime tous les avertissements d'un membre")
-				.addUserOption(option =>
-					option.setName('membre').setDescription('Membre').setRequired(true),
+				.addStringOption(option =>
+					option.setName('membre').setDescription('Discord ID').setRequired(true),
 				),
 		),
 	interaction: async (interaction, client) => {
@@ -51,8 +51,11 @@ export default {
 		let member = ''
 
 		// Afin d'éviter les erreurs, on récupère le membre
-		// pour toutes les commandes sauf "del"
-		if (interaction.options.getSubcommand() !== 'del') {
+		// pour toutes les commandes sauf "del" et "clear"
+		if (
+			interaction.options.getSubcommand() !== 'del' &&
+			interaction.options.getSubcommand() !== 'clear'
+		) {
 			// Acquisition du membre
 			user = interaction.options.getUser('membre')
 			member = interaction.guild.members.cache.get(user.id)
@@ -249,17 +252,20 @@ export default {
 
 			// Supprime tous les avertissements
 			case 'clear':
+				// Acquisition du membre
+				const discordId = interaction.options.getString('membre')
+
 				// Vérification si le membre a des avertissements
 				let deletedWarns = []
 				try {
 					const sqlDelete = 'SELECT * FROM warnings WHERE discordID = ?'
-					const dataDelete = [member.id]
+					const dataDelete = [discordId]
 					const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
 					deletedWarns = resultDelete
 				} catch {
 					return interaction.reply({
 						content:
-							"Une erreur est survenue lors de la suppression de l'avertissement 😬",
+							'Une erreur est survenue lors de la suppression des avertissements 😬',
 						ephemeral: true,
 					})
 				}
@@ -273,7 +279,7 @@ export default {
 				try {
 					// Suppression en base de données
 					const sqlDeleteAll = 'DELETE FROM warnings WHERE discordID = ?'
-					const dataDeleteAll = [member.id]
+					const dataDeleteAll = [discordId]
 					await bdd.execute(sqlDeleteAll, dataDeleteAll)
 				} catch {
 					return interaction.reply({
