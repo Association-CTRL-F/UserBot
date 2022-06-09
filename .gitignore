@@ -7,7 +7,6 @@ node_modules/
 
 # fichiers d'environnement
 bot.env
-database.env
 banEmotesAtJoin.json
 
 # fichiers de config
