@@ -307,6 +307,8 @@ export default async (message, client) => {
 							)
 						}
 
+						client.cache.warned.push(guildMember.user.id)
+
 						// Envoi du message d'avertissement en message privé
 						const DMMessageWarn = await guildMember
 							.send({
@@ -341,6 +343,98 @@ export default async (message, client) => {
 				}
 			}
 		})
+	}
+
+	// Partie Antispam
+
+	let hasRoleSpam = 0
+	client.config.guild.managers.staffRolesManagerIDs.forEach(role => {
+		try {
+			if (message.member.roles.cache.has(role)) hasRoleSpam += 1
+		} catch (error) {}
+	})
+
+	if (hasRoleSpam === 0) {
+		const sentMessage = await message.fetch().catch(() => false)
+
+		let guildMember = {}
+		if (message.guild)
+			guildMember = await message.guild.members.fetch(sentMessage.author).catch(() => false)
+
+		if (!sentMessage || !guildMember) return
+
+		const filter = client.cache.warned.filter(id => id === message.author.id)
+
+		if (filter.length >= 4) {
+			// Acquisition du message de bannissement
+			let banDM = ''
+			try {
+				const sqlSelectBan = 'SELECT * FROM forms WHERE name = ?'
+				const dataSelectBan = ['ban']
+				const [resultSelectBan] = await bdd.execute(sqlSelectBan, dataSelectBan)
+
+				banDM = resultSelectBan[0].content
+			} catch {
+				return console.log(
+					'Une erreur est survenue lors de la récupération du message de bannissement en base de données (Automod)',
+				)
+			}
+
+			// Envoi du message de bannissement en message privé
+			const DMMessageBan = await guildMember
+				.send({
+					embeds: [
+						{
+							color: '#C27C0E',
+							title: 'Bannissement',
+							description: banDM,
+							author: {
+								name: sentMessage.guild.name,
+								icon_url: sentMessage.guild.iconURL({ dynamic: true }),
+								url: sentMessage.guild.vanityURL,
+							},
+							fields: [
+								{
+									name: 'Raison du bannissement',
+									value: 'SPAM',
+								},
+							],
+						},
+					],
+				})
+				.catch(error => {
+					console.error(error)
+				})
+
+			// Ban du membre
+			const banAction = await guildMember
+				.ban({ days: 7, reason: `${client.user.tag} : SPAM` })
+				.catch(error => {
+					// Suppression du message privé envoyé
+					// car action de bannissement non réalisée
+					if (DMMessageBan) DMMessageBan.delete()
+
+					if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
+						return console.log(
+							"Je n'ai pas les permissions pour bannir ce membre (Automod)",
+						)
+
+					console.error(error)
+					return console.log(
+						'Une erreur est survenue lors du bannissement du membre (Automod)',
+					)
+				})
+
+			// Si au moins une erreur, throw
+			if (banAction instanceof Error || DMMessageBan instanceof Error)
+				throw new Error(
+					"L'envoi d'un message et / ou le bannissement d'un membre a échoué. Voir les logs précédents pour plus d'informations.",
+				)
+
+			client.cache.warned = client.cache.warned.filter(id => id !== message.author.id)
+
+			return
+		}
 	}
 
 	// Fin Automod

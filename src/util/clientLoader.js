@@ -127,6 +127,8 @@ export default async () => {
 		// Messages supprimés par le bot pour ne pas
 		// les log lors de l'event "messageDelete"
 		deleteMessagesID: new Set(),
+		// Avertissements pour l'antispam
+		warned: [],
 	}
 
 	// Maps utilisées pour la commande "rôles"
