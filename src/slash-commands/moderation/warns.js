@@ -12,16 +12,16 @@ export default {
 			subcommand
 				.setName('view')
 				.setDescription("Voir les avertissements d'un membre")
-				.addUserOption(option =>
-					option.setName('membre').setDescription('Membre').setRequired(true),
+				.addStringOption(option =>
+					option.setName('membre').setDescription('Discord ID').setRequired(true),
 				),
 		)
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('create')
 				.setDescription('Crée un nouvel avertissement')
-				.addUserOption(option =>
-					option.setName('membre').setDescription('Membre').setRequired(true),
+				.addStringOption(option =>
+					option.setName('membre').setDescription('Discord ID').setRequired(true),
 				)
 				.addStringOption(option =>
 					option
@@ -50,21 +50,9 @@ export default {
 		let user = ''
 		let member = ''
 
-		// Afin d'éviter les erreurs, on récupère le membre
-		// pour toutes les commandes sauf "del" et "clear"
-		if (
-			interaction.options.getSubcommand() !== 'del' &&
-			interaction.options.getSubcommand() !== 'clear'
-		) {
-			// Acquisition du membre
-			user = interaction.options.getUser('membre')
-			member = interaction.guild.members.cache.get(user.id)
-			if (!member)
-				return interaction.reply({
-					content: "Je n'ai pas trouvé cet utilisateur, vérifie la mention ou l'ID 😕",
-					ephemeral: true,
-				})
-		}
+		// Acquisition du membre
+		user = interaction.options.getString('membre')
+		member = interaction.guild.members.cache.get(user)
 
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
@@ -80,7 +68,7 @@ export default {
 				let warnings = []
 				try {
 					const sqlView = 'SELECT * FROM warnings WHERE discordID = ?'
-					const dataView = [member.id]
+					const dataView = [user]
 					const [resultWarnings] = await bdd.execute(sqlView, dataView)
 					warnings = resultWarnings
 				} catch {
@@ -125,10 +113,15 @@ export default {
 					loop: false,
 				})
 
-				pagination.author = {
-					name: `${member.displayName} (ID ${member.id})`,
-					icon_url: member.user.displayAvatarURL({ dynamic: true }),
-				}
+				if (member)
+					pagination.author = {
+						name: `${member.displayName} (ID ${member.id})`,
+						icon_url: member.user.displayAvatarURL({ dynamic: true }),
+					}
+				else
+					pagination.author = {
+						name: `ID ${user}`,
+					}
 
 				pagination.setDescription(`**Total : ${warnings.length}**`)
 				pagination.setColor('#C27C0E')
@@ -149,7 +142,7 @@ export default {
 					const sqlCreate =
 						'INSERT INTO warnings (discordID, warnedBy, warnReason, warnedAt) VALUES (?, ?, ?, ?)'
 					const dataCreate = [
-						member.id,
+						user,
 						interaction.user.id,
 						reason,
 						Math.round(Date.now() / 1000),
@@ -164,55 +157,57 @@ export default {
 					})
 				}
 
-				// Lecture du message d'avertissement
-				let warnDM = ''
-				try {
-					const sqlSelectWarn = 'SELECT * FROM forms WHERE name = ?'
-					const dataSelectWarn = ['warn']
-					const [resultSelectWarn] = await bdd.execute(sqlSelectWarn, dataSelectWarn)
-					warnDM = resultSelectWarn[0].content
-				} catch (error) {
-					return interaction.reply({
-						content:
-							"Une erreur est survenue lors de la récupération du message d'avertissement en base de données 😕",
-						ephemeral: true,
-					})
-				}
-
-				// Envoi du message d'avertissement en message privé
 				let errorDM = ''
-				const DMMessage = await member
-					.send({
-						embeds: [
-							{
-								color: '#C27C0E',
-								title: 'Avertissement',
-								description: warnDM,
-								author: {
-									name: interaction.guild.name,
-									icon_url: interaction.guild.iconURL({ dynamic: true }),
-									url: interaction.guild.vanityURL,
-								},
-								fields: [
-									{
-										name: "Raison de l'avertissement",
-										value: reason,
-									},
-								],
-							},
-						],
-					})
-					.catch(error => {
-						console.error(error)
-						errorDM =
-							"\n\nℹ️ Le message privé n'a pas été envoyé car le membre les a bloqué"
-					})
+				if (member) {
+					// Lecture du message d'avertissement
+					let warnDM = ''
+					try {
+						const sqlSelectWarn = 'SELECT * FROM forms WHERE name = ?'
+						const dataSelectWarn = ['warn']
+						const [resultSelectWarn] = await bdd.execute(sqlSelectWarn, dataSelectWarn)
+						warnDM = resultSelectWarn[0].content
+					} catch (error) {
+						return interaction.reply({
+							content:
+								"Une erreur est survenue lors de la récupération du message d'avertissement en base de données 😕",
+							ephemeral: true,
+						})
+					}
 
-				// Si au moins une erreur, throw
-				if (DMMessage instanceof Error)
-					throw new Error(
-						"L'envoi d'un message a échoué. Voir les logs précédents pour plus d'informations.",
-					)
+					// Envoi du message d'avertissement en message privé
+					const DMMessage = await member
+						.send({
+							embeds: [
+								{
+									color: '#C27C0E',
+									title: 'Avertissement',
+									description: warnDM,
+									author: {
+										name: interaction.guild.name,
+										icon_url: interaction.guild.iconURL({ dynamic: true }),
+										url: interaction.guild.vanityURL,
+									},
+									fields: [
+										{
+											name: "Raison de l'avertissement",
+											value: reason,
+										},
+									],
+								},
+							],
+						})
+						.catch(error => {
+							console.error(error)
+							errorDM =
+								"\n\nℹ️ Le message privé n'a pas été envoyé car le membre les a bloqué"
+						})
+
+					// Si au moins une erreur, throw
+					if (DMMessage instanceof Error)
+						throw new Error(
+							"L'envoi d'un message a échoué. Voir les logs précédents pour plus d'informations.",
+						)
+				}
 
 				// Message de confirmation
 				await interaction.deferReply()
