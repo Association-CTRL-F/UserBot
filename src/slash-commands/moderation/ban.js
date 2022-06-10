@@ -19,18 +19,21 @@ export default {
 				.setMaxValue(7),
 		),
 	interaction: async (interaction, client) => {
+		// On diffère la réponse pour avoir plus de 3 secondes
+		await interaction.deferReply()
+
 		// Acquisition du membre
 		const user = interaction.options.getUser('membre')
 		const member = interaction.guild.members.cache.get(user.id)
 		if (!member)
-			return interaction.reply({
+			return interaction.editReply({
 				content: "Je n'ai pas trouvé cet utilisateur, vérifie la mention ou l'ID 😕",
 				ephemeral: true,
 			})
 
 		// On ne peut pas se ban soi-même
 		if (member.id === interaction.user.id)
-			return interaction.reply({
+			return interaction.editReply({
 				content: 'Tu ne peux pas te bannir toi-même 😕',
 				ephemeral: true,
 			})
@@ -41,7 +44,7 @@ export default {
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
 		if (!bdd)
-			return interaction.reply({
+			return interaction.editReply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
 				ephemeral: true,
 			})
@@ -55,7 +58,7 @@ export default {
 
 			banDM = resultSelectBan[0].content
 		} catch {
-			return interaction.reply({
+			return interaction.editReply({
 				content:
 					'Une erreur est survenue lors de la récupération du message de bannissement en base de données 😬',
 				ephemeral: true,
@@ -101,25 +104,23 @@ export default {
 				if (DMMessage) DMMessage.delete()
 
 				if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
-					return interaction.reply({
+					return interaction.editReply({
 						content: "Tu n'as pas les permissions pour bannir ce membre 😬",
 						ephemeral: true,
 					})
 
 				console.error(error)
-				return interaction.reply({
+				return interaction.editReply({
 					content: 'Une erreur est survenue lors du bannissement du membre 😬',
 					ephemeral: true,
 				})
 			})
 
 		// Si pas d'erreur, message de confirmation du bannissement
-		if (banAction instanceof GuildMember) {
-			await interaction.deferReply()
+		if (banAction instanceof GuildMember)
 			return interaction.editReply({
 				content: `🔨 \`${member.user.tag}\` a été banni définitivement\n\nRaison : ${reason}${errorDM}`,
 			})
-		}
 
 		// Si au moins une erreur, throw
 		if (banAction instanceof Error || DMMessage instanceof Error)

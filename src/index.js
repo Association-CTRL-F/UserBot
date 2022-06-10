@@ -6,7 +6,7 @@ import slashCommandsLoader from './slash-commands/loader.js'
 import { closeGracefully } from './util/util.js'
 
 const run = async () => {
-	console.log(`Starting the app...\n`)
+	console.log(`Starting the app...`)
 
 	// Chargement des variables d'environnement si l'environnement
 	// n'est pas "production"
@@ -57,7 +57,7 @@ const run = async () => {
 	else await client.user.setPresence({ activities: [], status: 'online' })
 
 	console.log(
-		`Startup finished !\n\n> Ready :\n  - Version ${client.config.bot.version}\n  - Connected as ${client.user.username}`,
+		`Startup finished !\n> Ready :\n  - Version ${client.config.bot.version}\n  - Connected as ${client.user.username}`,
 	)
 
 	process.on('unhandledRejection', error => {

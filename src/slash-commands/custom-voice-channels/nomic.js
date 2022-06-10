@@ -8,29 +8,29 @@ export default {
 			'Crée un salon textuel nomic si tu es connecté dans un salon vocal personnalisé',
 		),
 	interaction: async (interaction, client) => {
+		// On diffère la réponse pour avoir plus de 3 secondes
+		await interaction.deferReply({ ephemeral: true })
+
 		const voiceChannel = interaction.member.voice.channel
 
 		// Si l'utilisateur n'est pas dans un salon vocal
 		if (!voiceChannel)
-			return interaction.reply({
+			return interaction.editReply({
 				content: 'Tu dois être dans un salon vocal pour utiliser cette commande 😕',
-				ephemeral: true,
 			})
 
 		// Si l'utilisateur n'est pas dans un salon vocal personnalisé
 		if (!client.voiceManager.has(voiceChannel.id))
-			return interaction.reply({
+			return interaction.editReply({
 				content:
 					'Tu dois être dans un salon vocal personnalisé pour utiliser cette commande 😕',
-				ephemeral: true,
 			})
 
 		// Check si il y a déjà un salon no-mic
 		const existingNoMicChannel = client.voiceManager.get(voiceChannel.id)
 		if (existingNoMicChannel)
-			return interaction.reply({
+			return interaction.editReply({
 				content: `Il y a déjà un salon no-mic : ${existingNoMicChannel} 😕`,
-				ephemeral: true,
 			})
 
 		// Crée le salon no mic
@@ -94,7 +94,6 @@ export default {
 		// Ajout du salon dans la map
 		client.voiceManager.set(voiceChannel.id, noMicChannel)
 
-		await interaction.deferReply({ ephemeral: true })
 		return interaction.editReply({
 			content: `Ton salon a bien été créé : ${noMicChannel} 👌`,
 		})

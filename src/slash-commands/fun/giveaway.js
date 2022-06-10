@@ -407,6 +407,9 @@ export default {
 						ephemeral: true,
 					})
 
+				// On diffère la réponse pour avoir plus de 3 secondes
+				await interaction.deferReply()
+
 				// Création de l'embed
 				const embed = {
 					color: '#BB2528',
@@ -436,9 +439,8 @@ export default {
 				const channelStart = await interaction.guild.channels
 					.fetch(fetchGiveaway.channel)
 					.catch(() =>
-						interaction.reply({
+						interaction.editReply({
 							content: "Le salon n'existe pas 😕",
-							ephemeral: true,
 						}),
 					)
 
@@ -569,14 +571,12 @@ export default {
 					await bdd.execute(sql, data)
 				} catch (error) {
 					await sentMessage.delete()
-					return interaction.reply({
+					return interaction.editReply({
 						content:
 							'Une erreur est survenue lors du lancement du giveaway en base de données 😬',
-						ephemeral: true,
 					})
 				}
 
-				await interaction.deferReply()
 				return interaction.editReply({
 					content: `Giveaway lancé 👌\nPrix : ${
 						fetchGiveaway.prize
@@ -608,6 +608,9 @@ export default {
 						content: 'Le giveaway est déjà terminé 😕',
 						ephemeral: true,
 					})
+
+				// On diffère la réponse pour avoir plus de 3 secondes
+				await interaction.deferReply()
 
 				const sentMessageFetch = await interaction.guild.channels.cache
 					.get(fetchGiveaway.channel)
@@ -704,7 +707,6 @@ export default {
 						content: `🎉 Giveaway terminé, aucun participant enregistré !`,
 					})
 
-					await interaction.deferReply()
 					return interaction.editReply({
 						content: `Tirage terminé 👌`,
 					})
@@ -732,7 +734,6 @@ export default {
 						content: `🎉 Félicitations à notre gagnant : ${winnersTirageStringEnd} !`,
 					})
 
-				await interaction.deferReply()
 				return interaction.editReply({
 					content: `Tirage terminé 👌`,
 				})
@@ -759,6 +760,9 @@ export default {
 						ephemeral: true,
 					})
 
+				// On diffère la réponse pour avoir plus de 3 secondes
+				await interaction.deferReply()
+
 				const sentMessageReroll = await interaction.guild.channels.cache
 					.get(fetchGiveaway.channel)
 					.messages.fetch(fetchGiveaway.messageId)
@@ -772,9 +776,8 @@ export default {
 						// eslint-disable-next-line no-empty
 					} catch (error) {}
 
-					return interaction.reply({
+					return interaction.editReply({
 						content: "Le message du giveaway n'existe pas 😕",
-						ephemeral: true,
 					})
 				}
 
@@ -850,7 +853,6 @@ export default {
 						content: `🎉 Giveaway terminé, aucun participant enregistré !`,
 					})
 
-					await interaction.deferReply()
 					return interaction.editReply({
 						content: `Tirage relancé 👌`,
 					})
@@ -876,7 +878,6 @@ export default {
 						content: `🎉 Félicitations à notre gagnant : ${winnersTirageString} !`,
 					})
 
-				await interaction.deferReply()
 				return interaction.editReply({
 					content: `Tirage relancé 👌`,
 				})

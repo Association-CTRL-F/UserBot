@@ -9,14 +9,16 @@ export default {
 			option.setName('url').setDescription('URL longue').setRequired(true),
 		),
 	interaction: async (interaction, client) => {
+		// On diffère la réponse pour avoir plus de 3 secondes
+		await interaction.deferReply({ ephemeral: true })
+
 		const long_url = interaction.options.getString('url')
 
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.urlsAPI
 		if (!bdd)
-			return interaction.reply({
+			return interaction.editReply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
-				ephemeral: true,
 			})
 
 		// Requête de récupération de la clé API de l'utilisateur
@@ -27,9 +29,8 @@ export default {
 			const [result] = await bdd.execute(sql, data)
 			api_key = result[0].api_key
 		} catch {
-			return interaction.reply({
+			return interaction.editReply({
 				content: "Tu n'es pas autorisé à créer un lien affilié 😬",
-				ephemeral: true,
 			})
 		}
 
@@ -50,22 +51,18 @@ export default {
 			const { status_message, short_url = undefined } = await res.json()
 
 			// S'il y a une erreur en retour ou pas d'url
-			if (!res.ok || !short_url) {
-				await interaction.deferReply({ ephemeral: true })
+			if (!res.ok || !short_url)
 				return interaction.editReply({
 					content: status_message,
 				})
-			}
 
 			// Sinon on affiche l'url
-			await interaction.deferReply({ ephemeral: true })
 			return interaction.editReply({
 				content: `<${short_url}>`,
 			})
 		} catch (error) {
-			return interaction.reply({
+			return interaction.editReply({
 				content: 'Une erreur est survenue lors de la création du lien 😕',
-				ephemeral: true,
 			})
 		}
 	},
