@@ -1,6 +1,6 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-import { MessageActionRow, MessageSelectMenu } from 'discord.js'
+import { MessageActionRow, MessageSelectMenu, MessageEmbed } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { Pagination } from 'pagination.djs'
 
@@ -142,10 +142,10 @@ export default {
 								displayRoles = displayRoles.concat('\n', `• <@&${ignoredRole}>`)
 							})
 
-							const embed = {
-								color: 'C27C0E',
-								title: `Règle d'automod "${ruleBdd.customId}"`,
-								fields: [
+							const embed = new MessageEmbed()
+								.setColor('C27C0E')
+								.setTitle(`Règle d'automod "${ruleBdd.customId}"`)
+								.addFields([
 									{
 										name: 'Type',
 										value: ruleBdd.type,
@@ -162,8 +162,7 @@ export default {
 										name: 'Raison',
 										value: ruleBdd.reason,
 									},
-								],
-							}
+								])
 
 							return interaction.reply({ embeds: [embed] })
 						}

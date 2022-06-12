@@ -2,7 +2,7 @@
 /* eslint-disable no-case-declarations */
 import { convertDateForDiscord, diffDate } from '../../util/util.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
-import discordjs from 'discord.js'
+import discordjs, { MessageEmbed } from 'discord.js'
 
 // import nodePackage from '../../../package.json'
 import { readFileSync } from 'fs'
@@ -19,13 +19,13 @@ export default {
 	interaction: (interaction, client) => {
 		switch (interaction.options.getSubcommand()) {
 			case 'bot':
-				const embedBot = {
-					color: '#3366FF',
-					author: {
+				const embedBot = new MessageEmbed()
+					.setColor('#3366FF')
+					.setAuthor({
 						name: `${client.user.username} (ID ${client.user.id})`,
-						icon_url: client.user.displayAvatarURL({ dynamic: true }),
-					},
-					fields: [
+						iconURL: client.user.displayAvatarURL({ dynamic: true }),
+					})
+					.addFields([
 						{
 							name: 'Latence API',
 							value: `${client.ws.ping} ms`,
@@ -46,8 +46,7 @@ export default {
 							name: 'Version Discord.js',
 							value: discordjs.version,
 						},
-					],
-				}
+					])
 
 				return interaction.reply({ embeds: [embedBot] })
 
@@ -69,14 +68,14 @@ export default {
 					VERY_HIGH: 'Très élevé : numéro de téléphone vérifié.',
 				}
 
-				const embedServer = {
-					color: '#3366FF',
-					author: {
+				const embedServer = new MessageEmbed()
+					.setColor('#3366FF')
+					.setAuthor({
 						name: `${interaction.guild.name} (ID ${interaction.guild.id})`,
-						icon_url: interaction.guild.iconURL({ dynamic: true }),
+						iconURL: interaction.guild.iconURL({ dynamic: true }),
 						url: interaction.guild.vanityURL,
-					},
-					fields: [
+					})
+					.addFields([
 						{
 							name: '**Date de création**',
 							value: convertDateForDiscord(interaction.guild.createdAt),
@@ -127,8 +126,7 @@ export default {
 							value: `${premiumTier[interaction.guild.premiumTier]}`,
 							inline: true,
 						},
-					],
-				}
+					])
 
 				return interaction.reply({ embeds: [embedServer] })
 		}

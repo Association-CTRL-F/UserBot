@@ -1,6 +1,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 import { SlashCommandBuilder } from '@discordjs/builders'
+import { MessageEmbed } from 'discord.js'
 import { convertDateForDiscord } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
 
@@ -175,26 +176,25 @@ export default {
 					}
 
 					// Envoi du message d'avertissement en message privé
+					const embedWarn = new MessageEmbed()
+						.setColor('#C27C0E')
+						.setTitle('Avertissement')
+						.setDescription(warnDM)
+						.setAuthor({
+							name: interaction.guild.name,
+							iconURL: interaction.guild.iconURL({ dynamic: true }),
+							url: interaction.guild.vanityURL,
+						})
+						.addFields([
+							{
+								name: "Raison de l'avertissement",
+								value: reason,
+							},
+						])
+
 					const DMMessage = await member
 						.send({
-							embeds: [
-								{
-									color: '#C27C0E',
-									title: 'Avertissement',
-									description: warnDM,
-									author: {
-										name: interaction.guild.name,
-										icon_url: interaction.guild.iconURL({ dynamic: true }),
-										url: interaction.guild.vanityURL,
-									},
-									fields: [
-										{
-											name: "Raison de l'avertissement",
-											value: reason,
-										},
-									],
-								},
-							],
+							embeds: [embedWarn],
 						})
 						.catch(error => {
 							console.error(error)

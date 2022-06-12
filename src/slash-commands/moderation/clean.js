@@ -3,7 +3,7 @@ import {
 	displayNameAndID,
 	convertDateForDiscord,
 } from '../../util/util.js'
-import { Util } from 'discord.js'
+import { Util, MessageEmbed } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
 
 const isEmbedExceedingLimits = embeds =>
@@ -101,23 +101,33 @@ export default {
 			const lastDescription = splitedDescriptions.pop()
 
 			const embeds = [
-				{
-					color: '0000ff',
-					author: {
+				new MessageEmbed()
+					.setColor('0000FF')
+					.setTitle('Clean')
+					.setDescription(firstDescription)
+					.setAuthor({
 						name: `${displayNameAndID(interaction.member, interaction.user)}`,
-						icon_url: interaction.user.displayAvatarURL({ dynamic: true }),
-					},
-					title: 'Clean',
-					description: firstDescription,
-				},
+						iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+					})
+					.addFields([
+						{
+							name: 'Clean',
+							value: firstDescription,
+						},
+					]),
 				...splitedDescriptions.map(description => ({
-					color: '0000ff',
+					color: '0000FF',
 					description: description,
 				})),
-				{
-					color: '0000ff',
-					description: lastDescription,
-					fields: [
+				new MessageEmbed()
+					.setColor('0000FF')
+					.setTitle('Clean')
+					.setDescription(lastDescription)
+					.setAuthor({
+						name: `${displayNameAndID(interaction.member, interaction.user)}`,
+						iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+					})
+					.addFields([
 						{
 							name: 'Salon',
 							value: interaction.channel.toString(),
@@ -133,8 +143,7 @@ export default {
 							value: convertDateForDiscord(Date.now()),
 							inline: true,
 						},
-					],
-				},
+					]),
 			]
 
 			if (!isEmbedExceedingLimits(embeds)) return logsChannel.send({ embeds: embeds })
@@ -146,35 +155,34 @@ export default {
 		}
 
 		// Si les messages tiennent dans un seul embed
-		return logsChannel.send({
-			embeds: [
+		const embed = new MessageEmbed()
+			.setColor('0000FF')
+			.setTitle('Clean')
+			.setDescription(text)
+			.setAuthor({
+				name: `${displayNameAndID(interaction.member, interaction.user)}`,
+				iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+			})
+			.addFields([
 				{
-					color: '0000ff',
-					author: {
-						name: `${displayNameAndID(interaction.member, interaction.user)}`,
-						icon_url: interaction.user.displayAvatarURL({ dynamic: true }),
-					},
-					title: 'Clean',
-					description: text,
-					fields: [
-						{
-							name: 'Salon',
-							value: interaction.channel.toString(),
-							inline: true,
-						},
-						{
-							name: 'Exécuté par',
-							value: interaction.member.toString(),
-							inline: true,
-						},
-						{
-							name: 'Exécuté le',
-							value: convertDateForDiscord(Date.now()),
-							inline: true,
-						},
-					],
+					name: 'Salon',
+					value: interaction.channel.toString(),
+					inline: true,
 				},
-			],
+				{
+					name: 'Exécuté par',
+					value: interaction.member.toString(),
+					inline: true,
+				},
+				{
+					name: 'Exécuté le',
+					value: convertDateForDiscord(Date.now()),
+					inline: true,
+				},
+			])
+
+		return logsChannel.send({
+			embeds: [embed],
 		})
 	},
 }

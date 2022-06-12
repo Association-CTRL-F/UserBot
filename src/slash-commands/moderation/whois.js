@@ -1,5 +1,6 @@
 import { convertDateForDiscord, diffDate } from '../../util/util.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
+import { MessageEmbed } from 'discord.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -17,13 +18,13 @@ export default {
 			})
 
 		// Création de l'embed
-		const embed = {
-			color: member.displayColor,
-			author: {
+		const embed = new MessageEmbed()
+			.setColor(member.displayColor)
+			.setAuthor({
 				name: `${member.displayName} (ID ${member.id})`,
-				icon_url: member.user.displayAvatarURL({ dynamic: true }),
-			},
-			fields: [
+				iconURL: member.user.displayAvatarURL({ dynamic: true }),
+			})
+			.addFields([
 				{
 					name: "Compte de l'utilisateur",
 					value: member.user.tag,
@@ -54,8 +55,7 @@ export default {
 					value: diffDate(member.joinedAt),
 					inline: true,
 				},
-			],
-		}
+			])
 
 		// Ajout d'un field si l'utilisateur boost le serveur
 		if (member.premiumSince)

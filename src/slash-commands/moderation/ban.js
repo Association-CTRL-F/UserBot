@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { Constants, GuildMember } from 'discord.js'
+import { Constants, GuildMember, MessageEmbed } from 'discord.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -67,26 +67,26 @@ export default {
 
 		// Envoi du message de bannissement en message privé
 		let errorDM = ''
+
+		const embed = new MessageEmbed()
+			.setColor('#C27C0E')
+			.setTitle('Bannissement')
+			.setDescription(banDM)
+			.setAuthor({
+				name: interaction.guild.name,
+				iconURL: interaction.guild.iconURL({ dynamic: true }),
+				url: interaction.guild.vanityURL,
+			})
+			.addFields([
+				{
+					name: 'Raison du bannissement',
+					value: reason,
+				},
+			])
+
 		const DMMessage = await member
 			.send({
-				embeds: [
-					{
-						color: '#C27C0E',
-						title: 'Bannissement',
-						description: banDM,
-						author: {
-							name: interaction.guild.name,
-							icon_url: interaction.guild.iconURL({ dynamic: true }),
-							url: interaction.guild.vanityURL,
-						},
-						fields: [
-							{
-								name: 'Raison du bannissement',
-								value: reason,
-							},
-						],
-					},
-				],
+				embeds: [embed],
 			})
 			.catch(error => {
 				console.error(error)

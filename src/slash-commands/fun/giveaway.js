@@ -3,6 +3,7 @@
 /* eslint-disable default-case */
 /* eslint-disable no-mixed-operators */
 import { SlashCommandBuilder } from '@discordjs/builders'
+import { MessageEmbed } from 'discord.js'
 import { convertDateForDiscord, convertMsToString, pluralize } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
 import ms from 'ms'
@@ -411,11 +412,11 @@ export default {
 				await interaction.deferReply()
 
 				// Création de l'embed
-				const embed = {
-					color: '#BB2528',
-					title: '🎁 GIVEAWAY 🎁',
-					description: 'Réagissez avec 🎉 pour participer !',
-					fields: [
+				const embed = new MessageEmbed()
+					.setColor('#BB2528')
+					.setTitle('🎁 GIVEAWAY 🎁')
+					.setDescription('Réagissez avec 🎉 pour participer !')
+					.addFields([
 						{
 							name: 'Organisateur',
 							value: interaction.user.toString(),
@@ -432,8 +433,7 @@ export default {
 							name: 'Nombre de gagnants',
 							value: pluralize('gagnant', fetchGiveaway.winnersCount),
 						},
-					],
-				}
+					])
 
 				// Envoi du message dans le salon du giveaway
 				const channelStart = await interaction.guild.channels
@@ -508,10 +508,10 @@ export default {
 					}
 
 					// Modification de l'embed
-					const embedWin = {
-						color: '#BB2528',
-						title: '🎁 GIVEAWAY 🎁',
-						fields: [
+					const embedWin = new MessageEmbed()
+						.setColor('#BB2528')
+						.setTitle('🎁 GIVEAWAY 🎁')
+						.addFields([
 							{
 								name: 'Organisateur',
 								value: interaction.user.toString(),
@@ -520,8 +520,7 @@ export default {
 								name: 'Prix',
 								value: fetchGiveaway.prize,
 							},
-						],
-					}
+						])
 
 					try {
 						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
@@ -671,10 +670,10 @@ export default {
 				}
 
 				// Modification de l'embed
-				const embedWinEnd = {
-					color: '#BB2528',
-					title: '🎁 GIVEAWAY 🎁',
-					fields: [
+				const embedWinEnd = new MessageEmbed()
+					.setColor('#BB2528')
+					.setTitle('🎁 GIVEAWAY 🎁')
+					.addFields([
 						{
 							name: 'Organisateur',
 							value: interaction.user.toString(),
@@ -683,8 +682,7 @@ export default {
 							name: 'Prix',
 							value: fetchGiveaway.prize,
 						},
-					],
-				}
+					])
 
 				try {
 					const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
@@ -819,10 +817,10 @@ export default {
 				}
 
 				// Modification de l'embed
-				const embedWin = {
-					color: '#BB2528',
-					title: '🎁 GIVEAWAY 🎁',
-					fields: [
+				const embedWinReroll = new MessageEmbed()
+					.setColor('#BB2528')
+					.setTitle('🎁 GIVEAWAY 🎁')
+					.addFields([
 						{
 							name: 'Organisateur',
 							value: interaction.user.toString(),
@@ -831,8 +829,7 @@ export default {
 							name: 'Prix',
 							value: fetchGiveaway.prize,
 						},
-					],
-				}
+					])
 
 				try {
 					const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
@@ -842,12 +839,12 @@ export default {
 				} catch (error) {}
 
 				if (winnersTirageString === '' || !usersReactions) {
-					embedWin.fields.push({
+					embedWinReroll.fields.push({
 						name: '0 gagnant',
 						value: 'Pas de participants',
 					})
 
-					await sentMessageReroll.edit({ embeds: [embedWin] })
+					await sentMessageReroll.edit({ embeds: [embedWinReroll] })
 
 					await sentMessageReroll.reply({
 						content: `🎉 Giveaway terminé, aucun participant enregistré !`,
@@ -858,16 +855,16 @@ export default {
 					})
 				}
 
-				embedWin.fields.push({
+				embedWinReroll.fields.push({
 					name: pluralize('gagnant', i),
 					value: winnersTirageString,
 				})
 
 				if (i < fetchGiveaway.winnersCount)
-					embedWin.description =
+					embedWinReroll.description =
 						'Le nombre de participants était inférieur au nombre de gagnants défini.'
 
-				await sentMessageReroll.edit({ embeds: [embedWin] })
+				await sentMessageReroll.edit({ embeds: [embedWinReroll] })
 
 				if (i > 1)
 					await sentMessageReroll.reply({

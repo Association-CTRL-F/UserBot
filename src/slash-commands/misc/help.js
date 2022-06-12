@@ -1,4 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
+import { MessageEmbed } from 'discord.js'
 const capitalize = string => `${string.charAt(0).toUpperCase()}${string.slice(1)}`
 
 export default {
@@ -27,16 +28,16 @@ export default {
 				})
 			})
 
+			const embed = new MessageEmbed()
+				.setColor('FF8000')
+				.setTitle('Commandes principales disponibles')
+				.setDescription(
+					'Certaines commandes sont réservées au staff du serveur, elles ne sont donc pas visibles pour les membres.',
+				)
+				.addFields(fields)
+
 			return interaction.reply({
-				embeds: [
-					{
-						title: 'Commandes principales disponibles',
-						description:
-							'Certaines commandes sont réservées au staff du serveur, elles ne sont donc pas visibles pour les membres.',
-						color: 'ff8000',
-						fields,
-					},
-				],
+				embeds: [embed],
 			})
 		}
 
@@ -49,11 +50,10 @@ export default {
 			})
 
 		// Création de l'embed avec les options
-		const embed = {
-			title: command.data.name,
-			color: 'ff8000',
-			description: command.data.description,
-		}
+		const embed = new MessageEmbed()
+			.setColor('FF8000')
+			.setTitle(command.data.name)
+			.setDescription(command.data.description)
 
 		return interaction.reply({ embeds: [embed] })
 	},

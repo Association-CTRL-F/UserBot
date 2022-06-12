@@ -1,5 +1,5 @@
 import { isImage, getFileInfos, displayNameAndID, convertDateForDiscord } from '../../util/util.js'
-import { MessageAttachment, Util, GuildAuditLogs } from 'discord.js'
+import { MessageAttachment, Util, GuildAuditLogs, MessageEmbed } from 'discord.js'
 import bent from 'bent'
 
 const getLinkBuffer = url => {
@@ -50,12 +50,13 @@ export default async (message, client) => {
 			else thread.delete()
 	}
 
-	const logEmbed = {
-		author: {
+	const logEmbed = new MessageEmbed()
+		.setColor('57C92A')
+		.setAuthor({
 			name: `${displayNameAndID(message.member, message.author)}`,
-			icon_url: message.author.displayAvatarURL({ dynamic: true }),
-		},
-		fields: [
+			iconURL: message.author.displayAvatarURL({ dynamic: true }),
+		})
+		.addFields([
 			{
 				name: 'Auteur',
 				value: message.author.toString(),
@@ -71,9 +72,8 @@ export default async (message, client) => {
 				value: convertDateForDiscord(message.createdAt),
 				inline: true,
 			},
-		],
-		timestamp: new Date(),
-	}
+		])
+		.setTimestamp(new Date())
 
 	const { executor, target, extra } = fetchedLog
 
@@ -87,7 +87,7 @@ export default async (message, client) => {
 	) {
 		logEmbed.color = 'fc3c3c'
 		logEmbed.footer = {
-			icon_url: executor.displayAvatarURL({ dynamic: true }),
+			iconURL: executor.displayAvatarURL({ dynamic: true }),
 			text: `Message supprimé par ${executor.tag}`,
 		}
 	} else {

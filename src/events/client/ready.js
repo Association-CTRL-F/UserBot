@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import { readFile } from 'fs/promises'
-import { Constants } from 'discord.js'
+import { Constants, MessageEmbed } from 'discord.js'
 import { pluralize } from '../../util/util.js'
 import ms from 'ms'
 
@@ -96,23 +96,20 @@ export default async client => {
 				}
 
 				// Si pas d'erreur, envoi du message privé
+				const embed = new MessageEmbed()
+					.setColor('#C27C0E')
+					.setTitle('Mute terminé')
+					.setDescription(unmuteDM)
+					.setAuthor({
+						name: guild.name,
+						iconURL: guild.iconURL({ dynamic: true }),
+						url: guild.vanityURL,
+					})
+
 				if (deletedMute.affectedRows === 1)
 					return member
 						.send({
-							embeds: [
-								{
-									color: '#C27C0E',
-									title: 'Mute terminé',
-									description: unmuteDM,
-									author: {
-										name: guild.name,
-										icon_url: guild.iconURL({
-											dynamic: true,
-										}),
-										url: guild.vanityURL,
-									},
-								},
-							],
+							embeds: [embed],
 						})
 						.catch(error => {
 							console.error(error)
@@ -141,23 +138,20 @@ export default async client => {
 					}
 
 					// Si pas d'erreur, envoi du message privé
+					const embed = new MessageEmbed()
+						.setColor('#C27C0E')
+						.setTitle('Mute terminé')
+						.setDescription(unmuteDM)
+						.setAuthor({
+							name: guild.name,
+							iconURL: guild.iconURL({ dynamic: true }),
+							url: guild.vanityURL,
+						})
+
 					if (deletedMute.affectedRows === 1)
 						return member
 							.send({
-								embeds: [
-									{
-										color: '#C27C0E',
-										title: 'Mute terminé',
-										description: unmuteDM,
-										author: {
-											name: guild.name,
-											icon_url: guild.iconURL({
-												dynamic: true,
-											}),
-											url: guild.vanityURL,
-										},
-									},
-								],
+								embeds: [embed],
 							})
 							.catch(error => {
 								console.error(error)
@@ -209,11 +203,10 @@ export default async client => {
 				// Envoi du rappel en message privé
 				if (deletedReminder.affectedRows === 1) {
 					if (reminder.private) {
-						const embed = {
-							color: '#C27C0E',
-							title: 'Rappel',
-							description: reminder.reminder,
-						}
+						const embed = new MessageEmbed()
+							.setColor('#C27C0E')
+							.setTitle('Rappel')
+							.setDescription(reminder.reminder)
 
 						return member
 							.send({
@@ -256,11 +249,10 @@ export default async client => {
 				// Envoi du rappel en message privé
 				if (deletedReminder.affectedRows === 1) {
 					if (reminder.private) {
-						const embed = {
-							color: '#C27C0E',
-							title: 'Rappel',
-							description: reminder.reminder,
-						}
+						const embed = new MessageEmbed()
+							.setColor('#C27C0E')
+							.setTitle('Rappel')
+							.setDescription(reminder.reminder)
 
 						return member
 							.send({
@@ -368,10 +360,10 @@ export default async client => {
 				}
 
 				// Modification de l'embed
-				const embedWin = {
-					color: '#BB2528',
-					title: '🎁 GIVEAWAY 🎁',
-					fields: [
+				const embedWin = new MessageEmbed()
+					.setColor('#BB2528')
+					.setTitle('🎁 GIVEAWAY 🎁')
+					.addFields([
 						{
 							name: 'Organisateur',
 							value: organisator.user.toString(),
@@ -380,8 +372,7 @@ export default async client => {
 							name: 'Prix',
 							value: giveaway.prize,
 						},
-					],
-				}
+					])
 
 				try {
 					const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'

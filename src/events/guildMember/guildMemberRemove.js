@@ -1,4 +1,5 @@
 import { convertDateForDiscord, diffDate } from '../../util/util.js'
+import { MessageEmbed } from 'discord.js'
 
 export default (guildMember, client) => {
 	if (
@@ -13,13 +14,13 @@ export default (guildMember, client) => {
 	)
 	if (!leaveJoinChannel) return
 
-	const embed = {
-		color: 'C9572A',
-		author: {
+	const embedLeave = new MessageEmbed()
+		.setColor('C9572A')
+		.setAuthor({
 			name: `${guildMember.displayName} (ID ${guildMember.id})`,
-			icon_url: guildMember.user.displayAvatarURL({ dynamic: true }),
-		},
-		fields: [
+			iconURL: guildMember.user.displayAvatarURL({ dynamic: true }),
+		})
+		.addFields([
 			{
 				name: 'Mention',
 				value: guildMember.toString(),
@@ -35,15 +36,14 @@ export default (guildMember, client) => {
 				value: diffDate(guildMember.user.createdAt),
 				inline: true,
 			},
-		],
-		footer: {
+		])
+		.setFooter({
 			text: 'Un utilisateur a quitté le serveur',
-		},
-		timestamp: new Date(),
-	}
+		})
+		.setTimestamp(new Date())
 
 	if (guildMember.joinedAt)
-		embed.fields.push(
+		embedLeave.fields.push(
 			{
 				name: 'Serveur rejoint le',
 				value: convertDateForDiscord(guildMember.joinedAt),
@@ -56,5 +56,5 @@ export default (guildMember, client) => {
 			},
 		)
 
-	return leaveJoinChannel.send({ embeds: [embed] })
+	return leaveJoinChannel.send({ embeds: [embedLeave] })
 }

@@ -1,6 +1,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 import { SlashCommandBuilder } from '@discordjs/builders'
+import { MessageEmbed } from 'discord.js'
 import { convertDateForDiscord } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
 
@@ -91,16 +92,15 @@ export default {
 							commandBdd.lastModificationAt * 1000,
 						)}\n`
 
-					const embed = {
-						color: 'C27C0E',
-						title: `Commande personnalisée "${commandBdd.name}"`,
-						fields: [
+					const embed = new MessageEmbed()
+						.setColor('C27C0E')
+						.setTitle(`Commande personnalisée "${commandBdd.name}"`)
+						.addFields([
 							{
 								name: 'Contenu',
 								value: `\`\`\`${commandBdd.content}\`\`\``,
 							},
-						],
-					}
+						])
 
 					embed.fields.push({
 						name: 'Historique',

@@ -2,7 +2,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable no-mixed-operators */
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { Constants, GuildMember } from 'discord.js'
+import { Constants, GuildMember, MessageEmbed } from 'discord.js'
 import { convertMinutesToString } from '../../util/util.js'
 
 export default {
@@ -132,30 +132,30 @@ export default {
 
 				// Envoi du message de mute en message privé
 				let errorDM = ''
+
+				const embed = new MessageEmbed()
+					.setColor('#C27C0E')
+					.setTitle('Mute')
+					.setDescription(muteDM)
+					.setAuthor({
+						name: interaction.guild.name,
+						iconURL: interaction.guild.iconURL({ dynamic: true }),
+						url: interaction.guild.vanityURL,
+					})
+					.addFields([
+						{
+							name: 'Raison du mute',
+							value: reason,
+						},
+						{
+							name: 'Durée',
+							value: convertMinutesToString(duration),
+						},
+					])
+
 				const DMMessage = await member
 					.send({
-						embeds: [
-							{
-								color: '#C27C0E',
-								title: 'Mute',
-								description: muteDM,
-								author: {
-									name: interaction.guild.name,
-									icon_url: interaction.guild.iconURL({ dynamic: true }),
-									url: interaction.guild.vanityURL,
-								},
-								fields: [
-									{
-										name: 'Raison du mute',
-										value: reason,
-									},
-									{
-										name: 'Durée',
-										value: convertMinutesToString(duration),
-									},
-								],
-							},
-						],
+						embeds: [embed],
 					})
 					.catch(error => {
 						console.error(error)
@@ -266,23 +266,20 @@ export default {
 					}
 
 					// Si pas d'erreur, envoi du message privé
+					const embedUnmute = new MessageEmbed()
+						.setColor('#C27C0E')
+						.setTitle('Mute terminé')
+						.setDescription(unmuteDM)
+						.setAuthor({
+							name: interaction.guild.name,
+							iconURL: interaction.guild.iconURL({ dynamic: true }),
+							url: interaction.guild.vanityURL,
+						})
+
 					if (deletedMute.affectedRows === 1)
 						member
 							.send({
-								embeds: [
-									{
-										color: '#C27C0E',
-										title: 'Mute terminé',
-										description: unmuteDM,
-										author: {
-											name: interaction.guild.name,
-											icon_url: interaction.guild.iconURL({
-												dynamic: true,
-											}),
-											url: interaction.guild.vanityURL,
-										},
-									},
-								],
+								embeds: [embedUnmute],
 							})
 							.catch(error => {
 								console.error(error)
@@ -351,30 +348,29 @@ export default {
 							})
 
 						// Envoi du message de mute en message privé
+						const embedMuteGroup = new MessageEmbed()
+							.setColor('#C27C0E')
+							.setTitle('Mute')
+							.setDescription(muteDM)
+							.setAuthor({
+								name: interaction.guild.name,
+								iconURL: interaction.guild.iconURL({ dynamic: true }),
+								url: interaction.guild.vanityURL,
+							})
+							.addFields([
+								{
+									name: 'Raison du mute',
+									value: reason,
+								},
+								{
+									name: 'Durée',
+									value: convertMinutesToString(duration),
+								},
+							])
+
 						const DMMessageGroup = await memberGroup
 							.send({
-								embeds: [
-									{
-										color: '#C27C0E',
-										title: 'Mute',
-										description: muteDM,
-										author: {
-											name: interaction.guild.name,
-											icon_url: interaction.guild.iconURL({ dynamic: true }),
-											url: interaction.guild.vanityURL,
-										},
-										fields: [
-											{
-												name: 'Raison du mute',
-												value: reason,
-											},
-											{
-												name: 'Durée',
-												value: convertMinutesToString(duration),
-											},
-										],
-									},
-								],
+								embeds: [embedMuteGroup],
 							})
 							.catch(error => {
 								console.error(error)
@@ -491,23 +487,20 @@ export default {
 							}
 
 							// Si pas d'erreur, envoi du message privé
+							const embedUnmuteGroup = new MessageEmbed()
+								.setColor('#C27C0E')
+								.setTitle('Mute terminé')
+								.setDescription(unmuteDM)
+								.setAuthor({
+									name: interaction.guild.name,
+									iconURL: interaction.guild.iconURL({ dynamic: true }),
+									url: interaction.guild.vanityURL,
+								})
+
 							if (deletedMute.affectedRows === 1)
 								memberGroup
 									.send({
-										embeds: [
-											{
-												color: '#C27C0E',
-												title: 'Mute terminé',
-												description: unmuteDM,
-												author: {
-													name: interaction.guild.name,
-													icon_url: interaction.guild.iconURL({
-														dynamic: true,
-													}),
-													url: interaction.guild.vanityURL,
-												},
-											},
-										],
+										embeds: [embedUnmuteGroup],
 									})
 									.catch(error => {
 										console.error(error)

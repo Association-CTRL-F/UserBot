@@ -17,37 +17,36 @@ export default async (guildMember, client) => {
 	if (!leaveJoinChannel) return
 
 	// Envoi du message de join
-	const sentMessage = await leaveJoinChannel.send({
-		embeds: [
+	const embedJoin = new MessageEmbed()
+		.setColor('57C92A')
+		.setAuthor({
+			name: `${guildMember.displayName} (ID ${guildMember.id})`,
+			iconURL: guildMember.user.displayAvatarURL({ dynamic: true }),
+		})
+		.addFields([
 			{
-				color: '57C92A',
-				author: {
-					name: `${guildMember.displayName} (ID ${guildMember.id})`,
-					icon_url: guildMember.user.displayAvatarURL({ dynamic: true }),
-				},
-				fields: [
-					{
-						name: 'Mention',
-						value: guildMember.toString(),
-						inline: true,
-					},
-					{
-						name: 'Date de création du compte',
-						value: convertDateForDiscord(guildMember.user.createdAt),
-						inline: true,
-					},
-					{
-						name: 'Âge du compte',
-						value: diffDate(guildMember.user.createdAt),
-						inline: true,
-					},
-				],
-				footer: {
-					text: 'Un utilisateur a rejoint le serveur',
-				},
-				timestamp: new Date(),
+				name: 'Mention',
+				value: guildMember.toString(),
+				inline: true,
 			},
-		],
+			{
+				name: 'Date de création du compte',
+				value: convertDateForDiscord(guildMember.user.createdAt),
+				inline: true,
+			},
+			{
+				name: 'Âge du compte',
+				value: diffDate(guildMember.user.createdAt),
+				inline: true,
+			},
+		])
+		.setFooter({
+			text: 'Un utilisateur a rejoint le serveur',
+		})
+		.setTimestamp(new Date())
+
+	const sentMessage = await leaveJoinChannel.send({
+		embeds: [embedJoin],
 	})
 
 	// Si le membre n'est pas bannisable, réaction avec 🚫
@@ -143,26 +142,25 @@ export default async (guildMember, client) => {
 	}
 
 	// Envoi du message de bannissement en message privé
+	const embed = new MessageEmbed()
+		.setColor('#C27C0E')
+		.setTitle('Bannissement')
+		.setDescription(banDM)
+		.setAuthor({
+			name: guild.name,
+			iconURL: guild.iconURL({ dynamic: true }),
+			url: guild.vanityURL,
+		})
+		.addFields([
+			{
+				name: 'Raison du bannissement',
+				value: reason,
+			},
+		])
+
 	const DMMessage = await guildMember
 		.send({
-			embeds: [
-				{
-					color: '#C27C0E',
-					title: 'Bannissement',
-					description: banDM,
-					author: {
-						name: guild.name,
-						icon_url: guild.iconURL({ dynamic: true }),
-						url: guild.vanityURL,
-					},
-					fields: [
-						{
-							name: 'Raison du bannissement',
-							value: reason,
-						},
-					],
-				},
-			],
+			embeds: [embed],
 		})
 		.catch(async error => {
 			if (error.code === Constants.APIErrors.CANNOT_MESSAGE_USER)

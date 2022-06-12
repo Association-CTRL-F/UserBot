@@ -1,4 +1,4 @@
-import { Constants } from 'discord.js'
+import { Constants, MessageEmbed } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
 
 export default {
@@ -49,21 +49,20 @@ export default {
 		}
 
 		// Création de l'embed
-		const embed = {
-			color: '#C27C0E',
-			title: 'Formulaire config',
-			author: {
+		const embed = new MessageEmbed()
+			.setColor('#C27C0E')
+			.setTitle('Formulaire de config')
+			.setAuthor({
 				name: interaction.guild.name,
-				icon_url: interaction.guild.iconURL({ dynamic: true }),
+				iconURL: interaction.guild.iconURL({ dynamic: true }),
 				url: interaction.guild.vanityURL,
-			},
-			fields: [
+			})
+			.addFields([
 				{
 					name: 'Précisions',
 					value: configDescription,
 				},
-			],
-		}
+			])
 
 		// Acquisition du salon
 		const configChannel = interaction.guild.channels.cache.get(

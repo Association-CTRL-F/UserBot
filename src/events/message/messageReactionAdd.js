@@ -1,5 +1,5 @@
 import { convertDateForDiscord } from '../../util/util.js'
-import { Constants } from 'discord.js'
+import { Constants, MessageEmbed } from 'discord.js'
 import ms from 'ms'
 
 export default async (messageReaction, user, client) => {
@@ -111,13 +111,13 @@ export default async (messageReaction, user, client) => {
 			}
 
 			// S'il n'y a pas de report déjà posté
-			const sendLogReport = {
-				author: {
+			const sendLogReport = new MessageEmbed()
+				.setDescription(`**Contenu du message**\n${message.content}`)
+				.setAuthor({
 					name: 'Nouveau signalement',
-					icon_url: message.author.displayAvatarURL({ dynamic: true }),
-				},
-				description: `**Contenu du message**\n${message.content}`,
-				fields: [
+					iconURL: message.author.displayAvatarURL({ dynamic: true }),
+				})
+				.addFields([
 					{
 						name: 'Auteur',
 						value: message.author.toString(),
@@ -135,12 +135,11 @@ export default async (messageReaction, user, client) => {
 						})`,
 						inline: true,
 					},
-				],
-			}
+				])
 
 			switch (messageReaction.count) {
 				case 1:
-					sendLogReport.color = 'ffae00'
+					sendLogReport.color = 'FFAE00'
 					sendLogReport.fields.push({
 						name: '1er signalement',
 						value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
@@ -148,7 +147,7 @@ export default async (messageReaction, user, client) => {
 					})
 					break
 				case 2:
-					sendLogReport.color = 'ff8200'
+					sendLogReport.color = 'FF8200'
 					sendLogReport.fields.push(
 						{
 							name: '1er signalement',
@@ -163,7 +162,7 @@ export default async (messageReaction, user, client) => {
 					)
 					break
 				case 3:
-					sendLogReport.color = 'ff6600'
+					sendLogReport.color = 'FF6600'
 					sendLogReport.fields.push(
 						{
 							name: '1er signalement',
@@ -183,7 +182,7 @@ export default async (messageReaction, user, client) => {
 					)
 					break
 				case 4:
-					sendLogReport.color = 'ff3200'
+					sendLogReport.color = 'FF3200'
 					sendLogReport.fields.push(
 						{
 							name: '1er signalement',

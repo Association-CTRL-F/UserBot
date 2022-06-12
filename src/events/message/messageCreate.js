@@ -1,13 +1,14 @@
 /* eslint-disable no-empty */
 /* eslint-disable default-case */
 /* eslint-disable no-case-declarations */
-import { Collection, Constants, GuildMember } from 'discord.js'
+import { Collection, Constants, GuildMember, MessageEmbed } from 'discord.js'
 import {
 	modifyWrongUsernames,
 	convertDate,
 	isImage,
 	getFileInfos,
 	displayNameAndID,
+	isStaffMember,
 } from '../../util/util.js'
 
 export default async (message, client) => {
@@ -43,15 +44,7 @@ export default async (message, client) => {
 	// Automod //
 
 	// Partie domaines
-
-	let hasRole = 0
-	client.config.guild.managers.staffRolesManagerIDs.forEach(role => {
-		try {
-			if (message.member.roles.cache.has(role)) hasRole += 1
-		} catch (error) {}
-	})
-
-	if (hasRole === 0) {
+	if (!isStaffMember(message.member, client.config.guild.managers.staffRolesManagerIDs)) {
 		let domains = []
 		try {
 			const sqlDomains = 'SELECT * FROM automod_domains'
@@ -100,26 +93,25 @@ export default async (message, client) => {
 				}
 
 				// Envoi du message de bannissement en message privé
+				const embed = new MessageEmbed()
+					.setColor('#C27C0E')
+					.setTitle('Bannissement')
+					.setDescription(banDM)
+					.setAuthor({
+						name: sentMessage.guild.name,
+						iconURL: sentMessage.guild.iconURL({ dynamic: true }),
+						url: sentMessage.guild.vanityURL,
+					})
+					.addFields([
+						{
+							name: 'Raison du bannissement',
+							value: 'Scam Nitro / Steam (Automod)',
+						},
+					])
+
 				const DMMessageBan = await guildMember
 					.send({
-						embeds: [
-							{
-								color: '#C27C0E',
-								title: 'Bannissement',
-								description: banDM,
-								author: {
-									name: sentMessage.guild.name,
-									icon_url: sentMessage.guild.iconURL({ dynamic: true }),
-									url: sentMessage.guild.vanityURL,
-								},
-								fields: [
-									{
-										name: 'Raison du bannissement',
-										value: 'Scam Nitro / Steam (Automod)',
-									},
-								],
-							},
-						],
+						embeds: [embed],
 					})
 					.catch(error => {
 						console.error(error)
@@ -220,26 +212,25 @@ export default async (message, client) => {
 						}
 
 						// Envoi du message de bannissement en message privé
+						const embedBan = new MessageEmbed()
+							.setColor('#C27C0E')
+							.setTitle('Bannissement')
+							.setDescription(banDM)
+							.setAuthor({
+								name: sentMessage.guild.name,
+								iconURL: sentMessage.guild.iconURL({ dynamic: true }),
+								url: sentMessage.guild.vanityURL,
+							})
+							.addFields([
+								{
+									name: 'Raison du bannissement',
+									value: rule.reason,
+								},
+							])
+
 						const DMMessageBan = await guildMember
 							.send({
-								embeds: [
-									{
-										color: '#C27C0E',
-										title: 'Bannissement',
-										description: banDM,
-										author: {
-											name: sentMessage.guild.name,
-											icon_url: sentMessage.guild.iconURL({ dynamic: true }),
-											url: sentMessage.guild.vanityURL,
-										},
-										fields: [
-											{
-												name: 'Raison du bannissement',
-												value: rule.reason,
-											},
-										],
-									},
-								],
+								embeds: [embedBan],
 							})
 							.catch(error => {
 								console.error(error)
@@ -308,26 +299,25 @@ export default async (message, client) => {
 						}
 
 						// Envoi du message d'avertissement en message privé
+						const embedWarn = new MessageEmbed()
+							.setColor('#C27C0E')
+							.setTitle('Avertissement')
+							.setDescription(warnDM)
+							.setAuthor({
+								name: sentMessage.guild.name,
+								iconURL: sentMessage.guild.iconURL({ dynamic: true }),
+								url: sentMessage.guild.vanityURL,
+							})
+							.addFields([
+								{
+									name: "Raison de l'avertissement",
+									value: rule.reason,
+								},
+							])
+
 						const DMMessageWarn = await guildMember
 							.send({
-								embeds: [
-									{
-										color: '#C27C0E',
-										title: 'Avertissement',
-										description: warnDM,
-										author: {
-											name: sentMessage.guild.name,
-											icon_url: sentMessage.guild.iconURL({ dynamic: true }),
-											url: sentMessage.guild.vanityURL,
-										},
-										fields: [
-											{
-												name: "Raison de l'avertissement",
-												value: rule.reason,
-											},
-										],
-									},
-								],
+								embeds: [embedWarn],
 							})
 							.catch(error => {
 								console.error(error)
@@ -482,17 +472,15 @@ export default async (message, client) => {
 			.filter(Boolean)
 
 		const sentMessages = validMessages.map(validMessage => {
-			const embed = {
-				color: '2f3136',
-				author: {
+			const embed = new MessageEmbed()
+				.setColor('2F3136')
+				.setAuthor({
 					name: `${displayNameAndID(validMessage.member, validMessage.author)}`,
-					icon_url: validMessage.author.displayAvatarURL({ dynamic: true }),
-				},
-				fields: [],
-				footer: {
+					iconURL: validMessage.author.displayAvatarURL({ dynamic: true }),
+				})
+				.setFooter({
 					text: `Message posté le ${convertDate(validMessage.createdAt)}`,
-				},
-			}
+				})
 
 			const description = `${validMessage.content}\n[Aller au message](${validMessage.url}) - ${validMessage.channel}`
 			// Si la description dépasse la limite
@@ -519,7 +507,7 @@ export default async (message, client) => {
 				embed.footer.text += `\nModifié le ${convertDate(validMessage.editedAt)}`
 
 			if (message.author !== validMessage.author) {
-				embed.footer.icon_url = message.author.displayAvatarURL({ dynamic: true })
+				embed.footer.iconURL = message.author.displayAvatarURL({ dynamic: true })
 				embed.footer.text += `\nCité par ${displayNameAndID(
 					message.member,
 					message.author,

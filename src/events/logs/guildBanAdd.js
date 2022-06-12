@@ -1,5 +1,5 @@
 import { convertDateForDiscord, diffDate } from '../../util/util.js'
-import { Util, GuildAuditLogs } from 'discord.js'
+import { Util, GuildAuditLogs, MessageEmbed } from 'discord.js'
 
 export default async (ban, client) => {
 	if (ban.user.bot || ban.guild.id !== client.config.guild.guildID || !ban.guild.available) return
@@ -21,13 +21,13 @@ export default async (ban, client) => {
 	const bannedUser = await ban.fetch()
 
 	// Création de l'embed
-	const logEmbed = {
-		color: 'C9572A',
-		author: {
+	const logEmbed = new MessageEmbed()
+		.setColor('C9572A')
+		.setAuthor({
 			name: `${bannedUser.user.username} (ID ${bannedUser.user.id})`,
-			icon_url: bannedUser.user.displayAvatarURL({ dynamic: true }),
-		},
-		fields: [
+			iconURL: bannedUser.user.displayAvatarURL({ dynamic: true }),
+		})
+		.addFields([
 			{
 				name: 'Mention',
 				value: bannedUser.user.toString(),
@@ -43,16 +43,15 @@ export default async (ban, client) => {
 				value: diffDate(bannedUser.user.createdAt),
 				inline: true,
 			},
-		],
-		timestamp: new Date(),
-	}
+		])
+		.setTimestamp(new Date())
 
 	const { executor, target } = fetchedLog
 
 	// Détermination du modérateur ayant effectué le bannissement
 	if (target.id === bannedUser.user.id && fetchedLog.createdTimestamp > Date.now() - 5000)
 		logEmbed.footer = {
-			icon_url: executor.displayAvatarURL({ dynamic: true }),
+			iconURL: executor.displayAvatarURL({ dynamic: true }),
 			text: `Membre banni par ${executor.tag}`,
 		}
 	else

@@ -1,7 +1,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { Constants } from 'discord.js'
+import { Constants, MessageEmbed } from 'discord.js'
 import { convertDate } from '../../util/util.js'
 
 export default {
@@ -50,21 +50,20 @@ export default {
 			// Nouveau vote
 			case 'create':
 				// Envoi du message de vote
+				const embed = new MessageEmbed()
+					.setColor('00FF00')
+					.setTitle('Nouveau vote')
+					.setDescription(`\`\`\`${proposition}\`\`\``)
+					.setAuthor({
+						name: `${interaction.member.displayName} (ID ${interaction.member.id})`,
+						iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+					})
+					.setFooter({
+						text: `Vote posté le ${convertDate(new Date())}`,
+					})
+
 				const sentMessage = await interaction.reply({
-					embeds: [
-						{
-							color: '00FF00',
-							author: {
-								name: `${interaction.member.displayName} (ID ${interaction.member.id})`,
-								icon_url: interaction.user.displayAvatarURL({ dynamic: true }),
-							},
-							title: 'Nouveau vote',
-							description: `\`\`\`${proposition}\`\`\``,
-							footer: {
-								text: `Vote posté le ${convertDate(new Date())}`,
-							},
-						},
-					],
+					embeds: [embed],
 					fetchReply: true,
 				})
 
@@ -127,25 +126,22 @@ export default {
 					})
 
 				// Modification du message
+				const embedEdit = new MessageEmbed()
+					.setColor('00FF00')
+					.setTitle('Nouveau vote (modifié)')
+					.setDescription(`\`\`\`${proposition}\`\`\``)
+					.setAuthor({
+						name: `${interaction.member.displayName} (ID ${interaction.member.id})`,
+						iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+					})
+					.setFooter({
+						text: `Vote posté le ${convertDate(
+							message.createdAt,
+						)}\nModifié le ${convertDate(new Date())}`,
+					})
+
 				await message.edit({
-					embeds: [
-						{
-							color: '00FF00',
-							author: {
-								name: `${interaction.member.displayName} (ID ${interaction.member.id})`,
-								icon_url: interaction.user.displayAvatarURL({
-									dynamic: true,
-								}),
-							},
-							title: 'Nouveau vote (modifié)',
-							description: `\`\`\`${proposition}\`\`\``,
-							footer: {
-								text: `Vote posté le ${convertDate(
-									message.createdAt,
-								)}\nModifié le ${convertDate(new Date())}`,
-							},
-						},
-					],
+					embeds: [embedEdit],
 				})
 
 				return interaction.reply({

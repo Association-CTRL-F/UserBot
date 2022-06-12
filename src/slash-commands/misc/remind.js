@@ -3,6 +3,7 @@
 /* eslint-disable default-case */
 
 import { SlashCommandBuilder } from '@discordjs/builders'
+import { MessageEmbed } from 'discord.js'
 import { convertDateForDiscord } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
 import ms from 'ms'
@@ -156,11 +157,10 @@ export default {
 
 						const member = interaction.guild.members.cache.get(interaction.user.id)
 
-						const embed = {
-							color: '#C27C0E',
-							title: 'Rappel',
-							description: rappel,
-						}
+						const embed = new MessageEmbed()
+							.setColor('#C27C0E')
+							.setTitle('Rappel')
+							.setDescription(rappel)
 
 						if (prive)
 							return member.send({
@@ -264,11 +264,10 @@ export default {
 
 						const member = interaction.guild.members.cache.get(interaction.user.id)
 
-						const embed = {
-							color: '#C27C0E',
-							title: 'Rappel',
-							description: rappelEdit,
-						}
+						const embed = new MessageEmbed()
+							.setColor('#C27C0E')
+							.setTitle('Rappel')
+							.setDescription(rappelEdit)
 
 						if (priveEdit)
 							return member.send({

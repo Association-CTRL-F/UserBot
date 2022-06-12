@@ -1,7 +1,7 @@
 /* eslint-disable default-case */
 /* eslint-disable no-case-declarations */
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { Constants, GuildMember } from 'discord.js'
+import { Constants, GuildMember, MessageEmbed } from 'discord.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -87,20 +87,19 @@ export default {
 					})
 
 				// Envoi du message d'unmute en message privé
+				const embed = new MessageEmbed()
+					.setColor('#C27C0E')
+					.setTitle('Mute terminé')
+					.setDescription(unmuteDM)
+					.setAuthor({
+						name: interaction.guild.name,
+						iconURL: interaction.guild.iconURL({ dynamic: true }),
+						url: interaction.guild.vanityURL,
+					})
+
 				const DMMessage = await member
 					.send({
-						embeds: [
-							{
-								color: '#C27C0E',
-								title: 'Mute terminé',
-								description: unmuteDM,
-								author: {
-									name: interaction.guild.name,
-									icon_url: interaction.guild.iconURL({ dynamic: true }),
-									url: interaction.guild.vanityURL,
-								},
-							},
-						],
+						embeds: [embed],
 					})
 					.catch(error => {
 						console.error(error)
@@ -239,27 +238,25 @@ export default {
 						if (!memberGroup.roles.cache.has(mutedRole)) return
 
 						// On ne peut pas se mute soi-même
-						// if (memberGroup.id === interaction.user.id)
-						// 	return interaction.editReply({
-						// 		content: "Tu ne peux pas t'unmute toi-même 😕",
-						// 		ephemeral: true,
-						// 	})
+						if (memberGroup.id === interaction.user.id)
+							return interaction.editReply({
+								content: "Tu ne peux pas t'unmute toi-même 😕",
+								ephemeral: true,
+							})
 
 						// Envoi du message d'unmute en message privé
+						const embedUnmuteGroup = new MessageEmbed()
+							.setColor('#C27C0E')
+							.setTitle('Mute terminé')
+							.setDescription(unmuteDM)
+							.setAuthor({
+								name: interaction.guild.name,
+								iconURL: interaction.guild.iconURL({ dynamic: true }),
+								url: interaction.guild.vanityURL,
+							})
 						const DMMessageGroup = await memberGroup
 							.send({
-								embeds: [
-									{
-										color: '#C27C0E',
-										title: 'Mute terminé',
-										description: unmuteDM,
-										author: {
-											name: interaction.guild.name,
-											icon_url: interaction.guild.iconURL({ dynamic: true }),
-											url: interaction.guild.vanityURL,
-										},
-									},
-								],
+								embeds: [embedUnmuteGroup],
 							})
 							.catch(error => {
 								console.error(error)

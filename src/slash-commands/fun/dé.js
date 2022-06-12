@@ -1,4 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
+import { MessageEmbed } from 'discord.js'
 
 export default {
 	data: new SlashCommandBuilder().setName('dé').setDescription('Lancer de dé'),
@@ -12,14 +13,13 @@ export default {
 
 		if (randomSurprise === randomTirage) {
 			// Création de l'embed surprise
-			const embed = {
-				color: '#1ABC9C',
-				title: 'Lancer de dé',
-				description: `**SURPRISE**`,
-				thumbnail: {
+			const embed = new MessageEmbed()
+				.setColor('#1ABC9C')
+				.setTitle('Lancer de dé')
+				.setDescription('**SURPRISE**')
+				.setThumbnail({
 					url: `attachment://rgb.png`,
-				},
-			}
+				})
 
 			return interaction.reply({
 				embeds: [embed],
@@ -28,14 +28,13 @@ export default {
 		}
 
 		// Création de l'embed
-		const embed = {
-			color: '#C27C0E',
-			title: 'Lancer de dé',
-			description: `Tu es tombé sur **${face}**`,
-			thumbnail: {
+		const embed = new MessageEmbed()
+			.setColor('#C27C0E')
+			.setTitle('Lancer de dé')
+			.setDescription(`Tu es tombé sur **${face}**`)
+			.setThumbnail({
 				url: `attachment://${face}.png`,
-			},
-		}
+			})
 
 		return interaction.reply({
 			embeds: [embed],
