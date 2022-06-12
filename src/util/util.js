@@ -247,6 +247,21 @@ export const closeGracefully = (signal, client) => {
 export const convertDateForDiscord = date => `<t:${Math.round(new Date(date) / 1000)}>`
 
 /**
+ * Vérifie si l'utilisateur est staff ou non
+ * @param {GuildMember} guildMember
+ * @param staffRoles Rôles Staff
+ * @returns true si le membre à un rôle staff, sinon false
+ */
+export const isStaffMember = (guildMember, staffRoles) => {
+	const isStaff = staffRoles.reduce(
+		// eslint-disable-next-line no-param-reassign
+		(acc, role) => (guildMember.roles.cache.has(role) ? (acc += 1) : acc),
+		0,
+	)
+	return isStaff > 0
+}
+
+/**
  * Crée un pool de connexion à la base de données
  * @param {Client} client Discord.js
  * @param {string} dbName nom de la base de données à utiliser
