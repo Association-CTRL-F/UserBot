@@ -69,8 +69,8 @@ export default {
 		// Vérification si le domaine existe
 		let domainBdd = {}
 		try {
-			const sqlCheckName = 'SELECT * FROM automod_domains WHERE domain = ?'
-			const dataCheckName = [domainString]
+			const sqlCheckName = 'SELECT * FROM automod_domains WHERE domain = ? AND guildId = ?'
+			const dataCheckName = [domainString, interaction.guild.id]
 			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 			domainBdd = resultCheckName[0]
 		} catch (error) {
@@ -87,8 +87,9 @@ export default {
 				// Récupération des règles
 				let rules = []
 				try {
-					const sqlSelect = 'SELECT * FROM automod_rules'
-					const [resultSelect] = await bdd.execute(sqlSelect)
+					const sqlSelect = 'SELECT * FROM automod_rules WHERE guildId = ?'
+					const dataSelect = [interaction.guild.id]
+					const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
 					rules = resultSelect
 				} catch {
 					return interaction.reply({
@@ -116,8 +117,9 @@ export default {
 						// Vérification si la règle existe
 						let ruleBdd = {}
 						try {
-							const sqlCheckName = 'SELECT * FROM automod_rules WHERE id = ?'
-							const dataCheckName = [ruleId]
+							const sqlCheckName =
+								'SELECT * FROM automod_rules WHERE id = ? AND guildId = ?'
+							const dataCheckName = [ruleId, interaction.guild.id]
 							const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 							ruleBdd = resultCheckName[0]
 						} catch (error) {
@@ -266,8 +268,9 @@ export default {
 					case 'view':
 						let domainsView = []
 						try {
-							const sqlCheckName = 'SELECT * FROM automod_domains'
-							const [resultCheckName] = await bdd.execute(sqlCheckName)
+							const sqlCheckName = 'SELECT * FROM automod_domains WHERE guildId = ?'
+							const dataCheckName = [interaction.guild.id]
+							const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 							domainsView = resultCheckName
 						} catch (error) {
 							return interaction.reply({
@@ -323,8 +326,9 @@ export default {
 
 						// Ajout du domaine en base de données
 						try {
-							const sqlInsert = 'INSERT INTO automod_domains (domain) VALUES (?)'
-							const dataInsert = [domainString]
+							const sqlInsert =
+								'INSERT INTO automod_domains (guildId, domain) VALUES (?, ?)'
+							const dataInsert = [interaction.guild.id, domainString]
 
 							await bdd.execute(sqlInsert, dataInsert)
 						} catch (error) {
@@ -351,8 +355,9 @@ export default {
 						// Si oui, alors suppression du domaine
 						// en base de données
 						try {
-							const sqlDelete = 'DELETE FROM automod_domains WHERE domain = ?'
-							const dataDelete = [domainString]
+							const sqlDelete =
+								'DELETE FROM automod_domains WHERE domain = ? AND guildId = ?'
+							const dataDelete = [domainString, interaction.guild.id]
 
 							await bdd.execute(sqlDelete, dataDelete)
 						} catch {

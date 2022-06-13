@@ -52,8 +52,8 @@ export default {
 		// Acquisition du message de bannissement
 		let banDM = ''
 		try {
-			const sqlSelectBan = 'SELECT * FROM forms WHERE name = ?'
-			const dataSelectBan = ['ban']
+			const sqlSelectBan = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
+			const dataSelectBan = ['ban', interaction.guild.id]
 			const [resultSelectBan] = await bdd.execute(sqlSelectBan, dataSelectBan)
 
 			banDM = resultSelectBan[0].content

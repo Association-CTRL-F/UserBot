@@ -135,8 +135,8 @@ export default {
 			// Acquisition de l'id du giveaway
 			// Fetch du giveaway
 			try {
-				const sqlSelect = 'SELECT * FROM giveaways WHERE id = ?'
-				const dataSelect = [id]
+				const sqlSelect = 'SELECT * FROM giveaways WHERE id = ? AND guildId = ?'
+				const dataSelect = [id, interaction.guild.id]
 				const [resultDelete] = await bdd.execute(sqlSelect, dataSelect)
 				fetchGiveaway = resultDelete[0]
 			} catch {
@@ -150,8 +150,10 @@ export default {
 			case 'view':
 				let giveaways = []
 				try {
-					const sqlSelect = 'SELECT * FROM giveaways WHERE started = 0'
-					const [resultGiveaways] = await bdd.execute(sqlSelect)
+					const sqlSelect = 'SELECT * FROM giveaways WHERE started = 0 AND guildId = ?'
+					const dataSelect = [interaction.guild.id]
+
+					const [resultGiveaways] = await bdd.execute(sqlSelect, dataSelect)
 					giveaways = resultGiveaways
 				} catch (error) {
 					return interaction.reply({
@@ -224,8 +226,9 @@ export default {
 				// Insertion du giveaway en base de données
 				try {
 					const sql =
-						'INSERT INTO giveaways (prize, winnersCount, channel, timestampEnd, hostedBy, excludedIds, messageId, started, ended, timeoutId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+						'INSERT INTO giveaways (guildId, prize, winnersCount, channel, timestampEnd, hostedBy, excludedIds, messageId, started, ended, timeoutId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
 					const data = [
+						interaction.guild.id,
 						prize,
 						winners,
 						channel.id,
@@ -309,8 +312,8 @@ export default {
 				// Modification du giveaway en base de données
 				try {
 					const sql =
-						'UPDATE giveaways SET prize = ?, winnersCount = ?, channel = ?, timestampEnd = ? WHERE id = ?'
-					const data = [prize, winners, channel.id, duree, id]
+						'UPDATE giveaways SET prize = ?, winnersCount = ?, channel = ?, timestampEnd = ? WHERE id = ? AND guildId = ?'
+					const data = [prize, winners, channel.id, duree, id, interaction.guild.id]
 					await bdd.execute(sql, data)
 				} catch (error) {
 					return interaction.reply({
@@ -344,8 +347,8 @@ export default {
 				// Suppresion en base de données
 				let deletedGiveaway = {}
 				try {
-					const sqlDelete = 'DELETE FROM giveaways WHERE id = ?'
-					const dataDelete = [id]
+					const sqlDelete = 'DELETE FROM giveaways WHERE id = ? AND guildId = ?'
+					const dataDelete = [id, interaction.guild.id]
 					const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
 					deletedGiveaway = resultDelete
 				} catch {
@@ -456,8 +459,9 @@ export default {
 
 					if (!sentMessageFetch) {
 						try {
-							const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
-							const data = [1, fetchGiveaway.id]
+							const sql =
+								'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
+							const data = [1, fetchGiveaway.id, interaction.guild.id]
 							await bdd.execute(sql, data)
 							// eslint-disable-next-line no-empty
 						} catch (error) {}
@@ -495,8 +499,9 @@ export default {
 							usersReactions.sweep(user => user.id === winnerTirage.id)
 
 							try {
-								const sql = 'UPDATE giveaways SET excludedIds = ? WHERE id = ?'
-								const data = [excludedIds, fetchGiveaway.id]
+								const sql =
+									'UPDATE giveaways SET excludedIds = ? WHERE id = ? AND guildId = ?'
+								const data = [excludedIds, fetchGiveaway.id, interaction.guild.id]
 								await bdd.execute(sql, data)
 								// eslint-disable-next-line no-empty
 							} catch (error) {}
@@ -523,8 +528,8 @@ export default {
 						])
 
 					try {
-						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
-						const data = [1, fetchGiveaway.id]
+						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
+						const data = [1, fetchGiveaway.id, interaction.guild.id]
 						await bdd.execute(sql, data)
 						// eslint-disable-next-line no-empty
 					} catch (error) {}
@@ -565,8 +570,15 @@ export default {
 				// Lancement du giveaway en base de données
 				try {
 					const sql =
-						'UPDATE giveaways SET timestampEnd = ?, messageId = ?, started = ?, timeoutId = ? WHERE id = ?'
-					const data = [timestampEndStart, sentMessage.id, 1, Number(timeout), id]
+						'UPDATE giveaways SET timestampEnd = ?, messageId = ?, started = ?, timeoutId = ? WHERE id = ? AND guildId = ?'
+					const data = [
+						timestampEndStart,
+						sentMessage.id,
+						1,
+						Number(timeout),
+						id,
+						interaction.guild.id,
+					]
 					await bdd.execute(sql, data)
 				} catch (error) {
 					await sentMessage.delete()
@@ -618,8 +630,8 @@ export default {
 
 				if (!sentMessageFetch) {
 					try {
-						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
-						const data = [1, fetchGiveaway.id]
+						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
+						const data = [1, fetchGiveaway.id, interaction.guild.id]
 						await bdd.execute(sql, data)
 						// eslint-disable-next-line no-empty
 					} catch (error) {}
@@ -657,8 +669,9 @@ export default {
 						usersReactionsEnd.sweep(user => user.id === winnerTirage.id)
 
 						try {
-							const sql = 'UPDATE giveaways SET excludedIds = ? WHERE id = ?'
-							const data = [excludedIdsEnd, fetchGiveaway.id]
+							const sql =
+								'UPDATE giveaways SET excludedIds = ? WHERE id = ? AND guildId = ?'
+							const data = [excludedIdsEnd, fetchGiveaway.id, interaction.guild.id]
 							await bdd.execute(sql, data)
 							// eslint-disable-next-line no-empty
 						} catch (error) {}
@@ -685,8 +698,8 @@ export default {
 					])
 
 				try {
-					const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
-					const data = [1, fetchGiveaway.id]
+					const sql = 'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
+					const data = [1, fetchGiveaway.id, interaction.guild.id]
 					await bdd.execute(sql, data)
 					// eslint-disable-next-line no-empty
 				} catch (error) {}
@@ -768,8 +781,8 @@ export default {
 
 				if (!sentMessageReroll) {
 					try {
-						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
-						const data = [1, fetchGiveaway.id]
+						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
+						const data = [1, fetchGiveaway.id, interaction.guild.id]
 						await bdd.execute(sql, data)
 						// eslint-disable-next-line no-empty
 					} catch (error) {}
@@ -804,8 +817,9 @@ export default {
 						usersReactions.sweep(user => user.id === winnerTirage.id)
 
 						try {
-							const sql = 'UPDATE giveaways SET excludedIds = ? WHERE id = ?'
-							const data = [excludedIds, fetchGiveaway.id]
+							const sql =
+								'UPDATE giveaways SET excludedIds = ? WHERE id = ? AND guildId = ?'
+							const data = [excludedIds, fetchGiveaway.id, interaction.guild.id]
 							await bdd.execute(sql, data)
 							// eslint-disable-next-line no-empty
 						} catch (error) {}
@@ -832,8 +846,8 @@ export default {
 					])
 
 				try {
-					const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
-					const data = [1, fetchGiveaway.id]
+					const sql = 'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
+					const data = [1, fetchGiveaway.id, interaction.guild.id]
 					await bdd.execute(sql, data)
 					// eslint-disable-next-line no-empty
 				} catch (error) {}

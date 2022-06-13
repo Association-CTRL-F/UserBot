@@ -16,8 +16,8 @@ export default {
 		// Vérification si le formulaire existe
 		let form = {}
 		try {
-			const sqlCheckName = 'SELECT * FROM forms WHERE name = ?'
-			const dataCheckName = [menu.values[0]]
+			const sqlCheckName = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
+			const dataCheckName = [menu.values[0], menu.guild.id]
 			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 			form = resultCheckName[0]
 		} catch (error) {

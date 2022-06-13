@@ -22,8 +22,8 @@ export default {
 		// Vérification si la commande existe
 		let command = {}
 		try {
-			const sqlCheckName = 'SELECT * FROM commands WHERE name = ?'
-			const dataCheckName = [nom]
+			const sqlCheckName = 'SELECT * FROM commands WHERE name = ? AND guildId = ?'
+			const dataCheckName = [nom, modal.guild.id]
 			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 			command = resultCheckName[0]
 		} catch (error) {
@@ -43,9 +43,10 @@ export default {
 		// Sinon, création de la nouvelle commande en base de données
 		try {
 			const sqlInsert =
-				'INSERT INTO commands (name, content, author, createdAt, lastModificationBy, lastModificationAt, numberOfUses) VALUES (?, ?, ?, ?, ?, ?, ?)'
+				'INSERT INTO commands (guildId, name, content, author, createdAt, lastModificationBy, lastModificationAt, numberOfUses) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
 
 			const dataInsert = [
+				modal.guild.id,
 				nom,
 				contenu,
 				modal.user.id,

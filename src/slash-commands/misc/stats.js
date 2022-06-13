@@ -24,8 +24,10 @@ export default {
 			case 'commands':
 				let commands = []
 				try {
-					const sqlSelect = 'SELECT * FROM commands ORDER BY numberOfUses DESC'
-					const [resultCommands] = await bdd.execute(sqlSelect)
+					const sqlSelect =
+						'SELECT * FROM commands WHERE guildId = ? ORDER BY numberOfUses DESC'
+					const dataSelect = [interaction.guild.id]
+					const [resultCommands] = await bdd.execute(sqlSelect, dataSelect)
 					commands = resultCommands
 				} catch (error) {
 					return interaction.reply({

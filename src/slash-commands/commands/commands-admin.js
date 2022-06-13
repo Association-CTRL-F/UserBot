@@ -47,8 +47,8 @@ export default {
 		// Vérification si la commande existe
 		let commandBdd = {}
 		try {
-			const sqlCheckName = 'SELECT * FROM commands WHERE name = ?'
-			const dataCheckName = [nom]
+			const sqlCheckName = 'SELECT * FROM commands WHERE name = ? AND guildId = ?'
+			const dataCheckName = [nom, interaction.guild.id]
 			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 			commandBdd = resultCheckName[0]
 		} catch (error) {
@@ -138,8 +138,8 @@ export default {
 
 				// Si oui, alors suppression de la commande en base de données
 				try {
-					const sqlDelete = 'DELETE FROM commands WHERE name = ?'
-					const dataDelete = [nom]
+					const sqlDelete = 'DELETE FROM commands WHERE name = ? AND guildId = ?'
+					const dataDelete = [nom, interaction.guild.id]
 
 					await bdd.execute(sqlDelete, dataDelete)
 				} catch {

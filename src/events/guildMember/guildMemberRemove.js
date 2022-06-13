@@ -1,17 +1,28 @@
 import { convertDateForDiscord, diffDate } from '../../util/util.js'
 import { MessageEmbed } from 'discord.js'
 
-export default (guildMember, client) => {
-	if (
-		guildMember.user.bot ||
-		guildMember.guild.id !== client.config.guild.guildID ||
-		!guildMember.guild.available
-	)
-		return
+export default async (guildMember, client) => {
+	const guild = guildMember.guild
+	if (guildMember.user.bot || !guild.available) return
 
-	const leaveJoinChannel = guildMember.guild.channels.cache.get(
-		client.config.guild.channels.leaveJoinChannelID,
-	)
+	// Acquisition de la base de données
+	const bdd = client.config.db.pools.userbot
+	if (!bdd)
+		return console.log('Une erreur est survenue lors de la connexion à la base de données')
+
+	// Acquisition des paramètres de la guild
+	let configGuild = {}
+	try {
+		const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
+		const dataSelect = [guild.id]
+		const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
+		configGuild = resultSelect[0]
+	} catch (error) {
+		return console.log(error)
+	}
+
+	// Acquisition du salon de logs
+	const leaveJoinChannel = guild.channels.cache.get(configGuild.LEAVE_JOIN_CHANNEL_ID)
 	if (!leaveJoinChannel) return
 
 	const embedLeave = new MessageEmbed()

@@ -12,14 +12,25 @@ import {
 } from '../../util/util.js'
 
 export default async (message, client) => {
-	if (
-		message.author.bot ||
-		(message.guild &&
-			(message.guild.id !== client.config.guild.guildID || !message.guild.available))
-	)
-		return
+	if (message.author.bot || (message.guild && !message.guild.available)) return
 
 	if (message.partial) await message.fetch()
+
+	// Acquisition de la base de données
+	const bdd = client.config.db.pools.userbot
+	if (!bdd)
+		return console.log('Une erreur est survenue lors de la connexion à la base de données')
+
+	// Acquisition des paramètres de la guild
+	let configGuild = {}
+	try {
+		const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
+		const dataSelect = [message.guild.id]
+		const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
+		configGuild = resultSelect[0]
+	} catch (error) {
+		return console.log(error)
+	}
 
 	// Si le message vient d'une guild, on vérifie
 	if (message.member) {
@@ -28,27 +39,27 @@ export default async (message, client) => {
 
 		// Si c'est un salon autre que blabla
 		if (
-			message.channel.id !== client.config.guild.channels.blablaChannelID &&
-			message.member.roles.cache.has(client.config.guild.roles.joinRoleID)
+			message.channel.id !== configGuild.BLABLA_CHANNEL_ID &&
+			message.member.roles.cache.has(configGuild.JOIN_ROLE_ID)
 		)
-			message.member.roles.remove(client.config.guild.roles.joinRoleID).catch(error => {
+			message.member.roles.remove(configGuild.JOIN_ROLE_ID).catch(error => {
 				if (error.code !== Constants.APIErrors.UNKNOWN_MEMBER) throw error
 			})
 	}
 
-	// Acquisition de la base de données
-	const bdd = client.config.db.pools.userbot
-	if (!bdd)
-		return console.log('Une erreur est survenue lors de la connexion à la base de données')
-
 	// Automod //
 
 	// Partie domaines
-	if (!isStaffMember(message.member, client.config.guild.managers.staffRolesManagerIDs)) {
+	const staffRoles = configGuild.STAFF_ROLES_MANAGER_IDS
+		? configGuild.STAFF_ROLES_MANAGER_IDS.split(/, */)
+		: []
+
+	if (!isStaffMember(message.member, staffRoles)) {
 		let domains = []
 		try {
-			const sqlDomains = 'SELECT * FROM automod_domains'
-			const [resultsDomains] = await bdd.execute(sqlDomains)
+			const sqlDomains = 'SELECT * FROM automod_domains WHERE guildId = ?'
+			const dataDomains = [configGuild.GUILD_ID]
+			const [resultsDomains] = await bdd.execute(sqlDomains, dataDomains)
 			domains = resultsDomains
 		} catch (error) {
 			return console.error(error)
@@ -153,8 +164,9 @@ export default async (message, client) => {
 	// Acquisition des règles depuis la base de données
 	let rules = []
 	try {
-		const sqlRules = 'SELECT * FROM automod_rules'
-		const [resultsRules] = await bdd.execute(sqlRules)
+		const sqlRules = 'SELECT * FROM automod_rules WHERE guildId = ?'
+		const dataRules = [configGuild.GUILD_ID]
+		const [resultsRules] = await bdd.execute(sqlRules, dataRules)
 		rules = resultsRules
 	} catch (error) {
 		return console.error(error)
@@ -267,8 +279,9 @@ export default async (message, client) => {
 						// Création de l'avertissement en base de données
 						try {
 							const sqlCreate =
-								'INSERT INTO warnings (discordID, warnedBy, warnReason, warnedAt) VALUES (?, ?, ?, ?)'
+								'INSERT INTO warnings (guildId, discordID, warnedBy, warnReason, warnedAt) VALUES (?, ?, ?, ?, ?)'
 							const dataCreate = [
+								configGuild.GUILD_ID,
 								guildMember.user.id,
 								client.user.id,
 								rule.reason,
@@ -336,10 +349,11 @@ export default async (message, client) => {
 	// Fin Automod
 
 	// Si c'est un salon no-text
-	if (
-		client.config.guild.managers.noTextManagerChannelIDs.includes(message.channel.id) &&
-		message.attachments.size < 1
-	) {
+	const NOTEXT = configGuild.NOTEXT_MANAGER_CHANNELS_IDS
+		? configGuild.NOTEXT_MANAGER_CHANNELS_IDS.split(/, */)
+		: []
+
+	if (NOTEXT.includes(message.channel.id) && message.attachments.size < 1) {
 		const sentMessage = await message.channel.send(
 			`<@${message.author.id}>, tu dois mettre une image / vidéo 😕`,
 		)
@@ -357,10 +371,11 @@ export default async (message, client) => {
 	}
 
 	// Si c'est un salon auto-thread
-	if (
-		client.config.guild.managers.threadsManagerChannelIDs.includes(message.channel.id) &&
-		!message.hasThread
-	)
+	const THREADS = configGuild.THREADS_MANAGER_CHANNELS_IDS
+		? configGuild.THREADS_MANAGER_CHANNELS_IDS.split(/, */)
+		: []
+
+	if (THREADS.includes(message.channel.id) && !message.hasThread)
 		// Création automatique du thread associé
 		return message.startThread({
 			name: `Thread de ${message.member.displayName}`,
@@ -375,13 +390,13 @@ export default async (message, client) => {
 	}
 
 	// Command handler
-	if (message.content.startsWith(client.config.bot.prefix)) {
-		const args = message.content.slice(client.config.bot.prefix.length).split(/ +/)
+	if (message.content.startsWith(configGuild.COMMANDS_PREFIX)) {
+		const args = message.content.slice(configGuild.COMMANDS_PREFIX.length).split(/ +/)
 		const commandName = args.shift().toLowerCase()
 
 		// Vérification si la commande existe
-		const sqlCheckName = 'SELECT * FROM commands WHERE name = ?'
-		const dataCheckName = [commandName]
+		const sqlCheckName = 'SELECT * FROM commands WHERE name = ? AND guildId = ?'
+		const dataCheckName = [commandName, configGuild.GUILD_ID]
 		const [rowsCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 
 		if (!rowsCheckName[0]) return
@@ -413,8 +428,9 @@ export default async (message, client) => {
 
 		// Exécution de la commande
 		try {
-			const sql = 'UPDATE commands SET numberOfUses = numberOfUses + 1 WHERE name = ?'
-			const data = [commandName]
+			const sql =
+				'UPDATE commands SET numberOfUses = numberOfUses + 1 WHERE name = ? AND guildId = ?'
+			const data = [commandName, configGuild.GUILD_ID]
 			await bdd.execute(sql, data)
 
 			return message.channel.send(rowsCheckName[0].content)
@@ -441,8 +457,7 @@ export default async (message, client) => {
 				// ou sur un salon n'existant pas sur la guild
 				matches
 					.reduce((acc, match) => {
-						const [, guildId, channelId, messageId] = regex.exec(match)
-						if (guildId !== client.config.guild.guildID) return acc
+						const [, channelId, messageId] = regex.exec(match)
 
 						const foundChannel = message.guild.channels.cache.get(channelId)
 						if (!foundChannel) return acc

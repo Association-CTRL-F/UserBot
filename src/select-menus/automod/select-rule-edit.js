@@ -16,8 +16,8 @@ export default {
 		// Vérification si la règle existe
 		let rule = {}
 		try {
-			const sqlCheckName = 'SELECT * FROM automod_rules WHERE customId = ?'
-			const dataCheckName = [menu.values[0]]
+			const sqlCheckName = 'SELECT * FROM automod_rules WHERE customId = ? AND guildId = ?'
+			const dataCheckName = [menu.values[0], menu.guild.id]
 			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 			rule = resultCheckName[0]
 		} catch (error) {

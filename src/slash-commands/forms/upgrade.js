@@ -24,16 +24,27 @@ export default {
 				ephemeral: true,
 			})
 
+		// Acquisition des paramètres de la guild
+		let configGuild = {}
+		try {
+			const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
+			const dataSelect = [interaction.guild.id]
+			const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
+			configGuild = resultSelect[0]
+		} catch (error) {
+			return console.log(error)
+		}
+
 		// Acquisition du formulaire
 		let upgrade = ''
 		let upgradeDescription = ''
 		try {
-			const sqlSelectUpgrade = 'SELECT * FROM forms WHERE name = ?'
-			const dataSelectUpgrade = ['upgrade']
+			const sqlSelectUpgrade = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
+			const dataSelectUpgrade = ['upgrade', interaction.guild.id]
 			const [resultSelectUpgrade] = await bdd.execute(sqlSelectUpgrade, dataSelectUpgrade)
 
-			const sqlSelectUpgradeDesc = 'SELECT * FROM forms WHERE name = ?'
-			const dataSelectUpgradeDesc = ['upgradeDescription']
+			const sqlSelectUpgradeDesc = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
+			const dataSelectUpgradeDesc = ['upgradeDescription', interaction.guild.id]
 			const [resultSelectUpgradeDesc] = await bdd.execute(
 				sqlSelectUpgradeDesc,
 				dataSelectUpgradeDesc,
@@ -65,9 +76,7 @@ export default {
 			])
 
 		// Acquisition du salon
-		const upgradeChannel = interaction.guild.channels.cache.get(
-			client.config.guild.channels.upgradeChannelID,
-		)
+		const upgradeChannel = interaction.guild.channels.cache.get(configGuild.UPGRADE_CHANNEL_ID)
 
 		// Ajout salon du formulaire si le salon a été trouvé
 		if (upgradeChannel)

@@ -18,8 +18,8 @@ export default {
 		// Vérification si la commande existe
 		let command = {}
 		try {
-			const sqlCheckName = 'SELECT * FROM commands WHERE name = ?'
-			const dataCheckName = [nom]
+			const sqlCheckName = 'SELECT * FROM commands WHERE name = ? AND guildId = ?'
+			const dataCheckName = [nom, modal.guild.id]
 			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 			command = resultCheckName[0]
 		} catch (error) {
@@ -39,8 +39,14 @@ export default {
 		// Sinon, mise à jour de la commande en base de données
 		try {
 			const sqlEdit =
-				'UPDATE commands SET content = ?, lastModificationBy = ?, lastModificationAt = ? WHERE name = ?'
-			const dataEdit = [contenu, modal.user.id, Math.round(new Date() / 1000), nom]
+				'UPDATE commands SET content = ?, lastModificationBy = ?, lastModificationAt = ? WHERE name = ? AND guildId = ?'
+			const dataEdit = [
+				contenu,
+				modal.user.id,
+				Math.round(new Date() / 1000),
+				nom,
+				modal.guild.id,
+			]
 
 			await bdd.execute(sqlEdit, dataEdit)
 		} catch (error) {

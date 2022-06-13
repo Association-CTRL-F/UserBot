@@ -68,8 +68,8 @@ export default {
 			case 'view':
 				let warnings = []
 				try {
-					const sqlView = 'SELECT * FROM warnings WHERE discordID = ?'
-					const dataView = [user]
+					const sqlView = 'SELECT * FROM warnings WHERE discordID = ? AND guildId = ?'
+					const dataView = [user, interaction.guild.id]
 					const [resultWarnings] = await bdd.execute(sqlView, dataView)
 					warnings = resultWarnings
 				} catch {
@@ -141,8 +141,9 @@ export default {
 				// Création de l'avertissement en base de données
 				try {
 					const sqlCreate =
-						'INSERT INTO warnings (discordID, warnedBy, warnReason, warnedAt) VALUES (?, ?, ?, ?)'
+						'INSERT INTO warnings (guildId, discordID, warnedBy, warnReason, warnedAt) VALUES (?, ?, ?, ?, ?)'
 					const dataCreate = [
+						interaction.guild.id,
 						user,
 						interaction.user.id,
 						reason,
@@ -163,8 +164,8 @@ export default {
 					// Lecture du message d'avertissement
 					let warnDM = ''
 					try {
-						const sqlSelectWarn = 'SELECT * FROM forms WHERE name = ?'
-						const dataSelectWarn = ['warn']
+						const sqlSelectWarn = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
+						const dataSelectWarn = ['warn', interaction.guild.id]
 						const [resultSelectWarn] = await bdd.execute(sqlSelectWarn, dataSelectWarn)
 						warnDM = resultSelectWarn[0].content
 					} catch (error) {
@@ -222,8 +223,8 @@ export default {
 				let deletedWarn = {}
 				try {
 					const id = interaction.options.getString('id')
-					const sqlDelete = 'DELETE FROM warnings WHERE id = ?'
-					const dataDelete = [id]
+					const sqlDelete = 'DELETE FROM warnings WHERE id = ? AND guildId = ?'
+					const dataDelete = [id, interaction.guild.id]
 					const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
 					deletedWarn = resultDelete
 				} catch {
@@ -253,8 +254,8 @@ export default {
 				// Vérification si le membre a des avertissements
 				let deletedWarns = []
 				try {
-					const sqlDelete = 'SELECT * FROM warnings WHERE discordID = ?'
-					const dataDelete = [discordId]
+					const sqlDelete = 'SELECT * FROM warnings WHERE discordID = ? AND guildId = ?'
+					const dataDelete = [discordId, interaction.guild.id]
 					const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
 					deletedWarns = resultDelete
 				} catch {
@@ -273,8 +274,8 @@ export default {
 
 				try {
 					// Suppression en base de données
-					const sqlDeleteAll = 'DELETE FROM warnings WHERE discordID = ?'
-					const dataDeleteAll = [discordId]
+					const sqlDeleteAll = 'DELETE FROM warnings WHERE discordID = ? AND guildId = ?'
+					const dataDeleteAll = [discordId, interaction.guild.id]
 					await bdd.execute(sqlDeleteAll, dataDeleteAll)
 				} catch {
 					return interaction.reply({

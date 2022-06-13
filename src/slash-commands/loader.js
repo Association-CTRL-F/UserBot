@@ -5,7 +5,6 @@ import { removeFileExtension } from '../util/util.js'
 
 export default async client => {
 	const clientId = client.user.id
-	const guildId = client.config.guild.guildID
 	const rest = new REST({ version: '9' }).setToken(client.token)
 
 	// Dossier des commandes
@@ -37,7 +36,7 @@ export default async client => {
 	).flat()
 
 	try {
-		await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
+		await rest.put(Routes.applicationCommands(clientId), {
 			body: commands,
 		})
 		console.log('Slash commands ✅')

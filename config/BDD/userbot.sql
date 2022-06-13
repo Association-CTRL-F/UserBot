@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: Jun 07, 2022 at 03:42 PM
+-- Generation Time: Jun 13, 2022 at 07:02 PM
 -- Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal
 -- PHP Version: 7.4.23
 
@@ -29,6 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `automod_domains` (
   `id` int(11) NOT NULL,
+  `guildId` varchar(255) NOT NULL,
   `domain` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -40,6 +41,7 @@ CREATE TABLE `automod_domains` (
 
 CREATE TABLE `automod_rules` (
   `id` int(11) NOT NULL,
+  `guildId` varchar(255) NOT NULL,
   `customId` varchar(255) NOT NULL,
   `regex` text NOT NULL,
   `type` varchar(255) NOT NULL,
@@ -55,6 +57,7 @@ CREATE TABLE `automod_rules` (
 
 CREATE TABLE `commands` (
   `id` int(11) NOT NULL,
+  `guildId` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
   `content` text NOT NULL,
   `author` varchar(255) NOT NULL,
@@ -71,14 +74,13 @@ CREATE TABLE `commands` (
 --
 
 CREATE TABLE `config` (
-  `DISCORD_TOKEN` varchar(255) DEFAULT NULL,
   `COMMANDS_PREFIX` varchar(255) DEFAULT NULL,
   `TIMEZONE` varchar(255) DEFAULT NULL,
   `GUILD_ID` varchar(255) NOT NULL,
   `LEAVE_JOIN_CHANNEL_ID` varchar(255) DEFAULT NULL,
-  `REPORT_CHANNEL` varchar(255) DEFAULT NULL,
-  `LOGS_MESSAGES_CHANNEL` varchar(255) DEFAULT NULL,
-  `LOGS_BANS_CHANNEL` varchar(255) DEFAULT NULL,
+  `REPORT_CHANNEL_ID` varchar(255) DEFAULT NULL,
+  `LOGS_MESSAGES_CHANNEL_ID` varchar(255) DEFAULT NULL,
+  `LOGS_BANS_CHANNEL_ID` varchar(255) DEFAULT NULL,
   `JOIN_ROLE_ID` varchar(255) DEFAULT NULL,
   `TIMEOUT_JOIN` varchar(255) DEFAULT NULL,
   `MUTED_ROLE_ID` varchar(255) DEFAULT NULL,
@@ -86,8 +88,7 @@ CREATE TABLE `config` (
   `CONFIG_CHANNEL_ID` varchar(255) DEFAULT NULL,
   `UPGRADE_CHANNEL_ID` varchar(255) DEFAULT NULL,
   `BLABLA_CHANNEL_ID` varchar(255) DEFAULT NULL,
-  `RICH_PRESENCE_TEXT` varchar(255) DEFAULT NULL,
-  `VOICE_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
+  `VOICE_MANAGER_CHANNELS_ID` varchar(255) DEFAULT NULL,
   `NOLOGS_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
   `NOTEXT_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
   `THREADS_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
@@ -102,6 +103,7 @@ CREATE TABLE `config` (
 
 CREATE TABLE `forms` (
   `id` int(11) NOT NULL,
+  `guildId` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
   `content` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -114,6 +116,7 @@ CREATE TABLE `forms` (
 
 CREATE TABLE `giveaways` (
   `id` int(11) NOT NULL,
+  `guildId` varchar(255) NOT NULL,
   `prize` varchar(255) NOT NULL,
   `winnersCount` int(11) NOT NULL,
   `channel` varchar(255) NOT NULL,
@@ -134,6 +137,7 @@ CREATE TABLE `giveaways` (
 
 CREATE TABLE `mute` (
   `id` int(11) NOT NULL,
+  `guildId` varchar(255) NOT NULL,
   `discordID` varchar(255) NOT NULL,
   `timestampStart` varchar(255) NOT NULL,
   `timestampEnd` varchar(255) NOT NULL
@@ -147,6 +151,7 @@ CREATE TABLE `mute` (
 
 CREATE TABLE `reminders` (
   `id` int(11) NOT NULL,
+  `guildId` varchar(255) NOT NULL,
   `discordID` varchar(255) NOT NULL,
   `reminder` text NOT NULL,
   `timestampEnd` varchar(255) NOT NULL,
@@ -163,6 +168,7 @@ CREATE TABLE `reminders` (
 
 CREATE TABLE `vocal` (
   `id` int(11) NOT NULL,
+  `guildId` varchar(255) NOT NULL,
   `channel` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -174,6 +180,7 @@ CREATE TABLE `vocal` (
 
 CREATE TABLE `warnings` (
   `id` int(11) NOT NULL,
+  `guildId` varchar(255) NOT NULL,
   `discordID` varchar(255) NOT NULL,
   `warnedBy` varchar(255) NOT NULL,
   `warnReason` text NOT NULL,

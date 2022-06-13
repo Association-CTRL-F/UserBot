@@ -29,8 +29,8 @@ export default {
 		// Vérification si la règle existe
 		let rule = {}
 		try {
-			const sqlCheckName = 'SELECT * FROM automod_rules WHERE customId = ?'
-			const dataCheckName = [customId]
+			const sqlCheckName = 'SELECT * FROM automod_rules WHERE customId = ? AND guildId = ?'
+			const dataCheckName = [customId, modal.guild.id]
 			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 			rule = resultCheckName[0]
 		} catch (error) {
@@ -50,8 +50,8 @@ export default {
 		// Sinon, mise à jour de la règle en base de données
 		try {
 			const sqlUpdate =
-				'UPDATE automod_rules SET regex = ?, type = ?, ignoredRoles = ?, reason = ? WHERE customId = ?'
-			const dataUpdate = [regex, type, ignoredRoles, reason, customId]
+				'UPDATE automod_rules SET regex = ?, type = ?, ignoredRoles = ?, reason = ? WHERE customId = ? AND guildId = ?'
+			const dataUpdate = [regex, type, ignoredRoles, reason, customId, modal.guild.id]
 
 			await bdd.execute(sqlUpdate, dataUpdate)
 		} catch (error) {

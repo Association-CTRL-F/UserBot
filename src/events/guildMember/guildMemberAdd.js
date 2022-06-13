@@ -6,14 +6,28 @@ const removeAddedReactions = reactions => Promise.all(reactions.map(reaction => 
 
 export default async (guildMember, client) => {
 	const guild = guildMember.guild
-	if (guildMember.user.bot || guild.id !== client.config.guild.guildID || !guild.available) return
+	if (guildMember.user.bot || !guild.available) return
 
 	modifyWrongUsernames(guildMember).catch(() => null)
 
+	// Acquisition de la base de données
+	const bdd = client.config.db.pools.userbot
+	if (!bdd)
+		return console.log('Une erreur est survenue lors de la connexion à la base de données')
+
+	// Acquisition des paramètres de la guild
+	let configGuild = {}
+	try {
+		const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
+		const dataSelect = [guild.id]
+		const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
+		configGuild = resultSelect[0]
+	} catch (error) {
+		return console.log(error)
+	}
+
 	// Acquisition du salon de logs
-	const leaveJoinChannel = guild.channels.cache.get(
-		client.config.guild.channels.leaveJoinChannelID,
-	)
+	const leaveJoinChannel = guild.channels.cache.get(configGuild.LEAVE_JOIN_CHANNEL_ID)
 	if (!leaveJoinChannel) return
 
 	// Envoi du message de join
@@ -120,12 +134,6 @@ export default async (guildMember, client) => {
 
 	// Définition de la variable "reason" en fonction de la réaction cliquée
 	const reason = emotesConfig.get(banReactionEmoji.name) || emotesConfig.get(banReactionEmoji.id)
-
-	// Lecture du message de ban
-	// Acquisition de la base de données
-	const bdd = client.config.db.pools.userbot
-	if (!bdd)
-		return console.log('Une erreur est survenue lors de la connexion à la base de données 😕')
 
 	// Acquisition du message de bannissement
 	let banDM = ''

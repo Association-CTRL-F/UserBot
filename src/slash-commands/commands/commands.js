@@ -37,6 +37,17 @@ export default {
 				ephemeral: true,
 			})
 
+		// Acquisition des paramètres de la guild
+		let configGuild = {}
+		try {
+			const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
+			const dataSelect = [interaction.guild.id]
+			const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
+			configGuild = resultSelect[0]
+		} catch (error) {
+			return console.log(error)
+		}
+
 		switch (interaction.options.getSubcommand()) {
 			// Visualisation des commandes
 			case 'view':
@@ -46,8 +57,8 @@ export default {
 				// Vérification si la commande existe
 				let commandBdd = {}
 				try {
-					const sqlCheckName = 'SELECT * FROM commands WHERE name = ?'
-					const dataCheckName = [nom]
+					const sqlCheckName = 'SELECT * FROM commands WHERE name = ? AND guildId = ?'
+					const dataCheckName = [nom, interaction.guild.id]
 					const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 					commandBdd = resultCheckName[0]
 				} catch (error) {
@@ -113,7 +124,10 @@ export default {
 				// Récupération des commandes
 				let commands = []
 				try {
-					const [resultCommands] = await bdd.execute('SELECT * FROM commands')
+					const sqlSelect = 'SELECT * FROM commands WHERE guildId = ?'
+					const dataSelect = [interaction.guild.id]
+
+					const [resultCommands] = await bdd.execute(sqlSelect, dataSelect)
 					commands = resultCommands
 				} catch (error) {
 					return interaction.reply({
@@ -156,7 +170,7 @@ export default {
 
 				paginationView.setTitle('Commandes personnalisées')
 				paginationView.setDescription(
-					`**Total : ${commands.length}\nPréfixe : \`${client.config.bot.prefix}\`**`,
+					`**Total : ${commands.length}\nPréfixe : \`${configGuild.COMMANDS_PREFIX}\`**`,
 				)
 				paginationView.setColor('#C27C0E')
 				paginationView.setFields(fieldsEmbedView)
@@ -173,8 +187,8 @@ export default {
 				let commandsSearch = []
 				try {
 					const sqlSearch =
-						'SELECT * FROM commands WHERE MATCH(name) AGAINST(? IN BOOLEAN MODE) OR MATCH(content) AGAINST(? IN BOOLEAN MODE);'
-					const dataSearch = [keyword, keyword]
+						'SELECT * FROM commands WHERE MATCH(name) AGAINST(? IN BOOLEAN MODE) OR MATCH(content) AGAINST(? IN BOOLEAN MODE) AND guildId = ?;'
+					const dataSearch = [keyword, keyword, interaction.guild.id]
 					const [resultsSearch] = await bdd.execute(sqlSearch, dataSearch)
 					commandsSearch = resultsSearch
 				} catch (error) {
@@ -218,7 +232,7 @@ export default {
 
 				paginationSearch.setTitle('Résultats de la recherche')
 				paginationSearch.setDescription(
-					`**Total : ${commandsSearch.length}\nPréfixe : \`${client.config.bot.prefix}\`**`,
+					`**Total : ${commandsSearch.length}\nPréfixe : \`${configGuild.COMMANDS_PREFIX}\`**`,
 				)
 				paginationSearch.setColor('#C27C0E')
 				paginationSearch.setFields(fieldsEmbedSearch)

@@ -1,4 +1,4 @@
-const handleLeave = (oldState, newState, client) => {
+const handleLeave = async (oldState, newState, client) => {
 	// Acquisition de la base de données
 	const bdd = client.config.db.pools.userbot
 	if (!bdd)
@@ -6,6 +6,17 @@ const handleLeave = (oldState, newState, client) => {
 
 	// S'il quitte un salon non personnalisé, on return
 	if (!client.voiceManager.has(oldState.channelId)) return
+
+	// Acquisition des paramètres de la guild
+	let configGuild = {}
+	try {
+		const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
+		const dataSelect = [oldState.guild.id]
+		const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
+		configGuild = resultSelect[0]
+	} catch (error) {
+		return console.log(error)
+	}
 
 	// S'il le salon qu'il a quitté est vide
 	if (oldState.channel.members.size === 0) {
@@ -20,8 +31,8 @@ const handleLeave = (oldState, newState, client) => {
 		client.voiceManager.delete(oldState.channelId)
 
 		try {
-			const sqlDelete = 'DELETE FROM vocal WHERE channel = ?'
-			const dataDelete = [oldState.channel.id]
+			const sqlDelete = 'DELETE FROM vocal WHERE channel = ? AND guildId = ?'
+			const dataDelete = [oldState.channel.id, configGuild.GUILD_ID]
 			bdd.execute(sqlDelete, dataDelete)
 		} catch {
 			console.log(
@@ -49,10 +60,25 @@ const handleJoin = async (newState, client) => {
 	if (!bdd)
 		return console.log('Une erreur est survenue lors de la connexion à la base de données')
 
-	// S'il rejoint un salon qui doit créer un nouveau salon
-	if (client.config.guild.managers.voiceManagerChannelsIDs.includes(newState.channelId)) {
-		const member = newState.member
+	const member = newState.member
 
+	// Acquisition des paramètres de la guild
+	let configGuild = {}
+	try {
+		const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
+		const dataSelect = [member.guild.id]
+		const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
+		configGuild = resultSelect[0]
+	} catch (error) {
+		return console.log(error)
+	}
+
+	// S'il rejoint un salon qui doit créer un nouveau salon
+	const VOICE = configGuild.VOICE_MANAGER_CHANNELS_ID
+		? configGuild.VOICE_MANAGER_CHANNELS_ID.split(/, */)
+		: []
+
+	if (VOICE.includes(newState.channelId)) {
 		const permissions = newState.channel.permissionOverwrites.cache.clone().set(member, {
 			id: member,
 			type: 'member',
@@ -77,8 +103,8 @@ const handleJoin = async (newState, client) => {
 		if (!moveAction) return createdChannel.delete()
 
 		try {
-			const sql = 'INSERT INTO vocal (channel) VALUES (?)'
-			const data = [createdChannel.id]
+			const sql = 'INSERT INTO vocal (guildId, channel) VALUES (?, ?)'
+			const data = [configGuild.GUILD_ID, createdChannel.id]
 			await bdd.execute(sql, data)
 		} catch (error) {
 			console.log(

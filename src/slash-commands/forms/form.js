@@ -58,8 +58,10 @@ export default {
 				// Récupération des formulaires
 				let forms = []
 				try {
-					const sqlSelect = 'SELECT * FROM forms'
-					const [resultSelect] = await bdd.execute(sqlSelect)
+					const sqlSelect = 'SELECT * FROM forms WHERE guildId = ?'
+					const dataSelect = [interaction.guild.id]
+
+					const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
 					forms = resultSelect
 				} catch {
 					return interaction.reply({

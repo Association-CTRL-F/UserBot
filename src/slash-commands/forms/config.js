@@ -24,16 +24,27 @@ export default {
 				ephemeral: true,
 			})
 
+		// Acquisition des paramètres de la guild
+		let configGuild = {}
+		try {
+			const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
+			const dataSelect = [interaction.guild.id]
+			const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
+			configGuild = resultSelect[0]
+		} catch (error) {
+			return console.log(error)
+		}
+
 		// Acquisition du formulaire
 		let config = ''
 		let configDescription = ''
 		try {
-			const sqlSelectConfig = 'SELECT * FROM forms WHERE name = ?'
-			const dataSelectConfig = ['config']
+			const sqlSelectConfig = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
+			const dataSelectConfig = ['config', interaction.guild.id]
 			const [resultSelectConfig] = await bdd.execute(sqlSelectConfig, dataSelectConfig)
 
-			const sqlSelectConfigDesc = 'SELECT * FROM forms WHERE name = ?'
-			const dataSelectConfigDesc = ['configDescription']
+			const sqlSelectConfigDesc = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
+			const dataSelectConfigDesc = ['configDescription', interaction.guild.id]
 			const [resultSelectConfigDesc] = await bdd.execute(
 				sqlSelectConfigDesc,
 				dataSelectConfigDesc,
@@ -65,9 +76,7 @@ export default {
 			])
 
 		// Acquisition du salon
-		const configChannel = interaction.guild.channels.cache.get(
-			client.config.guild.channels.configChannelID,
-		)
+		const configChannel = interaction.guild.channels.cache.get(configGuild.CONFIG_CHANNEL_ID)
 
 		// Ajout salon du formulaire si le salon a été trouvé
 		if (configChannel)

@@ -16,7 +16,26 @@ export default {
 		.addSubcommand(subcommand =>
 			subcommand.setName('server').setDescription('Infos du serveur'),
 		),
-	interaction: (interaction, client) => {
+	interaction: async (interaction, client) => {
+		// Acquisition de la base de données
+		const bdd = client.config.db.pools.userbot
+		if (!bdd)
+			return interaction.reply({
+				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
+				ephemeral: true,
+			})
+
+		// Acquisition des paramètres de la guild
+		let configGuild = {}
+		try {
+			const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
+			const dataSelect = [interaction.guild.id]
+			const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
+			configGuild = resultSelect[0]
+		} catch (error) {
+			return console.log(error)
+		}
+
 		switch (interaction.options.getSubcommand()) {
 			case 'bot':
 				const embedBot = new MessageEmbed()
@@ -36,7 +55,7 @@ export default {
 						},
 						{
 							name: 'Préfixe',
-							value: `\`${client.config.bot.prefix}\``,
+							value: `\`${configGuild.COMMANDS_PREFIX}\``,
 						},
 						{
 							name: 'Version',
