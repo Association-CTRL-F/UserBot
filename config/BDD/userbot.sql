@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: Jun 13, 2022 at 07:02 PM
+-- Generation Time: Jun 14, 2022 at 07:05 PM
 -- Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal
 -- PHP Version: 7.4.23
 
@@ -74,6 +74,7 @@ CREATE TABLE `commands` (
 --
 
 CREATE TABLE `config` (
+  `isSetup` tinyint(1) NOT NULL,
   `COMMANDS_PREFIX` varchar(255) DEFAULT NULL,
   `TIMEZONE` varchar(255) DEFAULT NULL,
   `GUILD_ID` varchar(255) NOT NULL,
@@ -88,7 +89,7 @@ CREATE TABLE `config` (
   `CONFIG_CHANNEL_ID` varchar(255) DEFAULT NULL,
   `UPGRADE_CHANNEL_ID` varchar(255) DEFAULT NULL,
   `BLABLA_CHANNEL_ID` varchar(255) DEFAULT NULL,
-  `VOICE_MANAGER_CHANNELS_ID` varchar(255) DEFAULT NULL,
+  `VOICE_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
   `NOLOGS_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
   `NOTEXT_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
   `THREADS_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,

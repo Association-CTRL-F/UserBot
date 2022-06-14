@@ -2,6 +2,7 @@
 /* eslint-disable default-case */
 import { MessageActionRow, MessageSelectMenu, Modal, TextInputComponent } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
+import { isGuildSetup } from '../../util/util.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -14,6 +15,15 @@ export default {
 			subcommand.setName('edit').setDescription('Modifie un formulaire'),
 		),
 	interaction: async (interaction, client) => {
+		// Vérification que la guild soit entièrement setup
+		const isSetup = await isGuildSetup(interaction.guild, client)
+
+		if (!isSetup)
+			return interaction.reply({
+				content: "Le serveur n'est pas entièrement configuré 😕",
+				ephemeral: true,
+			})
+
 		switch (interaction.options.getSubcommand()) {
 			// Nouveau formulaire
 			case 'create':

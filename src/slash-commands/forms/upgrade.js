@@ -1,5 +1,6 @@
 import { Constants, MessageEmbed } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
+import { isGuildSetup } from '../../util/util.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -7,6 +8,15 @@ export default {
 		.setDescription("Donne le formulaire d'upgrade")
 		.addUserOption(option => option.setName('membre').setDescription('Membre')),
 	interaction: async (interaction, client) => {
+		// Vérification que la guild soit entièrement setup
+		const isSetup = await isGuildSetup(interaction.guild, client)
+
+		if (!isSetup)
+			return interaction.reply({
+				content: "Le serveur n'est pas entièrement configuré 😕",
+				ephemeral: true,
+			})
+
 		// Acquisition du membre
 		const user = interaction.options.getUser('membre') || interaction.user
 		const member = interaction.guild.members.cache.get(user.id)
@@ -75,6 +85,9 @@ export default {
 				},
 			])
 
+		// On diffère la réponse pour avoir plus de 3 secondes
+		await interaction.deferReply()
+
 		// Acquisition du salon
 		const upgradeChannel = interaction.guild.channels.cache.get(configGuild.UPGRADE_CHANNEL_ID)
 
@@ -93,13 +106,13 @@ export default {
 			if (error.code !== Constants.APIErrors.CANNOT_MESSAGE_USER) throw error
 
 			if (member.user === interaction.user)
-				return interaction.reply({
+				return interaction.editReply({
 					content:
 						"Je n'ai pas réussi à envoyer le message privé, tu m'as sûrement bloqué / désactivé tes messages provenant du serveur 😬",
 					ephemeral: true,
 				})
 
-			return interaction.reply({
+			return interaction.editReply({
 				content:
 					"Je n'ai pas réussi à envoyer le DM, l'utilisateur mentionné m'a sûrement bloqué / désactivé les messages provenant du serveur 😬",
 				ephemeral: true,
@@ -107,16 +120,16 @@ export default {
 		}
 
 		if (member.user === interaction.user)
-			return interaction.reply({
+			return interaction.editReply({
 				content: 'Formulaire envoyé en message privé 👌',
 				ephemeral: true,
 			})
 
 		return upgradeChannel
-			? interaction.reply({
+			? interaction.editReply({
 					content: `${member}, remplis le formulaire reçu en message privé puis poste le dans ${upgradeChannel} 👌`,
 			  })
-			: interaction.reply({
+			: interaction.editReply({
 					content: `${member}, remplis le formulaire reçu en message privé 👌`,
 			  })
 	},

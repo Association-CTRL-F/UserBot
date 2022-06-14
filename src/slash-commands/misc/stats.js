@@ -3,6 +3,7 @@
 
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { Pagination } from 'pagination.djs'
+import { isGuildSetup } from '../../util/util.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -12,6 +13,15 @@ export default {
 			subcommand.setName('commands').setDescription('Affiche les stats des commandes'),
 		),
 	interaction: async (interaction, client) => {
+		// Vérification que la guild soit entièrement setup
+		const isSetup = await isGuildSetup(interaction.guild, client)
+
+		if (!isSetup)
+			return interaction.reply({
+				content: "Le serveur n'est pas entièrement configuré 😕",
+				ephemeral: true,
+			})
+
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
 		if (!bdd)

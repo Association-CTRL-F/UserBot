@@ -1,9 +1,19 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { MessageEmbed } from 'discord.js'
+import { isGuildSetup } from '../../util/util.js'
 
 export default {
 	data: new SlashCommandBuilder().setName('dé').setDescription('Lancer de dé'),
-	interaction: interaction => {
+	interaction: async (interaction, client) => {
+		// Vérification que la guild soit entièrement setup
+		const isSetup = await isGuildSetup(interaction.guild, client)
+
+		if (!isSetup)
+			return interaction.reply({
+				content: "Le serveur n'est pas entièrement configuré 😕",
+				ephemeral: true,
+			})
+
 		// Lancement du dé
 		const face = Math.floor(Math.random() * 6) + 1
 

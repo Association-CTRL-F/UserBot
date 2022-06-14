@@ -1,7 +1,8 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-import { convertSecondsToString } from '../../util/util.js'
+import { convertSecondsToString, isGuildSetup } from '../../util/util.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
+
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 export default {
@@ -25,7 +26,16 @@ export default {
 					option.setName('durée').setDescription('Durée du mode lent (en secondes)'),
 				),
 		),
-	interaction: async interaction => {
+	interaction: async (interaction, client) => {
+		// Vérification que la guild soit entièrement setup
+		const isSetup = await isGuildSetup(interaction.guild, client)
+
+		if (!isSetup)
+			return interaction.reply({
+				content: "Le serveur n'est pas entièrement configuré 😕",
+				ephemeral: true,
+			})
+
 		switch (interaction.options.getSubcommand()) {
 			// Ajout d'un cooldown
 			case 'set':

@@ -92,8 +92,8 @@ export default async (message, client) => {
 				// Acquisition du message de bannissement
 				let banDM = ''
 				try {
-					const sqlSelectBan = 'SELECT * FROM forms WHERE name = ?'
-					const dataSelectBan = ['ban']
+					const sqlSelectBan = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
+					const dataSelectBan = ['ban', configGuild.GUILD_ID]
 					const [resultSelectBan] = await bdd.execute(sqlSelectBan, dataSelectBan)
 
 					banDM = resultSelectBan[0].content
@@ -212,8 +212,9 @@ export default async (message, client) => {
 						// Acquisition du message de bannissement
 						let banDM = ''
 						try {
-							const sqlSelectBan = 'SELECT * FROM forms WHERE name = ?'
-							const dataSelectBan = ['ban']
+							const sqlSelectBan =
+								'SELECT * FROM forms WHERE name = ? AND guildId = ?'
+							const dataSelectBan = ['ban', configGuild.GUILD_ID]
 							const [resultSelectBan] = await bdd.execute(sqlSelectBan, dataSelectBan)
 
 							banDM = resultSelectBan[0].content
@@ -298,8 +299,9 @@ export default async (message, client) => {
 						// Lecture du message d'avertissement
 						let warnDM = ''
 						try {
-							const sqlSelectWarn = 'SELECT * FROM forms WHERE name = ?'
-							const dataSelectWarn = ['warn']
+							const sqlSelectWarn =
+								'SELECT * FROM forms WHERE name = ? AND guildId = ?'
+							const dataSelectWarn = ['warn', configGuild.GUILD_ID]
 							const [resultSelectWarn] = await bdd.execute(
 								sqlSelectWarn,
 								dataSelectWarn,

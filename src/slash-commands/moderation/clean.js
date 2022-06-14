@@ -2,6 +2,7 @@ import {
 	pluralizeWithoutQuantity as pluralize,
 	displayNameAndID,
 	convertDateForDiscord,
+	isGuildSetup,
 } from '../../util/util.js'
 import { Util, MessageEmbed } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
@@ -38,6 +39,15 @@ export default {
 			option.setName('silent').setDescription('Exécuter la commande silencieusement'),
 		),
 	interaction: async (interaction, client) => {
+		// Vérification que la guild soit entièrement setup
+		const isSetup = await isGuildSetup(interaction.guild, client)
+
+		if (!isSetup)
+			return interaction.reply({
+				content: "Le serveur n'est pas entièrement configuré 😕",
+				ephemeral: true,
+			})
+
 		// Acquisition du nombre de messages à supprimer et du silent
 		const chosenNumber = interaction.options.getInteger('nombre')
 		const ephemeral = interaction.options.getBoolean('silent')

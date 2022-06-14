@@ -74,8 +74,8 @@ const handleJoin = async (newState, client) => {
 	}
 
 	// S'il rejoint un salon qui doit créer un nouveau salon
-	const VOICE = configGuild.VOICE_MANAGER_CHANNELS_ID
-		? configGuild.VOICE_MANAGER_CHANNELS_ID.split(/, */)
+	const VOICE = configGuild.VOICE_MANAGER_CHANNELS_IDS
+		? configGuild.VOICE_MANAGER_CHANNELS_IDS.split(/, */)
 		: []
 
 	if (VOICE.includes(newState.channelId)) {

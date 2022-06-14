@@ -1,4 +1,4 @@
-import { convertDateForDiscord, diffDate } from '../../util/util.js'
+import { convertDateForDiscord, diffDate, isGuildSetup } from '../../util/util.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { MessageEmbed } from 'discord.js'
 
@@ -7,7 +7,16 @@ export default {
 		.setName('whois')
 		.setDescription('Donne des infos sur soit ou un autre utilisateur')
 		.addUserOption(option => option.setName('membre').setDescription('Membre')),
-	interaction: interaction => {
+	interaction: async (interaction, client) => {
+		// Vérification que la guild soit entièrement setup
+		const isSetup = await isGuildSetup(interaction.guild, client)
+
+		if (!isSetup)
+			return interaction.reply({
+				content: "Le serveur n'est pas entièrement configuré 😕",
+				ephemeral: true,
+			})
+
 		// Acquisition du membre
 		const user = interaction.options.getUser('membre') || interaction.user
 		const member = interaction.guild.members.cache.get(user.id)

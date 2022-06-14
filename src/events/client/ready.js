@@ -46,6 +46,8 @@ export default async client => {
 	}
 
 	guilds.forEach(async currentGuild => {
+		if (currentGuild.isSetup === 0) return
+
 		const guild = await client.guilds.fetch(currentGuild.GUILD_ID)
 		if (!guild)
 			return console.log(
@@ -72,10 +74,10 @@ export default async client => {
 		// Lecture du message d'unmute
 		let unmuteDM = ''
 		try {
-			const sqlSelectUnmute = 'SELECT * FROM forms WHERE name = ?'
-			const dataSelectUnmute = ['unmute']
+			const sqlSelectUnmute = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
+			const dataSelectUnmute = ['unmute', currentGuild.GUILD_ID]
 			const [resultSelectUnmute] = await bdd.execute(sqlSelectUnmute, dataSelectUnmute)
-			unmuteDM = resultSelectUnmute[0].content
+			unmuteDM = resultSelectUnmute[0]
 		} catch (error) {
 			return console.error(error)
 		}

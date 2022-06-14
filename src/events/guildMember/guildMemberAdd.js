@@ -138,8 +138,8 @@ export default async (guildMember, client) => {
 	// Acquisition du message de bannissement
 	let banDM = ''
 	try {
-		const sqlSelectBan = 'SELECT * FROM forms WHERE name = ?'
-		const dataSelectBan = ['ban']
+		const sqlSelectBan = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
+		const dataSelectBan = ['ban', configGuild.GUILD_ID]
 		const [resultSelectBan] = await bdd.execute(sqlSelectBan, dataSelectBan)
 
 		banDM = resultSelectBan[0].content
