@@ -546,8 +546,6 @@ export default async (message, client) => {
 					})
 				})
 
-			console.log(embed)
-
 			return message.channel.send({ embeds: [embed] })
 		})
 
