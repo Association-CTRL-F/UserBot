@@ -1,4 +1,4 @@
-import { convertDateForDiscord, diffDate, isGuildSetup } from '../../util/util.js'
+import { convertDateForDiscord, diffDate, displayNameAndID, isGuildSetup } from '../../util/util.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { MessageEmbed } from 'discord.js'
 
@@ -30,7 +30,7 @@ export default {
 		const embed = new MessageEmbed()
 			.setColor(member.displayColor)
 			.setAuthor({
-				name: `${member.displayName} (ID : ${member.id})`,
+				name: displayNameAndID(member),
 				iconURL: member.user.displayAvatarURL({ dynamic: true }),
 			})
 			.addFields([

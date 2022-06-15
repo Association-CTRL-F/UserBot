@@ -1,4 +1,4 @@
-import { convertDateForDiscord, diffDate } from '../../util/util.js'
+import { convertDateForDiscord, diffDate, displayNameAndID } from '../../util/util.js'
 import { MessageEmbed } from 'discord.js'
 
 export default async (guildMember, client) => {
@@ -28,7 +28,7 @@ export default async (guildMember, client) => {
 	const embedLeave = new MessageEmbed()
 		.setColor('C9572A')
 		.setAuthor({
-			name: `${guildMember.displayName} (ID : ${guildMember.id})`,
+			name: displayNameAndID(guildMember),
 			iconURL: guildMember.user.displayAvatarURL({ dynamic: true }),
 		})
 		.addFields([

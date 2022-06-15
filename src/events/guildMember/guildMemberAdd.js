@@ -1,4 +1,9 @@
-import { convertDateForDiscord, diffDate, modifyWrongUsernames } from '../../util/util.js'
+import {
+	convertDateForDiscord,
+	diffDate,
+	modifyWrongUsernames,
+	displayNameAndID,
+} from '../../util/util.js'
 import { readFile } from 'fs/promises'
 import { Constants, Permissions, Message, GuildMember, MessageEmbed } from 'discord.js'
 
@@ -34,7 +39,7 @@ export default async (guildMember, client) => {
 	const embedJoin = new MessageEmbed()
 		.setColor('57C92A')
 		.setAuthor({
-			name: `${guildMember.displayName} (ID : ${guildMember.id})`,
+			name: displayNameAndID(guildMember),
 			iconURL: guildMember.user.displayAvatarURL({ dynamic: true }),
 		})
 		.addFields([

@@ -1,6 +1,6 @@
 /* eslint-disable default-case */
 /* eslint-disable no-case-declarations */
-import { convertDateForDiscord, diffDate, isGuildSetup } from '../../util/util.js'
+import { convertDateForDiscord, diffDate, displayNameAndID, isGuildSetup } from '../../util/util.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
 import discordjs, { MessageEmbed } from 'discord.js'
 
@@ -50,7 +50,7 @@ export default {
 				const embedBot = new MessageEmbed()
 					.setColor('#3366FF')
 					.setAuthor({
-						name: `${client.user.username} (ID : ${client.user.id})`,
+						name: displayNameAndID(client.user, client.user),
 						iconURL: client.user.displayAvatarURL({ dynamic: true }),
 					})
 					.addFields([

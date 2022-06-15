@@ -70,7 +70,7 @@ export default async (message, client) => {
 	const logEmbed = new MessageEmbed()
 		.setColor('57C92A')
 		.setAuthor({
-			name: `${displayNameAndID(message.member, message.author)}`,
+			name: displayNameAndID(message.member, message.author),
 			iconURL: message.author.displayAvatarURL({ dynamic: true }),
 		})
 		.addFields([

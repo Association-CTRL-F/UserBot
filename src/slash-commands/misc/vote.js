@@ -2,7 +2,7 @@
 /* eslint-disable default-case */
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { Constants, MessageEmbed } from 'discord.js'
-import { convertDate, isGuildSetup } from '../../util/util.js'
+import { convertDate, displayNameAndID, isGuildSetup } from '../../util/util.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -64,7 +64,7 @@ export default {
 					.setTitle('Nouveau vote')
 					.setDescription(`\`\`\`${proposition}\`\`\``)
 					.setAuthor({
-						name: `${interaction.member.displayName} (ID : ${interaction.member.id})`,
+						name: displayNameAndID(interaction.member),
 						iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
 					})
 					.setFooter({
@@ -140,7 +140,7 @@ export default {
 					.setTitle('Nouveau vote (modifié)')
 					.setDescription(`\`\`\`${proposition}\`\`\``)
 					.setAuthor({
-						name: `${interaction.member.displayName} (ID : ${interaction.member.id})`,
+						name: displayNameAndID(interaction.member),
 						iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
 					})
 					.setFooter({

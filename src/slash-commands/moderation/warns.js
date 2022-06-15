@@ -2,7 +2,7 @@
 /* eslint-disable default-case */
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { MessageEmbed } from 'discord.js'
-import { convertDateForDiscord, isGuildSetup } from '../../util/util.js'
+import { convertDateForDiscord, displayNameAndID, isGuildSetup } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
 
 export default {
@@ -125,7 +125,7 @@ export default {
 
 				if (member)
 					pagination.author = {
-						name: `${member.displayName} (ID : ${member.id})`,
+						name: displayNameAndID(member),
 						icon_url: member.user.displayAvatarURL({ dynamic: true }),
 					}
 				else

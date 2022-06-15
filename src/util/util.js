@@ -212,7 +212,7 @@ export const getFileInfos = file => {
 }
 
 /**
- * Formate le pseudo et l'ID de l'utilisateur sous la forme "Pseudo (ID 123456789123456789)"
+ * Formate le pseudo et l'ID de l'utilisateur sous la forme "Pseudo (ID : 123456789123456789)"
  * @param {GuildMember} guildMember
  * @param {User} user
  * @returns le pseudo du guildMember ou le tag de l'user

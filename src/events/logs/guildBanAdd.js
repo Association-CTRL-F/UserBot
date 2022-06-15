@@ -1,4 +1,4 @@
-import { convertDateForDiscord, diffDate } from '../../util/util.js'
+import { convertDateForDiscord, diffDate, displayNameAndID } from '../../util/util.js'
 import { Util, GuildAuditLogs, MessageEmbed } from 'discord.js'
 
 export default async (ban, client) => {
@@ -40,7 +40,7 @@ export default async (ban, client) => {
 	const logEmbed = new MessageEmbed()
 		.setColor('C9572A')
 		.setAuthor({
-			name: `${bannedUser.user.username} (ID : ${bannedUser.user.id})`,
+			name: displayNameAndID(bannedUser.member, bannedUser.user),
 			iconURL: bannedUser.user.displayAvatarURL({ dynamic: true }),
 		})
 		.addFields([
