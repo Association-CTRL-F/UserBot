@@ -459,7 +459,8 @@ export default async (message, client) => {
 				// ou sur un salon n'existant pas sur la guild
 				matches
 					.reduce((acc, match) => {
-						const [, channelId, messageId] = regex.exec(match)
+						const [, guildId, channelId, messageId] = regex.exec(match)
+						if (guildId !== message.guild.id) return acc
 
 						const foundChannel = message.guild.channels.cache.get(channelId)
 						if (!foundChannel) return acc
@@ -544,6 +545,8 @@ export default async (message, client) => {
 						inline: true,
 					})
 				})
+
+			console.log(embed)
 
 			return message.channel.send({ embeds: [embed] })
 		})
