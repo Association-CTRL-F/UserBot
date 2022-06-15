@@ -50,7 +50,7 @@ export default {
 				const embedBot = new MessageEmbed()
 					.setColor('#3366FF')
 					.setAuthor({
-						name: `${client.user.username} (ID ${client.user.id})`,
+						name: `${client.user.username} (ID : ${client.user.id})`,
 						iconURL: client.user.displayAvatarURL({ dynamic: true }),
 					})
 					.addFields([
@@ -99,9 +99,8 @@ export default {
 				const embedServer = new MessageEmbed()
 					.setColor('#3366FF')
 					.setAuthor({
-						name: `${interaction.guild.name} (ID ${interaction.guild.id})`,
+						name: `${interaction.guild.name} (ID : ${interaction.guild.id})`,
 						iconURL: interaction.guild.iconURL({ dynamic: true }),
-						url: interaction.guild.vanityURL,
 					})
 					.addFields([
 						{

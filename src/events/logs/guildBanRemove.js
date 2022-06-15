@@ -37,7 +37,7 @@ export default async (ban, client) => {
 	const logEmbed = new MessageEmbed()
 		.setColor('57C92A')
 		.setAuthor({
-			name: `${ban.user.username} (ID ${ban.user.id})`,
+			name: `${ban.user.username} (ID : ${ban.user.id})`,
 			iconURL: ban.user.displayAvatarURL({ dynamic: true }),
 		})
 		.addFields([

@@ -30,7 +30,7 @@ export default {
 		const embed = new MessageEmbed()
 			.setColor(member.displayColor)
 			.setAuthor({
-				name: `${member.displayName} (ID ${member.id})`,
+				name: `${member.displayName} (ID : ${member.id})`,
 				iconURL: member.user.displayAvatarURL({ dynamic: true }),
 			})
 			.addFields([

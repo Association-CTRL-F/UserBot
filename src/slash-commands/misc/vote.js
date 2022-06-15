@@ -64,7 +64,7 @@ export default {
 					.setTitle('Nouveau vote')
 					.setDescription(`\`\`\`${proposition}\`\`\``)
 					.setAuthor({
-						name: `${interaction.member.displayName} (ID ${interaction.member.id})`,
+						name: `${interaction.member.displayName} (ID : ${interaction.member.id})`,
 						iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
 					})
 					.setFooter({
@@ -140,7 +140,7 @@ export default {
 					.setTitle('Nouveau vote (modifié)')
 					.setDescription(`\`\`\`${proposition}\`\`\``)
 					.setAuthor({
-						name: `${interaction.member.displayName} (ID ${interaction.member.id})`,
+						name: `${interaction.member.displayName} (ID : ${interaction.member.id})`,
 						iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
 					})
 					.setFooter({

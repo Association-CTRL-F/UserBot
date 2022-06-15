@@ -219,9 +219,9 @@ export const getFileInfos = file => {
  */
 export const displayNameAndID = (guildMember, user) => {
 	if (guildMember && guildMember.displayName)
-		return `${guildMember.displayName} (ID ${guildMember.id})`
+		return `${guildMember.displayName} (ID : ${guildMember.id})`
 
-	if (user && user.username) return `${user.username} (ID ${user.id})`
+	if (user && user.username) return `${user.username} (ID : ${user.id})`
 
 	return '?'
 }

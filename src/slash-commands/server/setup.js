@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { Modal, TextInputComponent, MessageActionRow } from 'discord.js'
+import { Modal, TextInputComponent, MessageActionRow, MessageEmbed } from 'discord.js'
+import { Pagination } from 'pagination.djs'
 
 const subCommands = {
 	'commands-prefix': {
@@ -59,6 +60,9 @@ const subCommands = {
 const command = new SlashCommandBuilder()
 	.setName('setup')
 	.setDescription('Configuration du serveur')
+	.addSubcommand(subCommand =>
+		subCommand.setName('view').setDescription('Voir la configuration du serveur'),
+	)
 
 for (const [subCommandName, subCommandContent] of Object.entries(subCommands))
 	for (const [subCommandCode, subCommandDesc] of Object.entries(subCommandContent))
@@ -76,6 +80,60 @@ export default {
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
 				ephemeral: true,
 			})
+
+		const configContent = ''
+		if (interaction.options.getSubcommand() === 'view') {
+			// Récupération de la valeur actuelle
+			let config = {}
+			try {
+				const sql = 'SELECT * FROM config WHERE GUILD_ID = ?'
+				const data = [interaction.guild.id]
+				const [result] = await bdd.execute(sql, data)
+				config = result[0]
+			} catch (error) {
+				return interaction.reply({
+					content:
+						'Une erreur est survenue lors de la récupération de la configuration en base de données 😕',
+					ephemeral: true,
+				})
+			}
+
+			delete config.isSetup
+			const fieldsEmbedView = []
+			for (const [varCode, varContent] of Object.entries(config))
+				fieldsEmbedView.push({
+					name: varCode,
+					value: `${varContent}`,
+				})
+
+			// Configuration de l'embed
+			const paginationView = new Pagination(interaction, {
+				firstEmoji: '⏮',
+				prevEmoji: '◀️',
+				nextEmoji: '▶️',
+				lastEmoji: '⏭',
+				limit: 5,
+				idle: 120000,
+				ephemeral: false,
+				prevDescription: '',
+				postDescription: '',
+				buttonStyle: 'SECONDARY',
+				loop: false,
+			})
+
+			paginationView.setTitle('Configuration du serveur')
+			paginationView.setColor('#C27C0E')
+			paginationView.setAuthor({
+				name: `${interaction.guild.name} (ID : ${interaction.guild.id})`,
+				iconURL: interaction.guild.iconURL({ dynamic: true }),
+			})
+			paginationView.setFields(fieldsEmbedView)
+			paginationView.footer = { text: 'Page : {pageNumber} / {totalPages}' }
+			paginationView.paginateFields(true)
+
+			// Envoi de l'embed
+			return paginationView.render()
+		}
 
 		// Récupération de la valeur actuelle
 		let config = {}

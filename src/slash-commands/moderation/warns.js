@@ -125,7 +125,7 @@ export default {
 
 				if (member)
 					pagination.author = {
-						name: `${member.displayName} (ID ${member.id})`,
+						name: `${member.displayName} (ID : ${member.id})`,
 						icon_url: member.user.displayAvatarURL({ dynamic: true }),
 					}
 				else

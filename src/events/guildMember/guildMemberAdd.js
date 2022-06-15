@@ -34,7 +34,7 @@ export default async (guildMember, client) => {
 	const embedJoin = new MessageEmbed()
 		.setColor('57C92A')
 		.setAuthor({
-			name: `${guildMember.displayName} (ID ${guildMember.id})`,
+			name: `${guildMember.displayName} (ID : ${guildMember.id})`,
 			iconURL: guildMember.user.displayAvatarURL({ dynamic: true }),
 		})
 		.addFields([

@@ -40,7 +40,7 @@ export default async (ban, client) => {
 	const logEmbed = new MessageEmbed()
 		.setColor('C9572A')
 		.setAuthor({
-			name: `${bannedUser.user.username} (ID ${bannedUser.user.id})`,
+			name: `${bannedUser.user.username} (ID : ${bannedUser.user.id})`,
 			iconURL: bannedUser.user.displayAvatarURL({ dynamic: true }),
 		})
 		.addFields([
