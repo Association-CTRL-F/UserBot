@@ -61,7 +61,6 @@ export default {
 		if (!mutedRole)
 			return interaction.editReply({
 				content: "Il n'y a pas de rôle Muted 😕",
-				ephemeral: true,
 			})
 
 		// Acquisition du message d'unmute
@@ -77,7 +76,6 @@ export default {
 			return interaction.editReply({
 				content:
 					"Une erreur est survenue lors de la récupération du message d'unmute en base de données 😬",
-				ephemeral: true,
 			})
 		}
 
@@ -90,21 +88,18 @@ export default {
 					return interaction.editReply({
 						content:
 							"Je n'ai pas trouvé cet utilisateur, vérifie la mention ou l'ID 😕",
-						ephemeral: true,
 					})
 
 				// Vérification si le membre a bien le rôle muted
 				if (!member.roles.cache.has(mutedRole))
 					return interaction.editReply({
 						content: "Le membre n'est pas muté 😕",
-						ephemeral: true,
 					})
 
 				// On ne peut pas se démute soi-même
 				if (member.id === interaction.user.id)
 					return interaction.editReply({
 						content: 'Tu ne peux pas te démute toi-même 😕',
-						ephemeral: true,
 					})
 
 				// Envoi du message d'unmute en message privé
@@ -139,7 +134,6 @@ export default {
 					return interaction.editReply({
 						content:
 							'Une erreur est survenue lors de la levé du mute du membre en base de données 😬',
-						ephemeral: true,
 					})
 				}
 
@@ -154,7 +148,6 @@ export default {
 						return interaction.editReply({
 							content:
 								'Une erreur est survenue lors de la levée du mute du membre en base de données 😬',
-							ephemeral: true,
 						})
 					}
 
@@ -180,21 +173,18 @@ export default {
 							return interaction.editReply({
 								content:
 									'Une erreur est survenue lors de la levée du mute du membre 😬',
-								ephemeral: true,
 							})
 						}
 
 						if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
 							return interaction.editReply({
 								content: "Je n'ai pas les permissions pour unmute ce membre 😬",
-								ephemeral: true,
 							})
 
 						console.error(error)
 						return interaction.editReply({
 							content:
 								'Une erreur est survenue lors de la levée du mute du membre 😬',
-							ephemeral: true,
 						})
 					})
 
@@ -220,13 +210,11 @@ export default {
 					if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
 						return interaction.editReply({
 							content: "Je n'ai pas les permissions pour unmute ce membre 😬",
-							ephemeral: true,
 						})
 
 					console.error(error)
 					return interaction.editReply({
 						content: 'Une erreur est survenue lors de la levée du mute du membre 😬',
-						ephemeral: true,
 					})
 				})
 
@@ -263,7 +251,6 @@ export default {
 						if (memberGroup.id === interaction.user.id)
 							return interaction.editReply({
 								content: "Tu ne peux pas t'unmute toi-même 😕",
-								ephemeral: true,
 							})
 
 						// Envoi du message d'unmute en message privé
@@ -297,12 +284,11 @@ export default {
 							return interaction.editReply({
 								content:
 									"Une erreur est survenue lors de l'unmute du membre en base de données 😬",
-								ephemeral: true,
 							})
 						}
 
 						// Si oui alors on lève le mute en base de données
-						if (mutedGroup) {
+						if (mutedGroup)
 							try {
 								const sqlDelete =
 									'DELETE FROM mute WHERE discordID = ? AND guildId = ?'
@@ -313,70 +299,8 @@ export default {
 								return interaction.editReply({
 									content:
 										"Une erreur est survenue lors de l'unmute du membre en base de données 😬",
-									ephemeral: true,
 								})
 							}
-
-							// Action d'unmute du membre
-							const unmuteActionGroup = await memberGroup.roles
-								.remove(mutedRole)
-								.catch(error => {
-									// Suppression du message privé envoyé
-									// car action de mute non réalisée
-									if (DMMessageGroup) DMMessageGroup.delete()
-
-									// Réinsertion du mute en base de données
-									try {
-										const sql =
-											'INSERT INTO mute (guildId, discordID, timestampStart, timestampEnd) VALUES (?, ?, ?, ?)'
-										const data = [
-											interaction.guild.id,
-											mutedGroup.discordID,
-											mutedGroup.timestampStart,
-											mutedGroup.timestampEnd,
-										]
-
-										bdd.execute(sql, data)
-									} catch {
-										return interaction.editReply({
-											content:
-												'Une erreur est survenue lors de la levée du mute du membre 😬',
-											ephemeral: true,
-										})
-									}
-
-									if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
-										return interaction.editReply({
-											content:
-												"Je n'ai pas les permissions pour unmute ce membre 😬",
-											ephemeral: true,
-										})
-
-									console.error(error)
-									return interaction.editReply({
-										content:
-											'Une erreur est survenue lors de la levée du mute du membre 😬',
-										ephemeral: true,
-									})
-								})
-
-							// Si pas d'erreur,
-							// message de confirmation de l'unmute
-							if (unmuteActionGroup instanceof GuildMember)
-								unmuteMessage = unmuteMessage.concat(
-									' ',
-									`\`${memberGroup.user.tag}\`,`,
-								)
-
-							// Si au moins une erreur, throw
-							if (
-								unmuteActionGroup instanceof Error ||
-								DMMessageGroup instanceof Error
-							)
-								throw new Error(
-									"L'envoi d'un message et / ou l'unmute d'un membre a échoué. Voir les logs précédents pour plus d'informations.",
-								)
-						}
 
 						// Action d'unmute du membre
 						const unmuteActionGroup = await memberGroup.roles
@@ -390,14 +314,12 @@ export default {
 									return interaction.editReply({
 										content:
 											"Je n'ai pas les permissions pour unmute ce membre 😬",
-										ephemeral: true,
 									})
 
 								console.error(error)
 								return interaction.editReply({
 									content:
 										'Une erreur est survenue lors de la levée du mute du membre 😬',
-									ephemeral: true,
 								})
 							})
 

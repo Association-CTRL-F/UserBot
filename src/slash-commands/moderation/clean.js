@@ -52,12 +52,31 @@ export default {
 		const chosenNumber = interaction.options.getInteger('nombre')
 		const ephemeral = interaction.options.getBoolean('silent')
 
+		// Acquisition de la base de données
+		const bdd = client.config.db.pools.userbot
+		if (!bdd)
+			return interaction.reply({
+				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
+				ephemeral: true,
+			})
+
+		// Acquisition des paramètres de la guild
+		let configGuild = {}
+		try {
+			const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
+			const dataSelect = [interaction.guild.id]
+			const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
+			configGuild = resultSelect[0]
+		} catch (error) {
+			return console.log(error)
+		}
+
 		// Acquisition du salon de logs
 		const logsChannel = interaction.guild.channels.cache.get(
-			client.config.guild.channels.logsMessagesChannelID,
+			configGuild.LOGS_MESSAGES_CHANNEL_ID,
 		)
 		if (!logsChannel)
-			return interaction.reply({
+			return interaction.ephemeral({
 				content: "Il n'y a pas de salon pour log l'action 😕",
 				ephemeral: true,
 			})
@@ -74,7 +93,7 @@ export default {
 		if (deletedMessages.size === 0)
 			return interaction.reply({
 				content: 'Aucun message supprimé 😕',
-				ephemeral: true,
+				ephemeral: ephemeral,
 			})
 
 		// Réponse pour l'utilisateur
@@ -133,27 +152,18 @@ export default {
 					.setColor('0000FF')
 					.setTitle('Clean')
 					.setDescription(lastDescription)
-					.setAuthor({
-						name: `${displayNameAndID(interaction.member, interaction.user)}`,
-						iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
-					})
 					.addFields([
 						{
 							name: 'Salon',
 							value: interaction.channel.toString(),
 							inline: true,
 						},
-						{
-							name: 'Exécuté par',
-							value: interaction.member.toString(),
-							inline: true,
-						},
-						{
-							name: 'Exécuté le',
-							value: convertDateForDiscord(Date.now()),
-							inline: true,
-						},
-					]),
+					])
+					.setFooter({
+						iconURL: interaction.member.displayAvatarURL({ dynamic: true }),
+						text: `Exécuté par ${interaction.user.tag}`,
+					})
+					.setTimestamp(new Date()),
 			]
 
 			if (!isEmbedExceedingLimits(embeds)) return logsChannel.send({ embeds: embeds })
@@ -169,27 +179,11 @@ export default {
 			.setColor('0000FF')
 			.setTitle('Clean')
 			.setDescription(text)
-			.setAuthor({
-				name: `${displayNameAndID(interaction.member, interaction.user)}`,
-				iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+			.setFooter({
+				iconURL: interaction.member.displayAvatarURL({ dynamic: true }),
+				text: `Exécuté par ${interaction.user.tag} dans #${interaction.channel.name}`,
 			})
-			.addFields([
-				{
-					name: 'Salon',
-					value: interaction.channel.toString(),
-					inline: true,
-				},
-				{
-					name: 'Exécuté par',
-					value: interaction.member.toString(),
-					inline: true,
-				},
-				{
-					name: 'Exécuté le',
-					value: convertDateForDiscord(Date.now()),
-					inline: true,
-				},
-			])
+			.setTimestamp(new Date())
 
 		return logsChannel.send({
 			embeds: [embed],

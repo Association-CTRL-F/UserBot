@@ -196,8 +196,8 @@ export default {
 				let commandsSearch = []
 				try {
 					const sqlSearch =
-						'SELECT * FROM commands WHERE MATCH(name) AGAINST(? IN BOOLEAN MODE) OR MATCH(content) AGAINST(? IN BOOLEAN MODE) AND guildId = ?;'
-					const dataSearch = [keyword, keyword, interaction.guild.id]
+						'SELECT * FROM commands WHERE guildId = ? AND (MATCH(name) AGAINST(? IN BOOLEAN MODE) OR MATCH(content) AGAINST(? IN BOOLEAN MODE));'
+					const dataSearch = [interaction.guild.id, keyword, keyword]
 					const [resultsSearch] = await bdd.execute(sqlSearch, dataSearch)
 					commandsSearch = resultsSearch
 				} catch (error) {
@@ -206,6 +206,12 @@ export default {
 						ephemeral: true,
 					})
 				}
+
+				if (commandsSearch.length === 0)
+					return interaction.reply({
+						content: 'Aucun résultat 😕',
+						ephemeral: true,
+					})
 
 				// Boucle d'ajout des champs
 				const fieldsEmbedSearch = []

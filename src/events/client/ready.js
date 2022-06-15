@@ -77,7 +77,7 @@ export default async client => {
 			const sqlSelectUnmute = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
 			const dataSelectUnmute = ['unmute', currentGuild.GUILD_ID]
 			const [resultSelectUnmute] = await bdd.execute(sqlSelectUnmute, dataSelectUnmute)
-			unmuteDM = resultSelectUnmute[0]
+			unmuteDM = resultSelectUnmute[0].content
 		} catch (error) {
 			return console.error(error)
 		}

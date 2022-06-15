@@ -46,6 +46,12 @@ export default {
 					})
 				}
 
+				if (commands.length === 0)
+					return interaction.reply({
+						content: "Aucune commande n'a été créée 😕",
+						ephemeral: true,
+					})
+
 				// Boucle d'ajout des champs
 				const fieldsEmbedView = []
 				let count = 1

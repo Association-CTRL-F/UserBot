@@ -551,7 +551,7 @@ export default {
 					if (winnersTirageString === '' || !usersReactions) {
 						embedWin.fields.push({
 							name: '0 gagnant',
-							value: 'Pas de participants',
+							value: 'Aucun participant',
 						})
 
 						await sentMessageFetch.edit({ embeds: [embedWin] })
@@ -721,7 +721,7 @@ export default {
 				if (winnersTirageStringEnd === '' || !usersReactionsEnd) {
 					embedWinEnd.fields.push({
 						name: '0 gagnant',
-						value: 'Pas de participants',
+						value: 'Aucun participant',
 					})
 
 					await sentMessageFetch.edit({ embeds: [embedWinEnd] })
@@ -869,7 +869,7 @@ export default {
 				if (winnersTirageString === '' || !usersReactions) {
 					embedWinReroll.fields.push({
 						name: '0 gagnant',
-						value: 'Pas de participants',
+						value: 'Aucun participant',
 					})
 
 					await sentMessageReroll.edit({ embeds: [embedWinReroll] })

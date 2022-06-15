@@ -13,6 +13,9 @@ export default {
 				ephemeral: true,
 			})
 
+		// On diffère la réponse pour avoir plus de 3 secondes
+		await interaction.deferReply()
+
 		const random = Math.round(Math.random() * 100)
 
 		let resultat = ''
@@ -20,7 +23,7 @@ export default {
 		else if (random > 50) resultat = 'Face'
 		else resultat = 'Tranche'
 
-		await interaction.reply({ content: 'La pièce tourne.' })
+		await interaction.editReply({ content: 'La pièce tourne.' })
 		await interaction.editReply({ content: 'La pièce tourne..' })
 		return interaction.editReply({
 			content: `La pièce tourne... **${resultat}** !`,

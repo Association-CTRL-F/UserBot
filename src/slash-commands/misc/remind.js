@@ -235,7 +235,7 @@ export default {
 					})
 				}
 
-				// Vérification si le rappel appartient bien au membre
+				// Vérification si le rappel existe
 				if (!fetchReminderEdit)
 					return interaction.reply({
 						content: "Ce rappel ne n'existe pas 😬",
@@ -341,6 +341,13 @@ export default {
 					})
 				}
 
+				// Vérification si le rappel existe
+				if (!fetchReminder)
+					return interaction.reply({
+						content: "Le rappel n'existe pas 😬",
+						ephemeral: true,
+					})
+
 				// Vérification si le rappel appartient bien au membre
 				if (fetchReminder.discordID !== interaction.user.id)
 					return interaction.reply({
@@ -370,12 +377,6 @@ export default {
 						content: 'Le rappel a bien été supprimé 👌',
 						ephemeral: true,
 					})
-
-				// Sinon, message d'erreur
-				return interaction.reply({
-					content: "Le rappel n'existe pas 😬",
-					ephemeral: true,
-				})
 		}
 	},
 }

@@ -14,6 +14,9 @@ export default {
 				ephemeral: true,
 			})
 
+		// On diffère la réponse pour avoir plus de 3 secondes
+		await interaction.deferReply()
+
 		// Lancement du dé
 		const face = Math.floor(Math.random() * 6) + 1
 
@@ -27,11 +30,9 @@ export default {
 				.setColor('#1ABC9C')
 				.setTitle('Lancer de dé')
 				.setDescription('**SURPRISE**')
-				.setThumbnail({
-					url: `attachment://rgb.png`,
-				})
+				.setThumbnail('attachment://rgb.png')
 
-			return interaction.reply({
+			return interaction.editReply({
 				embeds: [embed],
 				files: [`./config/commands/dé/rgb.png`],
 			})
@@ -42,11 +43,9 @@ export default {
 			.setColor('#C27C0E')
 			.setTitle('Lancer de dé')
 			.setDescription(`Tu es tombé sur **${face}**`)
-			.setThumbnail({
-				url: `attachment://${face}.png`,
-			})
+			.setThumbnail(`attachment://${face}.png`)
 
-		return interaction.reply({
+		return interaction.editReply({
 			embeds: [embed],
 			files: [`./config/commands/dé/${face}.png`],
 		})
