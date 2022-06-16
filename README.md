@@ -6,17 +6,17 @@ Bot du serveur Discord d'Entraide Informatique - Capetlevrai
 
 Vous devez tout d'abord inviter le bot sur votre serveur avec le lien suivant : https://lien.ctrl-f.io/InviteUserBot (le mot de passe n'est donné qu'aux modérateurs du serveur de Capet).
 
-La configuration du serveur doit être totalement effectuée afin que le bot puisse fonctionner, celui-ci affiche un message d'erreur vous invitant à la terminer le cas échéant.
+La configuration du serveur doit être totalement effectuée afin que le bot puisse fonctionner, celui-ci affiche un message d'erreur vous invitant à la terminer le cas échéant. La timezone est définie sur `Europe/Paris` et n'est pas modifiable.
 
 Cela s'effectue de la façon suivante avec la commande `/setup` :
 * `/setup view` : voir la configuration du serveur
-* `/setup commands-prefix` : préfixe des commandes personnalisées
+* `/setup commands-prefix` : préfixe des commandes personnalisées (`!` par défaut)
 * `/setup leave-join-channel` : salon départs-arrivées
 * `/setup report-channel` : salon signalements
 * `/setup logs-messages-channel` : salon logs messages
 * `/setup logs-bans-channel` : salon logs bans
 * `/setup join-role` : rôle Pas de blabla
-* `/setup timeout-join` : timeout rôle Pas de blabla
+* `/setup timeout-join` : timeout rôle Pas de blabla (`30m` par défaut)
 * `/setup muted-role` : rôle Muted
 * `/setup tribunal-channel` : salon tribunal
 * `/setup config-channel` : salon config
