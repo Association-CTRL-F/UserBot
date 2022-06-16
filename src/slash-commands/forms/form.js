@@ -81,6 +81,12 @@ export default {
 					})
 				}
 
+				if (forms.length === 0)
+					return interaction.reply({
+						content: "Aucun formulaire n'a été créé 😕",
+						ephemeral: true,
+					})
+
 				const arrayForms = []
 				forms.forEach(form => {
 					arrayForms.push({

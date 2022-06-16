@@ -98,6 +98,12 @@ export default {
 					})
 				}
 
+				if (reminders.length === 0)
+					return interaction.reply({
+						content: "Aucun rappel n'a été créé 😕",
+						ephemeral: true,
+					})
+
 				// Boucle d'ajout des champs
 				const fieldsEmbedView = []
 				reminders.forEach(reminder => {

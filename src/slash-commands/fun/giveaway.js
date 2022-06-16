@@ -141,6 +141,8 @@ export default {
 			}),
 		)
 
+		if (interaction.replied) return
+
 		let fetchGiveaway = {}
 		if (
 			interaction.options.getSubcommand() !== 'view' ||
@@ -175,6 +177,12 @@ export default {
 						ephemeral: true,
 					})
 				}
+
+				if (giveaways.length === 0)
+					return interaction.reply({
+						content: "Aucun giveaway n'a été créé 😕",
+						ephemeral: true,
+					})
 
 				// Boucle d'ajout des champs
 				const fieldsEmbedView = []

@@ -109,6 +109,12 @@ export default {
 					})
 				}
 
+				if (rules.length === 0)
+					return interaction.reply({
+						content: "Aucune règle n'a été créée 😕",
+						ephemeral: true,
+					})
+
 				const arrayRules = []
 				rules.forEach(rule => {
 					arrayRules.push({
@@ -289,6 +295,12 @@ export default {
 								ephemeral: true,
 							})
 						}
+
+						if (domainsView.length === 0)
+							return interaction.reply({
+								content: "Aucun domaine n'a été ajouté 😕",
+								ephemeral: true,
+							})
 
 						// Boucle d'ajout des champs
 						const fieldsEmbedView = []

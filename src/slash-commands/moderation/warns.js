@@ -89,6 +89,12 @@ export default {
 					})
 				}
 
+				if (warnings.length === 0)
+					return interaction.reply({
+						content: "Aucun avertissement n'a été créé pour cet utilisateur",
+						ephemeral: true,
+					})
+
 				// Sinon, boucle d'ajout des champs
 				const fieldsEmbed = []
 				warnings.forEach(warning => {

@@ -1,6 +1,6 @@
 {
 	"name": "userbot",
-	"version": "5.0.0",
+	"version": "5.0.1",
 	"description": "Bot Capet",
 	"main": "src/index.js",
 	"scripts": {
