@@ -10,7 +10,7 @@ Bot du serveur Discord d'Entraide Informatique - Capetlevrai
 - [Mise en place du bot](#mise-en-place-du-bot)
 	- [Création du bot](#création-du-bot)
 	- [Invitation du bot](#invitation-du-bot)
-    - [Configuration (pour utiliser UserBot#5014)](#configuration)
+    - [Configuration (pour utiliser UserBot#5014)](#configuration-pour-utiliser-userbot5014)
 - [Setup en production](#setup-en-production)
 	- [Setup avec Node.js](#setup-avec-nodejs)
 	- [Setup dans un container avec Docker et Docker Compose](#setup-dans-un-container-avec-docker-et-docker-compose)
