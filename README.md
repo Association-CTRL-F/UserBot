@@ -179,13 +179,12 @@ Le bot repose sur les variables d'environnement pour pouvoir fonctionner.
 > DN_NAME_URLS_API=""
 > DN_NAME_USERBOT=""
 > RICH_PRESENCE_TEXT=""
-
 > ```
 
 | Variable           | Description                                                                                                      |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------- |
 | DISCORD_TOKEN      | [Token secret du bot Discord](https://discordjs.guide/preparations/setting-up-a-bot-application.html#your-token) |
-| DB_HOST            | Serveru MySQL                                                                                                    |
+| DB_HOST            | Serveur MySQL                                                                                                    |
 | DB_USER            | Nom d'utilisateur MySQL                                                                                          |
 | DB_PASS            | Mot de passe MySQL                                                                                               |
 | DN_NAME_URLS_API   | Base de données des URLs courtes                                                                                 |
@@ -199,7 +198,7 @@ Le bot repose sur les variables d'environnement pour pouvoir fonctionner.
 </details>
 
 <details id='reaction'>
-<summary><b>Configuration du sytème de réaction/rôles</b></summary>
+<summary><b>Configuration du sytème de réactions / rôles</b></summary>
 
 #### Fichier reactionRoleConfig.json
 
