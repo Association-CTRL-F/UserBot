@@ -9,7 +9,6 @@ export default async (guild, client) => {
 		const sql = `INSERT INTO config (
 				isSetup,
                 COMMANDS_PREFIX,
-                TIMEZONE,
                 GUILD_ID,
                 LEAVE_JOIN_CHANNEL_ID,
                 REPORT_CHANNEL_ID,
@@ -30,7 +29,6 @@ export default async (guild, client) => {
 		const data = [
 			0,
 			'!',
-			'Europe/Paris',
 			guild.id,
 			null,
 			null,

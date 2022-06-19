@@ -30,6 +30,7 @@ export default async () => {
 	client.cooldowns = new Collection()
 
 	client.config = {
+		timezone: process.env.TIMEZONE,
 		db: {
 			dbHost: process.env.DB_HOST,
 			dbUser: process.env.DB_USER,
