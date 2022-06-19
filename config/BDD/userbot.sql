@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: Jun 14, 2022 at 07:05 PM
+-- Generation Time: Jun 19, 2022 at 03:34 PM
 -- Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal
 -- PHP Version: 7.4.23
 
@@ -76,7 +76,6 @@ CREATE TABLE `commands` (
 CREATE TABLE `config` (
   `isSetup` tinyint(1) NOT NULL,
   `COMMANDS_PREFIX` varchar(255) DEFAULT NULL,
-  `TIMEZONE` varchar(255) DEFAULT NULL,
   `GUILD_ID` varchar(255) NOT NULL,
   `LEAVE_JOIN_CHANNEL_ID` varchar(255) DEFAULT NULL,
   `REPORT_CHANNEL_ID` varchar(255) DEFAULT NULL,
