@@ -32,7 +32,7 @@ export default async client => {
 						if (command.contextMenu) {
 							client.contextmenus.set(command.contextMenu.name, command)
 
-							return command.contextMenu.toJSON()
+							return [command.data.toJSON(), command.contextMenu.toJSON()]
 						}
 
 						return command.data.toJSON()
@@ -40,7 +40,7 @@ export default async client => {
 				)
 			}),
 		)
-	).flat()
+	).flat(2)
 
 	try {
 		await rest.put(Routes.applicationCommands(clientId), {
