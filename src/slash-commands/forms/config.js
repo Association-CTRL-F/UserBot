@@ -1,5 +1,5 @@
 import { Constants, MessageEmbed } from 'discord.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { SlashCommandBuilder, ContextMenuCommandBuilder } from '@discordjs/builders'
 import { isGuildSetup } from '../../util/util.js'
 
 export default {
@@ -7,6 +7,7 @@ export default {
 		.setName('config')
 		.setDescription('Donne le formulaire de config')
 		.addUserOption(option => option.setName('membre').setDescription('Membre')),
+	contextMenu: new ContextMenuCommandBuilder().setName('config').setType(2),
 	interaction: async (interaction, client) => {
 		// Vérification que la guild soit entièrement setup
 		const isSetup = await isGuildSetup(interaction.guild, client)

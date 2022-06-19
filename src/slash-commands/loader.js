@@ -15,7 +15,7 @@ export default async client => {
 			commandsDir.map(async commandCategory => {
 				const commandFiles = await readdir(`./src/slash-commands/${commandCategory}`)
 
-				// Ajout dans la map utilisée pour la commande "rôles"
+				// Ajout dans la map
 				client.commandsCategories.set(
 					commandCategory,
 					commandFiles.map(removeFileExtension),
@@ -28,6 +28,13 @@ export default async client => {
 						).default
 
 						client.commands.set(command.data.name, command)
+
+						if (command.contextMenu) {
+							client.contextmenus.set(command.contextMenu.name, command)
+
+							return command.contextMenu.toJSON()
+						}
+
 						return command.data.toJSON()
 					}),
 				)

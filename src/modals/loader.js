@@ -9,7 +9,7 @@ export default async client => {
 		modalsDir.map(async modalCategory => {
 			const modalFiles = await readdir(`./src/modals/${modalCategory}`)
 
-			// Ajout dans la map utilisée pour la commande "rôles"
+			// Ajout dans la map
 			client.modalsCategories.set(modalCategory, modalFiles.map(removeFileExtension))
 
 			return Promise.all(

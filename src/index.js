@@ -34,9 +34,9 @@ const run = async () => {
 
 	try {
 		await menusLoader(client)
-		console.log('Menus ✅')
+		console.log('Select Menus ✅')
 	} catch {
-		console.log('Menus ❌')
+		console.log('Select Menus ❌')
 	}
 
 	await client.login(client.config.bot.token)

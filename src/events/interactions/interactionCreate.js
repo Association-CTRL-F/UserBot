@@ -10,15 +10,26 @@ export default (interaction, client) => {
 		return command.interaction(interaction, client)
 	}
 
-	if (interaction.isSelectMenu()) {
-		const menu = client.menus.get(interaction.customId)
-		if (!menu)
+	if (interaction.isContextMenu()) {
+		const contextMenu = client.contextmenus.get(interaction.commandName)
+		if (!contextMenu)
 			return interaction.reply({
-				content: `Impossible de trouver le menu "${interaction.customId}"`,
+				content: `Impossible de trouver le context-menu "${interaction.commandName}"`,
 				ephemeral: true,
 			})
 
-		return menu.interaction(interaction, client)
+		return contextMenu.interaction(interaction, client)
+	}
+
+	if (interaction.isSelectMenu()) {
+		const selectMenu = client.selectmenus.get(interaction.customId)
+		if (!selectMenu)
+			return interaction.reply({
+				content: `Impossible de trouver le select-menu "${interaction.customId}"`,
+				ephemeral: true,
+			})
+
+		return selectMenu.interaction(interaction, client)
 	}
 
 	if (interaction.isModalSubmit()) {

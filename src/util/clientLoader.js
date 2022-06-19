@@ -25,8 +25,9 @@ export default async () => {
 	})
 
 	client.commands = new Collection()
+	client.contextmenus = new Collection()
 	client.modals = new Collection()
-	client.menus = new Collection()
+	client.selectmenus = new Collection()
 	client.cooldowns = new Collection()
 
 	client.config = {
@@ -68,12 +69,12 @@ export default async () => {
 		deleteMessagesID: new Set(),
 	}
 
-	// Maps utilisées pour la commande "rôles"
+	// Maps
 	client.commandsCategories = new Map()
 	client.modalsCategories = new Map()
-	client.menusCategories = new Map()
+	client.selectMenusCategories = new Map()
 
-	// Map utilisé pour la gestion des salons vocaux
+	// Map utilisée pour la gestion des salons vocaux
 	client.voiceManager = new Map()
 
 	return client
