@@ -12,7 +12,7 @@ import {
 } from '../../util/util.js'
 
 export default async (message, client) => {
-	if (message.author.bot || (message.guild && !message.guild.available)) return
+	if (message.author.bot || message.guild || !message.guild.available) return
 
 	if (message.partial) await message.fetch()
 
