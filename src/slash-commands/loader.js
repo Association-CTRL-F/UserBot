@@ -27,15 +27,19 @@ export default async client => {
 							await import(`../slash-commands/${commandCategory}/${commandFile}`)
 						).default
 
-						client.commands.set(command.data.name, command)
+						const datas = []
+
+						if (command.data) {
+							client.commands.set(command.data.name, command)
+							datas.push(command.data.toJSON())
+						}
 
 						if (command.contextMenu) {
 							client.contextmenus.set(command.contextMenu.name, command)
-
-							return [command.data.toJSON(), command.contextMenu.toJSON()]
+							datas.push(command.contextMenu.toJSON())
 						}
 
-						return command.data.toJSON()
+						return datas
 					}),
 				)
 			}),
