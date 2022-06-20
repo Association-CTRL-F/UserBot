@@ -1,4 +1,3 @@
-/* eslint-disable no-empty */
 /* eslint-disable default-case */
 /* eslint-disable no-case-declarations */
 import { Collection, Constants, GuildMember, MessageEmbed } from 'discord.js'
@@ -185,7 +184,9 @@ export default async (message, client) => {
 						if (role.id === ignoredRole) hasIgnoredRole += 1
 					})
 				})
-			} catch (error) {}
+			} catch (error) {
+				return console.log(error)
+			}
 
 			if (hasIgnoredRole === 0) {
 				const regexRule = rule.regex

@@ -1,4 +1,3 @@
-/* eslint-disable no-empty */
 export default async (guild, client) => {
 	// Acquisition de la base de données
 	const bdd = client.config.db.pools.userbot
@@ -49,61 +48,79 @@ export default async (guild, client) => {
 		]
 
 		await bdd.execute(sql, data)
-	} catch (error) {}
+	} catch (error) {
+		return console.log(error)
+	}
 
 	try {
 		const sql = 'INSERT INTO forms (guildId, name, content) VALUES (?, ?, ?)'
 		const data = [guild.id, 'config', `\`\`\`Le formulaire de config\`\`\``]
 
 		await bdd.execute(sql, data)
-	} catch (error) {}
+	} catch (error) {
+		return console.log(error)
+	}
 
 	try {
 		const sql = 'INSERT INTO forms (guildId, name, content) VALUES (?, ?, ?)'
 		const data = [guild.id, 'configDescription', 'La description du formulaire de config']
 
 		await bdd.execute(sql, data)
-	} catch (error) {}
+	} catch (error) {
+		return console.log(error)
+	}
 
 	try {
 		const sql = 'INSERT INTO forms (guildId, name, content) VALUES (?, ?, ?)'
 		const data = [guild.id, 'upgrade', `\`\`\`Le formulaire d'upgrade\`\`\``]
 
 		await bdd.execute(sql, data)
-	} catch (error) {}
+	} catch (error) {
+		return console.log(error)
+	}
 
 	try {
 		const sql = 'INSERT INTO forms (guildId, name, content) VALUES (?, ?, ?)'
 		const data = [guild.id, 'upgradeDescription', "La description du formulaire d'upgrade"]
 
 		await bdd.execute(sql, data)
-	} catch (error) {}
+	} catch (error) {
+		return console.log(error)
+	}
 
 	try {
 		const sql = 'INSERT INTO forms (guildId, name, content) VALUES (?, ?, ?)'
 		const data = [guild.id, 'mute', 'Le message de mute']
 
 		await bdd.execute(sql, data)
-	} catch (error) {}
+	} catch (error) {
+		return console.log(error)
+	}
 
 	try {
 		const sql = 'INSERT INTO forms (guildId, name, content) VALUES (?, ?, ?)'
 		const data = [guild.id, 'unmute', "Le message d'unmute"]
 
 		await bdd.execute(sql, data)
-	} catch (error) {}
+	} catch (error) {
+		return console.log(error)
+	}
 
 	try {
 		const sql = 'INSERT INTO forms (guildId, name, content) VALUES (?, ?, ?)'
 		const data = [guild.id, 'warn', "Le message d'avertissement"]
 
 		await bdd.execute(sql, data)
-	} catch (error) {}
+	} catch (error) {
+		return console.log(error)
+	}
 
 	try {
 		const sql = 'INSERT INTO forms (guildId, name, content) VALUES (?, ?, ?)'
 		const data = [guild.id, 'ban', 'Le message de bannissement']
 
 		await bdd.execute(sql, data)
-	} catch (error) {}
+	} catch (error) {
+		return console.log(error)
+	}
 }

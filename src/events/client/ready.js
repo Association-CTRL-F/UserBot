@@ -360,8 +360,9 @@ export default async client => {
 						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
 						const data = [1, giveaway.id, currentGuild.GUILD_ID]
 						await bdd.execute(sql, data)
-						// eslint-disable-next-line no-empty
-					} catch (error) {}
+					} catch (error) {
+						return console.log(error)
+					}
 
 					return
 				}
@@ -375,8 +376,9 @@ export default async client => {
 
 					try {
 						usersReactions = await sentMessage.reactions.cache.get('🎉').users.fetch()
-						// eslint-disable-next-line no-empty
-					} catch (error) {}
+					} catch (error) {
+						return console.log(error)
+					}
 
 					const excludedIdsArray = giveaway.excludedIds.split(',')
 
@@ -401,8 +403,9 @@ export default async client => {
 									'UPDATE giveaways SET excludedIds = ? WHERE id = ? AND guildId = ?'
 								const data = [excludedIds, giveaway.id, currentGuild.GUILD_ID]
 								await bdd.execute(sql, data)
-								// eslint-disable-next-line no-empty
-							} catch (error) {}
+							} catch (error) {
+								return console.log(error)
+							}
 
 							i += 1
 						}
@@ -429,8 +432,9 @@ export default async client => {
 						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
 						const data = [1, giveaway.id, currentGuild.GUILD_ID]
 						await bdd.execute(sql, data)
-						// eslint-disable-next-line no-empty
-					} catch (error) {}
+					} catch (error) {
+						return console.log(error)
+					}
 
 					if (winnersTirageString === '' || !usersReactions) {
 						embedWin.fields.push({
@@ -469,8 +473,9 @@ export default async client => {
 					const sql = 'UPDATE giveaways SET timeoutId = ? WHERE id = ? AND guildId = ?'
 					const data = [Number(timeout), giveaway.id, currentGuild.GUILD_ID]
 					await bdd.execute(sql, data)
-					// eslint-disable-next-line no-empty
-				} catch (error) {}
+				} catch (error) {
+					return console.log(error)
+				}
 			})
 
 		// Boucle @Pas de blabla //

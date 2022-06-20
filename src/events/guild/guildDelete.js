@@ -17,6 +17,6 @@ export default async (guild, client) => {
 		const data = [guild.id]
 		await bdd.execute(sql, data)
 	} catch (error) {
-		console.log(error)
+		return console.log(error)
 	}
 }

@@ -485,8 +485,9 @@ export default {
 								'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
 							const data = [1, fetchGiveaway.id, interaction.guild.id]
 							await bdd.execute(sql, data)
-							// eslint-disable-next-line no-empty
-						} catch (error) {}
+						} catch (error) {
+							return console.log(error)
+						}
 
 						return
 					}
@@ -497,8 +498,9 @@ export default {
 						usersReactions = await sentMessageFetch.reactions.cache
 							.get('🎉')
 							.users.fetch()
-						// eslint-disable-next-line no-empty
-					} catch (error) {}
+					} catch (error) {
+						return console.log(error)
+					}
 
 					const excludedIdsArray = fetchGiveaway.excludedIds.split(',')
 					let excludedIds = fetchGiveaway.excludedIds
@@ -525,8 +527,9 @@ export default {
 									'UPDATE giveaways SET excludedIds = ? WHERE id = ? AND guildId = ?'
 								const data = [excludedIds, fetchGiveaway.id, interaction.guild.id]
 								await bdd.execute(sql, data)
-								// eslint-disable-next-line no-empty
-							} catch (error) {}
+							} catch (error) {
+								return console.log(error)
+							}
 
 							i += 1
 						}
@@ -553,8 +556,9 @@ export default {
 						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
 						const data = [1, fetchGiveaway.id, interaction.guild.id]
 						await bdd.execute(sql, data)
-						// eslint-disable-next-line no-empty
-					} catch (error) {}
+					} catch (error) {
+						return console.log(error)
+					}
 
 					if (winnersTirageString === '' || !usersReactions) {
 						embedWin.fields.push({
@@ -655,8 +659,9 @@ export default {
 						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
 						const data = [1, fetchGiveaway.id, interaction.guild.id]
 						await bdd.execute(sql, data)
-						// eslint-disable-next-line no-empty
-					} catch (error) {}
+					} catch (error) {
+						return console.log(error)
+					}
 
 					return
 				}
@@ -667,8 +672,9 @@ export default {
 					usersReactionsEnd = await sentMessageFetch.reactions.cache
 						.get('🎉')
 						.users.fetch()
-					// eslint-disable-next-line no-empty
-				} catch (error) {}
+				} catch (error) {
+					return console.log(error)
+				}
 
 				const excludedIdsArrayEnd = fetchGiveaway.excludedIds.split(',')
 				let excludedIdsEnd = fetchGiveaway.excludedIds
@@ -695,8 +701,9 @@ export default {
 								'UPDATE giveaways SET excludedIds = ? WHERE id = ? AND guildId = ?'
 							const data = [excludedIdsEnd, fetchGiveaway.id, interaction.guild.id]
 							await bdd.execute(sql, data)
-							// eslint-disable-next-line no-empty
-						} catch (error) {}
+						} catch (error) {
+							return console.log(error)
+						}
 
 						iEnd += 1
 					}
@@ -723,8 +730,9 @@ export default {
 					const sql = 'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
 					const data = [1, fetchGiveaway.id, interaction.guild.id]
 					await bdd.execute(sql, data)
-					// eslint-disable-next-line no-empty
-				} catch (error) {}
+				} catch (error) {
+					return console.log(error)
+				}
 
 				if (winnersTirageStringEnd === '' || !usersReactionsEnd) {
 					embedWinEnd.fields.push({
@@ -806,8 +814,9 @@ export default {
 						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
 						const data = [1, fetchGiveaway.id, interaction.guild.id]
 						await bdd.execute(sql, data)
-						// eslint-disable-next-line no-empty
-					} catch (error) {}
+					} catch (error) {
+						return console.log(error)
+					}
 
 					return interaction.editReply({
 						content: "Le message du giveaway n'existe pas 😕",
@@ -818,8 +827,9 @@ export default {
 
 				try {
 					usersReactions = await sentMessageReroll.reactions.cache.get('🎉').users.fetch()
-					// eslint-disable-next-line no-empty
-				} catch (error) {}
+				} catch (error) {
+					return console.log(error)
+				}
 
 				const excludedIdsArray = fetchGiveaway.excludedIds.split(',')
 				let excludedIds = fetchGiveaway.excludedIds
@@ -843,8 +853,9 @@ export default {
 								'UPDATE giveaways SET excludedIds = ? WHERE id = ? AND guildId = ?'
 							const data = [excludedIds, fetchGiveaway.id, interaction.guild.id]
 							await bdd.execute(sql, data)
-							// eslint-disable-next-line no-empty
-						} catch (error) {}
+						} catch (error) {
+							return console.log(error)
+						}
 
 						i += 1
 					}
@@ -871,8 +882,9 @@ export default {
 					const sql = 'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
 					const data = [1, fetchGiveaway.id, interaction.guild.id]
 					await bdd.execute(sql, data)
-					// eslint-disable-next-line no-empty
-				} catch (error) {}
+				} catch (error) {
+					return console.log(error)
+				}
 
 				if (winnersTirageString === '' || !usersReactions) {
 					embedWinReroll.fields.push({
