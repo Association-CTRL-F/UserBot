@@ -173,6 +173,7 @@ Le bot repose sur les variables d'environnement pour pouvoir fonctionner.
 > Exemple disponible [ici](config/env/bot.example.env) :
 > ```env
 > DISCORD_TOKEN=""
+> TIMEZONE=""
 > DB_HOST=""
 > DB_USER=""
 > DB_PASS=""
@@ -184,6 +185,7 @@ Le bot repose sur les variables d'environnement pour pouvoir fonctionner.
 | Variable           | Description                                                                                                      |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------- |
 | DISCORD_TOKEN      | [Token secret du bot Discord](https://discordjs.guide/preparations/setting-up-a-bot-application.html#your-token) |
+| TIMEZONE           | Timezone ("Europe/Paris" par défaut)                                                                             |
 | DB_HOST            | Serveur MySQL                                                                                                    |
 | DB_USER            | Nom d'utilisateur MySQL                                                                                          |
 | DB_PASS            | Mot de passe MySQL                                                                                               |
