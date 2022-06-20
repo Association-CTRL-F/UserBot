@@ -44,7 +44,7 @@ export default {
 			return console.log(error)
 		}
 
-		// On ne peut pas report un message posté pour soi-même
+		// On ne peut pas report son propre message
 		if (message.author === interaction.user)
 			return interaction.editReply({
 				content: 'Tu ne peux pas signaler ton propre message 😕',
@@ -64,7 +64,7 @@ export default {
 		if (logReport) {
 			const logReportEmbed = logReport.embeds[0]
 
-			// // On return si l'utilisateur a déjà report ce message
+			// On return si l'utilisateur a déjà report ce message
 			if (logReportEmbed.fields.some(field => field.value.includes(interaction.user.id)))
 				return interaction.editReply({
 					content: 'Tu as déjà signalé ce message 😕',
