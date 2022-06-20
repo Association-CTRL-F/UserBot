@@ -19,7 +19,10 @@ export default {
 			})
 
 		// Acquisition du membre
-		const user = interaction.options.getUser('membre') || interaction.user
+		let user = {}
+		if (interaction.isContextMenu()) user = interaction.targetUser
+		else user = interaction.options.getUser('membre') || interaction.user
+
 		const member = interaction.guild.members.cache.get(user.id)
 		if (!member)
 			return interaction.reply({
