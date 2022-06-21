@@ -44,7 +44,7 @@ const run = async () => {
 	await slashCommandsLoader(client)
 
 	console.log(
-		`Startup finished !\n> Ready :\n  - Version ${client.config.bot.version}\n  - Connected as ${client.user.username}`,
+		`Startup finished !\n> Ready :\n  - Version ${client.config.bot.version}\n  - Connected as ${client.user.tag}`,
 	)
 
 	process.on('unhandledRejection', error => {

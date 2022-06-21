@@ -55,7 +55,7 @@ export default async (messageReaction, user, client) => {
 		case '🚨': {
 			if (message.author.bot || !message.guild) return
 
-			// On ne peut pas report un message posté pour soi-même
+			// On ne peut pas report son propre message
 			if (message.author === user) return messageReaction.users.remove(user)
 
 			const reportChannel = message.guild.channels.cache.get(configGuild.REPORT_CHANNEL_ID)
@@ -73,7 +73,8 @@ export default async (messageReaction, user, client) => {
 				const logReportEmbed = logReport.embeds[0]
 
 				// On return si l'utilisateur a déjà report ce message
-				if (logReportEmbed.fields.some(field => field.value.includes(user.id))) return
+				if (logReportEmbed.fields.some(field => field.value.includes(user.id)))
+					return messageReaction.users.remove(user)
 
 				const editLogReport = {
 					author: logReportEmbed.author,
@@ -89,27 +90,28 @@ export default async (messageReaction, user, client) => {
 						editLogReport.fields.push({
 							name: '2nd signalement',
 							value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
-							inline: false,
 						})
 						break
+
 					case 2:
 						editLogReport.color = 'ff6600'
 						editLogReport.fields.push({
 							name: '3ème signalement',
 							value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
-							inline: false,
 						})
 						break
+
 					case 3:
 						editLogReport.color = 'ff3200'
 						editLogReport.fields.push({
 							name: '4ème signalement',
 							value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
-							inline: false,
 						})
+
 						client.cache.deleteMessagesID.add(messageReaction.message.id)
 						messageReaction.message.delete()
 						break
+
 					default:
 						break
 				}
@@ -120,7 +122,7 @@ export default async (messageReaction, user, client) => {
 
 			// S'il n'y a pas de report déjà posté
 			const sendLogReport = new MessageEmbed()
-				.setDescription(`**Contenu du message**\n${message.content}`)
+				.setDescription(`**Contenu du message**\n\`\`\`${message.content}\`\`\``)
 				.setAuthor({
 					name: 'Nouveau signalement',
 					iconURL: message.author.displayAvatarURL({ dynamic: true }),
@@ -151,71 +153,66 @@ export default async (messageReaction, user, client) => {
 					sendLogReport.fields.push({
 						name: '1er signalement',
 						value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
-						inline: false,
 					})
 					break
+
 				case 2:
 					sendLogReport.color = 'FF8200'
 					sendLogReport.fields.push(
 						{
 							name: '1er signalement',
 							value: '?',
-							inline: false,
 						},
 						{
 							name: '2nd signalement',
 							value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
-							inline: false,
 						},
 					)
 					break
+
 				case 3:
 					sendLogReport.color = 'FF6600'
 					sendLogReport.fields.push(
 						{
 							name: '1er signalement',
 							value: '?',
-							inline: false,
 						},
 						{
 							name: '2nd signalement',
 							value: '?',
-							inline: false,
 						},
 						{
 							name: '3ème signalement',
 							value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
-							inline: false,
 						},
 					)
 					break
+
 				case 4:
 					sendLogReport.color = 'FF3200'
 					sendLogReport.fields.push(
 						{
 							name: '1er signalement',
 							value: '?',
-							inline: false,
 						},
 						{
 							name: '2nd signalement',
 							value: '?',
-							inline: false,
 						},
 						{
 							name: '3ème signalement',
 							value: '?',
-							inline: false,
 						},
 						{
 							name: '4ème signalement',
 							value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
-							inline: false,
 						},
 					)
+
 					client.cache.deleteMessagesID.add(messageReaction.message.id)
 					messageReaction.message.delete()
 					break
+
 				default:
 					break
 			}
