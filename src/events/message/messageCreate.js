@@ -501,7 +501,7 @@ export default async (message, client) => {
 					text: `Message posté le ${convertDate(validMessage.createdAt)}`,
 				})
 
-			const description = `${validMessage.content}\n[Aller au message](${validMessage.url}) - ${validMessage.channel}`
+			const description = `${validMessage.content}\n\n[Aller au message](${validMessage.url}) - ${validMessage.channel}`
 			// Si la description dépasse la limite
 			// autorisée, les liens sont contenus dans des fields
 			if (description.length > 4096) {
