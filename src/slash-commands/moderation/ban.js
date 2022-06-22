@@ -1,13 +1,13 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { Constants, GuildMember, MessageEmbed } from 'discord.js'
+import { Constants, MessageEmbed } from 'discord.js'
 import { isGuildSetup } from '../../util/util.js'
 
 export default {
 	data: new SlashCommandBuilder()
 		.setName('ban')
 		.setDescription('Banni un membre')
-		.addUserOption(option =>
-			option.setName('membre').setDescription('Membre').setRequired(true),
+		.addStringOption(option =>
+			option.setName('membre').setDescription('Discord ID').setRequired(true),
 		)
 		.addStringOption(option =>
 			option.setName('raison').setDescription('Raison du bannissement').setRequired(true),
@@ -33,16 +33,11 @@ export default {
 		await interaction.deferReply()
 
 		// Acquisition du membre
-		const user = interaction.options.getUser('membre')
-		const member = interaction.guild.members.cache.get(user.id)
-		if (!member)
-			return interaction.editReply({
-				content: "Je n'ai pas trouvé cet utilisateur, vérifie la mention ou l'ID 😕",
-				ephemeral: true,
-			})
+		const user = interaction.options.getString('membre')
+		const member = interaction.guild.members.cache.get(user)
 
-		// On ne peut pas se ban soi-même
-		if (member.id === interaction.user.id)
+		if (user === interaction.user.id)
+			// On ne peut pas se ban soi-même
 			return interaction.editReply({
 				content: 'Tu ne peux pas te bannir toi-même 😕',
 				ephemeral: true,
@@ -94,20 +89,22 @@ export default {
 				},
 			])
 
-		const DMMessage = await member
-			.send({
-				embeds: [embed],
-			})
-			.catch(error => {
-				console.error(error)
-				errorDM =
-					"\n\nℹ️ Le message privé n'a pas été envoyé car l'utilisateur les a bloqué"
-			})
+		let DMMessage = {}
+		if (member)
+			DMMessage = await member
+				.send({
+					embeds: [embed],
+				})
+				.catch(error => {
+					console.error(error)
+					errorDM =
+						"\n\nℹ️ Le message privé n'a pas été envoyé car l'utilisateur les a bloqué"
+				})
 
 		// Ban du membre
 		const banDays = interaction.options.getInteger('messages') || 0
-		const banAction = await member
-			.ban({ days: banDays, reason: `${interaction.user.tag} : ${reason}` })
+		const banAction = await interaction.guild.members
+			.ban(user, { days: banDays, reason: `${interaction.user.tag} : ${reason}` })
 			.catch(error => {
 				// Suppression du message privé envoyé
 				// car action de bannissement non réalisée
@@ -127,9 +124,11 @@ export default {
 			})
 
 		// Si pas d'erreur, message de confirmation du bannissement
-		if (banAction instanceof GuildMember)
+		if (banAction)
 			return interaction.editReply({
-				content: `🔨 \`${member.user.tag}\` a été banni définitivement\n\nRaison : ${reason}${errorDM}`,
+				content: `🔨 \`${
+					member ? member.user.tag : user
+				}\` a été banni définitivement\n\nRaison : ${reason}${errorDM}`,
 			})
 
 		// Si au moins une erreur, throw
