@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { Constants, MessageEmbed } from 'discord.js'
+import { Constants, GuildBan, MessageEmbed, User } from 'discord.js'
 import { isGuildSetup } from '../../util/util.js'
 
 export default {
@@ -36,10 +36,18 @@ export default {
 		const user = interaction.options.getString('membre')
 		const member = interaction.guild.members.cache.get(user)
 
+		// On ne peut pas se ban soi-même
 		if (user === interaction.user.id)
-			// On ne peut pas se ban soi-même
 			return interaction.editReply({
 				content: 'Tu ne peux pas te bannir toi-même 😕',
+				ephemeral: true,
+			})
+
+		// Vérification si le ban existe déjà
+		const ban = await interaction.guild.bans.fetch(user).catch(error => console.log(error))
+		if (ban instanceof GuildBan)
+			return interaction.editReply({
+				content: 'Cet utilisateur est déjà banni 😕',
 				ephemeral: true,
 			})
 
@@ -89,7 +97,7 @@ export default {
 				},
 			])
 
-		let DMMessage = {}
+		let DMMessage = false
 		if (member)
 			DMMessage = await member
 				.send({
@@ -110,6 +118,12 @@ export default {
 				// car action de bannissement non réalisée
 				if (DMMessage) DMMessage.delete()
 
+				if (error.code === Constants.APIErrors.UNKNOWN_USER)
+					return interaction.editReply({
+						content: "Tu n'as pas donné un ID d'utilisateur 😬",
+						ephemeral: true,
+					})
+
 				if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
 					return interaction.editReply({
 						content: "Tu n'as pas les permissions pour bannir ce membre 😬",
@@ -123,8 +137,10 @@ export default {
 				})
 			})
 
+		console.log(banAction)
+
 		// Si pas d'erreur, message de confirmation du bannissement
-		if (banAction)
+		if (banAction instanceof User)
 			return interaction.editReply({
 				content: `🔨 \`${
 					member ? member.user.tag : user

@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { Constants } from 'discord.js'
+import { Constants, User } from 'discord.js'
 import { isGuildSetup } from '../../util/util.js'
 
 export default {
@@ -32,6 +32,14 @@ export default {
 				ephemeral: true,
 			})
 
+		// Vérification si le ban existe déjà
+		const ban = await interaction.guild.bans.fetch(user).catch(error => console.log(error))
+		if (!ban)
+			return interaction.editReply({
+				content: "Cet utilisateur n'est pas banni 😬",
+				ephemeral: true,
+			})
+
 		// Unban du membre
 		const unbanAction = await interaction.guild.members.unban(user).catch(error => {
 			if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
@@ -61,7 +69,7 @@ export default {
 		})
 
 		// Si pas d'erreur, message de confirmation d'unban
-		if (unbanAction)
+		if (unbanAction instanceof User)
 			return interaction.editReply({
 				content: `🔓 Le bannissement de \`${user}\` a été levé`,
 			})
