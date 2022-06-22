@@ -44,7 +44,7 @@ export default {
 			})
 
 		// Vérification si le ban existe déjà
-		const ban = await interaction.guild.bans.fetch(user).catch(error => console.log(error))
+		const ban = await interaction.guild.bans.fetch(user).catch(() => false)
 		if (ban instanceof GuildBan)
 			return interaction.editReply({
 				content: 'Cet utilisateur est déjà banni 😕',
