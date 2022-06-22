@@ -35,6 +35,12 @@ export default {
 		// Acquisition du membre
 		const user = interaction.options.getString('membre')
 		const member = interaction.guild.members.cache.get(user)
+		const matchID = user.match(/^(\d{17,19})$/)
+		if (!matchID)
+			return interaction.editReply({
+				content: "Tu ne m'as pas donné un ID valide 😕",
+				ephemeral: true,
+			})
 
 		// On ne peut pas se ban soi-même
 		if (user === interaction.user.id)

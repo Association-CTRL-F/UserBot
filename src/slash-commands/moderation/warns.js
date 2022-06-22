@@ -63,6 +63,12 @@ export default {
 		// Acquisition du membre
 		user = interaction.options.getString('membre')
 		member = interaction.guild.members.cache.get(user)
+		const matchID = user.match(/^(\d{17,19})$/)
+		if (!matchID)
+			return interaction.reply({
+				content: "Tu ne m'as pas donné un ID valide 😕",
+				ephemeral: true,
+			})
 
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
