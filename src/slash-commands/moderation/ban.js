@@ -137,8 +137,6 @@ export default {
 				})
 			})
 
-		console.log(banAction)
-
 		// Si pas d'erreur, message de confirmation du bannissement
 		if (banAction instanceof User)
 			return interaction.editReply({
