@@ -18,6 +18,9 @@ export default {
 				ephemeral: true,
 			})
 
+		// On diffère la réponse pour avoir plus de 3 secondes
+		await interaction.deferReply()
+
 		// Acquisition du membre
 		let user = {}
 		if (interaction.isUserContextMenu()) user = interaction.targetUser
@@ -25,7 +28,7 @@ export default {
 
 		const member = interaction.guild.members.cache.get(user.id)
 		if (!member)
-			return interaction.reply({
+			return interaction.editReply({
 				content: "Je n'ai pas trouvé cet utilisateur, vérifie la mention ou l'ID 😕",
 				ephemeral: true,
 			})
@@ -33,7 +36,7 @@ export default {
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
 		if (!bdd)
-			return interaction.reply({
+			return interaction.editReply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
 				ephemeral: true,
 			})
@@ -67,7 +70,7 @@ export default {
 			upgrade = resultSelectUpgrade[0].content
 			upgradeDescription = resultSelectUpgradeDesc[0].content
 		} catch {
-			return interaction.reply({
+			return interaction.editReply({
 				content: 'Une erreur est survenue lors de la récupération du formulaire 😬',
 				ephemeral: true,
 			})
@@ -88,9 +91,6 @@ export default {
 					value: upgradeDescription,
 				},
 			])
-
-		// On diffère la réponse pour avoir plus de 3 secondes
-		await interaction.deferReply()
 
 		// Acquisition du salon
 		const upgradeChannel = interaction.guild.channels.cache.get(configGuild.UPGRADE_CHANNEL_ID)
