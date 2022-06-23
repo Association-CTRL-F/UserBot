@@ -30,7 +30,10 @@ export default {
 			client.commandsCategories.forEach((commandsNames, category) => {
 				const commandsDescription = commandsNames.reduce((acc, commandName) => {
 					const command = client.commands.get(commandName)
-					return `${acc}- \`${commandName}\` : ${command.data.description}.\n`
+					if (command?.data)
+						return `${acc}- \`${commandName}\` : ${command.data.description}.\n`
+
+					return ''
 				}, '')
 
 				fields.push({
