@@ -33,6 +33,20 @@ export default {
 		)
 		.addSubcommand(subcommand =>
 			subcommand
+				.setName('edit')
+				.setDescription('Modifie un avertissement')
+				.addStringOption(option =>
+					option.setName('id').setDescription("ID de l'avertissement").setRequired(true),
+				)
+				.addStringOption(option =>
+					option
+						.setName('raison')
+						.setDescription("Raison de l'avertissement")
+						.setRequired(true),
+				),
+		)
+		.addSubcommand(subcommand =>
+			subcommand
 				.setName('del')
 				.setDescription('Supprime un avertissement')
 				.addStringOption(option =>
@@ -61,14 +75,16 @@ export default {
 		let member = ''
 
 		// Acquisition du membre
-		user = interaction.options.getString('membre')
-		member = interaction.guild.members.cache.get(user)
-		const matchID = user.match(/^(\d{17,19})$/)
-		if (!matchID)
-			return interaction.reply({
-				content: "Tu ne m'as pas donné un ID valide 😕",
-				ephemeral: true,
-			})
+		if (interaction.options.getSubcommand() !== 'edit') {
+			user = interaction.options.getString('membre')
+			member = interaction.guild.members.cache.get(user)
+			const matchID = user.match(/^(\d{17,19})$/)
+			if (!matchID)
+				return interaction.reply({
+					content: "Tu ne m'as pas donné un ID valide 😕",
+					ephemeral: true,
+				})
+		}
 
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
@@ -235,6 +251,69 @@ export default {
 				await interaction.deferReply()
 				return interaction.editReply({
 					content: `⚠️ \`${member.user.tag}\` a reçu un avertissement\n\nRaison : ${reason}${errorDM}`,
+				})
+
+			// Modifie un avertissement
+			case 'edit':
+				// Acquisition de la raison
+				const reasonEdit = interaction.options.getString('raison')
+
+				// Acquisition de l'avertissement
+				let editedWarn = {}
+				try {
+					const id = interaction.options.getString('id')
+					const sqlSelect = 'SELECT * FROM warnings WHERE id = ? AND guildId = ?'
+					const dataSelect = [id, interaction.guild.id]
+					const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
+					editedWarn = resultSelect[0]
+				} catch {
+					return interaction.reply({
+						content:
+							"Une erreur est survenue lors de la récupération de l'avertissement 😬",
+						ephemeral: true,
+					})
+				}
+
+				// Vérification si l'avertissement existe bien
+				if (!editedWarn)
+					return interaction.reply({
+						content: "L'avertissement n'existe pas 😬",
+						ephemeral: true,
+					})
+
+				// Vérification si l'avertissement
+				// a été créé par le même utilisateur
+				if (editedWarn.warnedBy !== interaction.user.id)
+					return interaction.reply({
+						content: "L'avertissement ne t'appartient pas 😬",
+						ephemeral: true,
+					})
+
+				// Modification de l'avertissement
+				try {
+					const id = interaction.options.getString('id')
+					const sqlEdit =
+						'UPDATE warnings SET warnReason = ? WHERE id = ? AND guildId = ?'
+					const dataEdit = [reasonEdit, id, interaction.guild.id]
+					const [resultEdit] = await bdd.execute(sqlEdit, dataEdit)
+					editedWarn = resultEdit
+				} catch {
+					return interaction.reply({
+						content:
+							"Une erreur est survenue lors de la modification de l'avertissement 😬",
+						ephemeral: true,
+					})
+				}
+
+				if (editedWarn.affectedRows === 1)
+					return interaction.reply({
+						content: "L'avertissement a bien été modifié 👌",
+					})
+
+				return interaction.reply({
+					content:
+						"Une erreur est survenue lors de la modification de l'avertissement 😬",
+					ephemeral: true,
 				})
 
 			// Supprime un avertissement
