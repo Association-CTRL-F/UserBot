@@ -451,11 +451,15 @@ export default {
 							value: fetchGiveaway.prize,
 						},
 						{
-							name: 'Date de fin',
-							value: convertDateForDiscord(timestampEndStart * 1000),
+							name: 'Tirage',
+							value: convertDateForDiscord(timestampEndStart * 1000, true),
 						},
 						{
-							name: 'Nombre de gagnants',
+							name: `${
+								fetchGiveaway.winnersCount > 1
+									? 'Nombre de gagnants'
+									: 'Nombre de gagnant'
+							}`,
 							value: pluralize('gagnant', fetchGiveaway.winnersCount),
 						},
 					])

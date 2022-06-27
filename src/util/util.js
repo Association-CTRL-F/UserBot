@@ -243,8 +243,12 @@ export const closeGracefully = (signal, client) => {
 /**
  * Converti la date dans un format utilisé par Discord pour afficher une date
  * @param {Date} date
+ * @param {Boolean} relative
  */
-export const convertDateForDiscord = date => `<t:${Math.round(new Date(date) / 1000)}>`
+export const convertDateForDiscord = (date, relative = false) => {
+	if (relative) return `<t:${Math.round(new Date(date) / 1000)}:R>`
+	return `<t:${Math.round(new Date(date) / 1000)}>`
+}
 
 /**
  * Vérifie si l'utilisateur est staff ou non
