@@ -36,14 +36,15 @@ export default async (message, client) => {
 		// Si le pseudo respecte bien les règles
 		modifyWrongUsernames(message.member).catch(() => null)
 
-		// Si c'est un salon autre que blabla
-		if (
-			message.channel.id !== configGuild.BLABLA_CHANNEL_ID &&
-			message.member.roles.cache.has(configGuild.JOIN_ROLE_ID)
-		)
-			message.member.roles.remove(configGuild.JOIN_ROLE_ID).catch(error => {
-				if (error.code !== Constants.APIErrors.UNKNOWN_MEMBER) throw error
-			})
+		if (configGuild.BLABLA_CHANNEL_ID && configGuild.JOIN_ROLE_ID)
+			if (
+				message.channel.id !== configGuild.BLABLA_CHANNEL_ID &&
+				message.member.roles.cache.has(configGuild.JOIN_ROLE_ID)
+			)
+				// Si c'est un salon autre que blabla
+				message.member.roles.remove(configGuild.JOIN_ROLE_ID).catch(error => {
+					if (error.code !== Constants.APIErrors.UNKNOWN_MEMBER) throw error
+				})
 	}
 
 	// Automod //
