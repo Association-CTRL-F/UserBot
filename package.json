@@ -15,7 +15,7 @@
 		"@discordjs/builders": "^0.15.0",
 		"@discordjs/rest": "^0.5.0",
 		"bent": "^7.3.12",
-		"discord-api-types": "^0.36.0",
+		"discord-api-types": "^0.36.1",
 		"discord.js": "^13.8.1",
 		"mathjs": "^10.6.4",
 		"ms": "^2.1.3",
