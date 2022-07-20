@@ -13,7 +13,7 @@
 	},
 	"dependencies": {
 		"@discordjs/builders": "^1.0.0",
-		"@discordjs/rest": "^0.5.0",
+		"@discordjs/rest": "^1.0.0",
 		"bent": "^7.3.12",
 		"discord-api-types": "^0.36.2",
 		"discord.js": "^13.8.1",
