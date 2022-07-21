@@ -21,7 +21,7 @@
 		"ms": "^2.1.3",
 		"mysql2": "^2.3.3",
 		"node-fetch": "^2.6.7",
-		"pagination.djs": "^3.6.2"
+		"pagination.djs": "^4.0.1"
 	},
 	"devDependencies": {
 		"dotenv": "^16.0.1",
