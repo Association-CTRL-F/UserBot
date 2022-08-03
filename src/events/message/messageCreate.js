@@ -461,14 +461,14 @@ export default async (message, client) => {
 				// ou sur un salon n'existant pas sur la guild
 				matches
 					.reduce((acc, match) => {
-						const [originalMatch, guildId, channelId, messageId] = regex.exec(match)
+						const [, guildId, channelId, messageId] = regex.exec(match)
 						if (guildId !== message.guild.id) return acc
 
 						const foundChannel = message.guild.channels.cache.get(channelId)
 						if (!foundChannel) return acc
 						
 						// Ignore la citation si le lien est entouré de <>
-						if (originalMatch.startsWith('<') && originalMatch.endsWith('>')) return acc
+						if (match.startsWith('<') && match.endsWith('>')) return acc
 
 						acc.push({ messageId, foundChannel })
 
