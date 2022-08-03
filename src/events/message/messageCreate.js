@@ -447,9 +447,9 @@ export default async (message, client) => {
 	if (message.guild) {
 		// Regex pour match les liens Discord
 		const regexGlobal =
-			/https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})/g
+			/<?https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})>?/g
 		const regex =
-			/https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})/
+			/<?https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})>?/
 
 		// Suppression des lignes en citations, pour ne pas afficher la citation
 		const matches = message.content.match(regexGlobal)
@@ -461,11 +461,14 @@ export default async (message, client) => {
 				// ou sur un salon n'existant pas sur la guild
 				matches
 					.reduce((acc, match) => {
-						const [, guildId, channelId, messageId] = regex.exec(match)
+						const [originalMatch, guildId, channelId, messageId] = regex.exec(match)
 						if (guildId !== message.guild.id) return acc
 
 						const foundChannel = message.guild.channels.cache.get(channelId)
 						if (!foundChannel) return acc
+						
+						// Ignore la citation si le lien est entouré de <>
+						if (originalMatch.startsWith('<') && originalMatch.endsWith('>')) return acc
 
 						acc.push({ messageId, foundChannel })
 
