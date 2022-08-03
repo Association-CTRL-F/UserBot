@@ -466,7 +466,7 @@ export default async (message, client) => {
 
 						const foundChannel = message.guild.channels.cache.get(channelId)
 						if (!foundChannel) return acc
-						
+
 						// Ignore la citation si le lien est entouré de <>
 						if (match.startsWith('<') && match.endsWith('>')) return acc
 
