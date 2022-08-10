@@ -447,9 +447,9 @@ export default async (message, client) => {
 	if (message.guild) {
 		// Regex pour match les liens Discord
 		const regexGlobal =
-			/https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})/g
+			/<?https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})>?/g
 		const regex =
-			/https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})/
+			/<?https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})>?/
 
 		// Suppression des lignes en citations, pour ne pas afficher la citation
 		const matches = message.content.match(regexGlobal)
@@ -466,6 +466,9 @@ export default async (message, client) => {
 
 						const foundChannel = message.guild.channels.cache.get(channelId)
 						if (!foundChannel) return acc
+
+						// Ignore la citation si le lien est entouré de <>
+						if (match.startsWith('<') && match.endsWith('>')) return acc
 
 						acc.push({ messageId, foundChannel })
 
