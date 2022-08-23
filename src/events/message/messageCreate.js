@@ -501,6 +501,7 @@ export default async (message, client) => {
 			.filter(Boolean)
 
 		const sentMessages = validMessages.map(validMessage => {
+			console.log(validMessage)
 			const embed = new EmbedBuilder()
 				.setColor('2F3136')
 				.setAuthor({
@@ -515,8 +516,8 @@ export default async (message, client) => {
 			// Si la description dépasse la limite
 			// autorisée, les liens sont contenus dans des fields
 			if (description.length > 4096) {
-				embed.description = validMessage.content
-				embed.fields.push(
+				embed.data.description = validMessage.content
+				embed.data.fields.push(
 					{
 						name: 'Message',
 						value: `[Aller au message](${validMessage.url})`,
@@ -529,15 +530,15 @@ export default async (message, client) => {
 					},
 				)
 			} else {
-				embed.description = description
+				embed.data.description = description
 			}
 
 			if (validMessage.editedAt)
-				embed.footer.text += `\nModifié le ${convertDate(validMessage.editedAt)}`
+				embed.data.footer.text += `\nModifié le ${convertDate(validMessage.editedAt)}`
 
 			if (message.author !== validMessage.author) {
-				embed.footer.iconURL = message.author.displayAvatarURL({ dynamic: true })
-				embed.footer.text += `\nCité par ${displayNameAndID(
+				embed.data.footer.iconURL = message.author.displayAvatarURL({ dynamic: true })
+				embed.data.footer.text += `\nCité par ${displayNameAndID(
 					message.member,
 					message.author,
 				)} le ${convertDate(message.createdAt)}`
@@ -546,11 +547,11 @@ export default async (message, client) => {
 			// Partie pour gérer les attachments
 			const attachments = validMessage.attachments
 			if (attachments.size === 1 && isImage(attachments.first().name))
-				embed.image = { url: attachments.first().url }
+				embed.data.image = { url: attachments.first().url }
 			else
 				attachments.forEach(attachment => {
 					const { name, type } = getFileInfos(attachment.name)
-					embed.fields.push({
+					embed.data.fields.push({
 						name: `Fichier ${type}`,
 						value: `[${name}](${attachment.url})`,
 						inline: true,
