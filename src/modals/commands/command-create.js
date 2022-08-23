@@ -55,7 +55,7 @@ export default {
 			const dataInsert = [
 				modal.guild.id,
 				nom,
-				aliases,
+				aliases ? aliases : null,
 				contenu,
 				modal.user.id,
 				Math.round(new Date() / 1000),

@@ -1,6 +1,6 @@
 /* eslint-disable default-case */
 /* eslint-disable no-case-declarations */
-import { SlashCommandBuilder, Constants, GuildMember, EmbedBuilder } from 'discord.js'
+import { SlashCommandBuilder, GuildMember, EmbedBuilder, RESTJSONErrorCodes } from 'discord.js'
 import { isGuildSetup } from '../../util/util.js'
 
 export default {
@@ -175,7 +175,7 @@ export default {
 							})
 						}
 
-						if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
+						if (error.code === RESTJSONErrorCodes.MissingPermissions)
 							return interaction.editReply({
 								content: "Je n'ai pas les permissions pour unmute ce membre 😬",
 							})
@@ -206,7 +206,7 @@ export default {
 					// car action de mute non réalisée
 					if (DMMessage) DMMessage.delete()
 
-					if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
+					if (error.code === RESTJSONErrorCodes.MissingPermissions)
 						return interaction.editReply({
 							content: "Je n'ai pas les permissions pour unmute ce membre 😬",
 						})
@@ -309,7 +309,7 @@ export default {
 								// car action de mute non réalisée
 								if (DMMessageGroup) DMMessageGroup.delete()
 
-								if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
+								if (error.code === RESTJSONErrorCodes.MissingPermissions)
 									return interaction.editReply({
 										content:
 											"Je n'ai pas les permissions pour unmute ce membre 😬",

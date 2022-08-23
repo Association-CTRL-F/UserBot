@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, Constants, GuildBan, EmbedBuilder, User } from 'discord.js'
+import { SlashCommandBuilder, GuildBan, EmbedBuilder, User, RESTJSONErrorCodes } from 'discord.js'
 import { isGuildSetup } from '../../util/util.js'
 
 export default {
@@ -139,13 +139,13 @@ export default {
 				// car action de bannissement non réalisée
 				if (DMMessage) DMMessage.delete()
 
-				if (error.code === Constants.APIErrors.UNKNOWN_USER)
+				if (error.code === RESTJSONErrorCodes.UnknownUser)
 					return interaction.editReply({
 						content: "Tu n'as pas donné un ID d'utilisateur 😬",
 						ephemeral: true,
 					})
 
-				if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
+				if (error.code === RESTJSONErrorCodes.MissingPermissions)
 					return interaction.editReply({
 						content: "Tu n'as pas les permissions pour bannir ce membre 😬",
 						ephemeral: true,

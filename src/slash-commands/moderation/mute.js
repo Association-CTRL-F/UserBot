@@ -1,7 +1,7 @@
 /* eslint-disable default-case */
 /* eslint-disable no-case-declarations */
 /* eslint-disable no-mixed-operators */
-import { SlashCommandBuilder, Constants, GuildMember, EmbedBuilder } from 'discord.js'
+import { SlashCommandBuilder, GuildMember, EmbedBuilder, RESTJSONErrorCodes } from 'discord.js'
 import { convertMinutesToString, isGuildSetup } from '../../util/util.js'
 
 export default {
@@ -240,7 +240,7 @@ export default {
 						})
 					}
 
-					if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
+					if (error.code === RESTJSONErrorCodes.MissingPermissions)
 						return interaction.editReply({
 							content: "Je n'ai pas les permissions pour mute ce membre 😬",
 						})
@@ -254,7 +254,7 @@ export default {
 				const removeRole = async () => {
 					if (!member.roles.cache.has(mutedRole)) return
 					member.roles.remove(mutedRole).catch(error => {
-						if (error.code !== Constants.APIErrors.UNKNOWN_MEMBER) throw error
+						if (error.code !== RESTJSONErrorCodes.UnknownMember) throw error
 					})
 
 					// Suppression du mute en base de données
@@ -454,7 +454,7 @@ export default {
 									})
 								}
 
-								if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
+								if (error.code === RESTJSONErrorCodes.MissingPermissions)
 									return interaction.editReply({
 										content:
 											"Je n'ai pas les permissions pour mute ce membre 😬",
@@ -471,7 +471,7 @@ export default {
 						const removeRoleGroup = async () => {
 							if (!memberGroup.roles.cache.has(mutedRole)) return
 							memberGroup.roles.remove(mutedRole).catch(error => {
-								if (error.code !== Constants.APIErrors.UNKNOWN_MEMBER) throw error
+								if (error.code !== RESTJSONErrorCodes.UnknownMember) throw error
 							})
 
 							// Suppression du mute en base de données

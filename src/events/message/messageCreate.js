@@ -1,6 +1,6 @@
 /* eslint-disable default-case */
 /* eslint-disable no-case-declarations */
-import { Collection, Constants, GuildMember, EmbedBuilder } from 'discord.js'
+import { Collection, GuildMember, EmbedBuilder, RESTJSONErrorCodes } from 'discord.js'
 import {
 	modifyWrongUsernames,
 	convertDate,
@@ -43,7 +43,7 @@ export default async (message, client) => {
 			)
 				// Si c'est un salon autre que blabla
 				message.member.roles.remove(configGuild.JOIN_ROLE_ID).catch(error => {
-					if (error.code !== Constants.APIErrors.UNKNOWN_MEMBER) throw error
+					if (error.code !== RESTJSONErrorCodes.UnknownMember) throw error
 				})
 	}
 
@@ -139,7 +139,7 @@ export default async (message, client) => {
 						// car action de bannissement non réalisée
 						if (DMMessageBan) DMMessageBan.delete()
 
-						if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
+						if (error.code === RESTJSONErrorCodes.MissingPermissions)
 							return console.log(
 								"Je n'ai pas les permissions pour bannir ce membre (Automod)",
 							)
@@ -265,7 +265,7 @@ export default async (message, client) => {
 								// car action de bannissement non réalisée
 								if (DMMessageBan) DMMessageBan.delete()
 
-								if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
+								if (error.code === RESTJSONErrorCodes.MissingPermissions)
 									return console.log(
 										"Je n'ai pas les permissions pour bannir ce membre (Automod)",
 									)
@@ -372,7 +372,7 @@ export default async (message, client) => {
 			setTimeout(
 				() =>
 					sentMessage.delete().catch(error => {
-						if (error.code !== Constants.APIErrors.UNKNOWN_MESSAGE) console.error(error)
+						if (error.code !== RESTJSONErrorCodes.UnknownMessage) console.error(error)
 					}),
 				// Suppression après 7 secondes
 				7 * 1000,

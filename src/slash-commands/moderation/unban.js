@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, Constants, User } from 'discord.js'
+import { SlashCommandBuilder, User, RESTJSONErrorCodes } from 'discord.js'
 import { isGuildSetup } from '../../util/util.js'
 
 export default {
@@ -41,19 +41,19 @@ export default {
 
 		// Unban du membre
 		const unbanAction = await interaction.guild.members.unban(user).catch(error => {
-			if (error.code === Constants.APIErrors.MISSING_PERMISSIONS)
+			if (error.code === RESTJSONErrorCodes.MissingPermissions)
 				return interaction.editReply({
 					content: "Je n'ai pas les permissions pour bannir ce membre 😬",
 					ephemeral: true,
 				})
 
-			if (error.code === Constants.APIErrors.UNKNOWN_USER)
+			if (error.code === RESTJSONErrorCodes.UnknownUser)
 				return interaction.editReply({
 					content: "Cet utilisateur n'existe pas 😬",
 					ephemeral: true,
 				})
 
-			if (error.code === Constants.APIErrors.UNKNOWN_BAN)
+			if (error.code === RESTJSONErrorCodes.UnknownBan)
 				return interaction.editReply({
 					content: "Ce membre n'est pas banni 😬",
 					ephemeral: true,

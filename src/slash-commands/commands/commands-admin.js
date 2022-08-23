@@ -91,7 +91,8 @@ export default {
 								.setCustomId('aliases-command-create')
 								.setLabel('Alias de la commande')
 								.setStyle('Paragraph')
-								.setMinLength(1),
+								.setMinLength(1)
+								.setRequired(false),
 						),
 					)
 					.addComponents(
@@ -137,8 +138,9 @@ export default {
 								.setCustomId('aliases-command-edit')
 								.setLabel('Alias de la commande')
 								.setStyle('Paragraph')
-								.setValue(commandBdd.aliases)
-								.setMinLength(1),
+								.setValue(commandBdd.aliases ? commandBdd.aliases : '')
+								.setMinLength(1)
+								.setRequired(false),
 						),
 					)
 					.addComponents(

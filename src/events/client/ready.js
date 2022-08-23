@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import { readFile } from 'fs/promises'
-import { Constants, EmbedBuilder } from 'discord.js'
+import { EmbedBuilder, RESTJSONErrorCodes } from 'discord.js'
 import { pluralize } from '../../util/util.js'
 import ms from 'ms'
 
@@ -490,13 +490,13 @@ export default async client => {
 
 			if (msPresence > ms(timeoutJoin))
 				await noblablaMember.roles.remove(joinRole).catch(error => {
-					if (error.code !== Constants.APIErrors.UNKNOWN_MEMBER) throw error
+					if (error.code !== RESTJSONErrorCodes.UnknownMember) throw error
 				})
 
 			setTimeout(
 				() =>
 					noblablaMember.roles.remove(joinRole).catch(error => {
-						if (error.code !== Constants.APIErrors.UNKNOWN_MEMBER) throw error
+						if (error.code !== RESTJSONErrorCodes.UnknownMember) throw error
 					}),
 				ms(timeoutJoin),
 			)

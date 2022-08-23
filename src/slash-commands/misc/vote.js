@@ -1,6 +1,6 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-import { SlashCommandBuilder, Constants, EmbedBuilder } from 'discord.js'
+import { SlashCommandBuilder, EmbedBuilder, RESTJSONErrorCodes } from 'discord.js'
 import { convertDate, displayNameAndID, isGuildSetup } from '../../util/util.js'
 
 export default {
@@ -107,7 +107,7 @@ export default {
 				const message = await interaction.channel.messages
 					.fetch(matchID[0])
 					.catch(error => {
-						if (error.code === Constants.APIErrors.UNKNOWN_MESSAGE) {
+						if (error.code === RESTJSONErrorCodes.UnknownMessage) {
 							interaction.reply({
 								content: "Je n'ai pas trouvé ce message dans ce salon 😕",
 								ephemeral: true,

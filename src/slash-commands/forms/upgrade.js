@@ -1,4 +1,9 @@
-import { SlashCommandBuilder, ContextMenuCommandBuilder, Constants, EmbedBuilder } from 'discord.js'
+import {
+	SlashCommandBuilder,
+	ContextMenuCommandBuilder,
+	EmbedBuilder,
+	RESTJSONErrorCodes,
+} from 'discord.js'
 import { isGuildSetup } from '../../util/util.js'
 
 export default {
@@ -106,7 +111,7 @@ export default {
 			await member.send({ embeds: [embed] })
 			await member.send(upgrade)
 		} catch (error) {
-			if (error.code !== Constants.APIErrors.CANNOT_MESSAGE_USER) throw error
+			if (error.code !== RESTJSONErrorCodes.CannotSendMessagesToThisUser) throw error
 
 			if (member.user === interaction.user)
 				return interaction.editReply({

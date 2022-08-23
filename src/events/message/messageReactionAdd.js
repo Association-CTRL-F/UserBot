@@ -1,5 +1,5 @@
 import { convertDateForDiscord } from '../../util/util.js'
-import { Constants, EmbedBuilder } from 'discord.js'
+import { EmbedBuilder, RESTJSONErrorCodes } from 'discord.js'
 import ms from 'ms'
 
 export default async (messageReaction, user, client) => {
@@ -41,7 +41,7 @@ export default async (messageReaction, user, client) => {
 			setTimeout(
 				() =>
 					guildMember.roles.remove(joinRole).catch(error => {
-						if (error.code !== Constants.APIErrors.UNKNOWN_MEMBER) throw error
+						if (error.code !== RESTJSONErrorCodes.UnknownMember) throw error
 					}),
 				ms(configGuild.TIMEOUT_JOIN),
 			)

@@ -5,7 +5,13 @@ import {
 	displayNameAndID,
 } from '../../util/util.js'
 import { readFile } from 'fs/promises'
-import { Constants, PermissionsBitField, Message, GuildMember, EmbedBuilder } from 'discord.js'
+import {
+	PermissionsBitField,
+	Message,
+	GuildMember,
+	EmbedBuilder,
+	RESTJSONErrorCodes,
+} from 'discord.js'
 
 const removeAddedReactions = reactions => Promise.all(reactions.map(reaction => reaction.remove()))
 
@@ -176,7 +182,7 @@ export default async (guildMember, client) => {
 			embeds: [embed],
 		})
 		.catch(async error => {
-			if (error.code === Constants.APIErrors.CANNOT_MESSAGE_USER)
+			if (error.code === RESTJSONErrorCodes.CannotSendMessagesToThisUser)
 				return sentMessage.react('⛔')
 
 			console.error(error)
