@@ -501,7 +501,6 @@ export default async (message, client) => {
 			.filter(Boolean)
 
 		const sentMessages = validMessages.map(validMessage => {
-			console.log(validMessage)
 			const embed = new EmbedBuilder()
 				.setColor('2F3136')
 				.setAuthor({
@@ -537,7 +536,7 @@ export default async (message, client) => {
 				embed.data.footer.text += `\nModifié le ${convertDate(validMessage.editedAt)}`
 
 			if (message.author !== validMessage.author) {
-				embed.data.footer.iconURL = message.author.displayAvatarURL({ dynamic: true })
+				embed.data.footer.icon_url = message.author.displayAvatarURL({ dynamic: true })
 				embed.data.footer.text += `\nCité par ${displayNameAndID(
 					message.member,
 					message.author,
