@@ -1,11 +1,10 @@
 import { convertDateForDiscord, isGuildSetup } from '../../util/util.js'
-import { ContextMenuCommandBuilder } from '@discordjs/builders'
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder, ContextMenuCommandBuilder } from 'discord.js'
 
 export default {
-	contextMenu: new ContextMenuCommandBuilder().setName('report').setType(3),
+	contextMenu: new ContextMenuCommandBuilder().setName('signaler').setType(3),
 	interaction: async (interaction, client) => {
-		if (!interaction.isMessageContextMenu()) return
+		if (!interaction.commandType === 3) return
 
 		// On diffère la réponse pour avoir plus de 3 secondes
 		await interaction.deferReply({ ephemeral: true })
@@ -44,7 +43,7 @@ export default {
 			return console.log(error)
 		}
 
-		// On ne peut pas report son propre message
+		// On ne peut pas signaler son propre message
 		if (message.author === interaction.user)
 			return interaction.editReply({
 				content: 'Tu ne peux pas signaler ton propre message 😕',
@@ -135,7 +134,7 @@ export default {
 		}
 
 		// S'il n'y a pas de report déjà posté
-		const sendLogReport = new MessageEmbed()
+		const sendLogReport = new EmbedBuilder()
 			.setDescription(`**Contenu du message**\n\`\`\`${message.content}\`\`\``)
 			.setColor('FFAE00')
 			.setAuthor({
