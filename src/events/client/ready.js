@@ -546,7 +546,7 @@ export default async client => {
 			activities: [
 				{
 					name: richPresenceText,
-					type: 'PLAYING',
+					type: 0,
 				},
 			],
 			status: 'online',
