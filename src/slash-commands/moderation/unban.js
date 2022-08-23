@@ -1,5 +1,4 @@
-import { SlashCommandBuilder } from '@discordjs/builders'
-import { Constants, User } from 'discord.js'
+import { SlashCommandBuilder, Constants, User } from 'discord.js'
 import { isGuildSetup } from '../../util/util.js'
 
 export default {

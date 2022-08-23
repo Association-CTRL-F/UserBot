@@ -1,7 +1,6 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-import { MessageActionRow, MessageSelectMenu, MessageEmbed } from 'discord.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { SlashCommandBuilder, ActionRowBuilder, SelectMenuBuilder, EmbedBuilder } from 'discord.js'
 import { Pagination } from 'pagination.djs'
 import { isGuildSetup } from '../../util/util.js'
 
@@ -109,7 +108,7 @@ export default {
 					})
 				}
 
-				if (rules.length === 0)
+				if (rules.length === 0 && interaction.options.getSubcommand() !== 'create')
 					return interaction.reply({
 						content: "Aucune règle n'a été créée 😕",
 						ephemeral: true,
@@ -160,7 +159,7 @@ export default {
 								displayRoles = displayRoles.concat('\n', `• <@&${ignoredRole}>`)
 							})
 
-							const embed = new MessageEmbed()
+							const embed = new EmbedBuilder()
 								.setColor('C27C0E')
 								.setTitle(`Règle d'automod "${ruleBdd.customId}"`)
 								.addFields([
@@ -205,7 +204,7 @@ export default {
 							ephemeral: false,
 							prevDescription: '',
 							postDescription: '',
-							buttonStyle: 'SECONDARY',
+							buttonStyle: 'Secondary',
 							loop: false,
 						})
 
@@ -221,8 +220,8 @@ export default {
 
 					// Créer une règle d'automod
 					case 'create':
-						const menuType = new MessageActionRow().addComponents(
-							new MessageSelectMenu()
+						const menuType = new ActionRowBuilder().addComponents(
+							new SelectMenuBuilder()
 								.setCustomId('select-rule-create')
 								.setPlaceholder('Sélectionnez un type de règle')
 								.addOptions([
@@ -247,8 +246,8 @@ export default {
 
 					// Modifier une règle d'automod
 					case 'edit':
-						const menuRulesEdit = new MessageActionRow().addComponents(
-							new MessageSelectMenu()
+						const menuRulesEdit = new ActionRowBuilder().addComponents(
+							new SelectMenuBuilder()
 								.setCustomId('select-rule-edit')
 								.setPlaceholder('Sélectionnez la règle')
 								.addOptions(arrayRules),
@@ -262,8 +261,8 @@ export default {
 
 					// Supprimer une règle d'automod
 					case 'del':
-						const menuRulesDel = new MessageActionRow().addComponents(
-							new MessageSelectMenu()
+						const menuRulesDel = new ActionRowBuilder().addComponents(
+							new SelectMenuBuilder()
 								.setCustomId('select-rule-del')
 								.setPlaceholder('Sélectionnez la règle')
 								.addOptions(arrayRules),
@@ -323,7 +322,7 @@ export default {
 							ephemeral: false,
 							prevDescription: '',
 							postDescription: '',
-							buttonStyle: 'SECONDARY',
+							buttonStyle: 'Secondary',
 							loop: false,
 						})
 

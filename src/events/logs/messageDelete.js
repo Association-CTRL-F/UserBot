@@ -1,5 +1,5 @@
 import { isImage, getFileInfos, displayNameAndID, convertDateForDiscord } from '../../util/util.js'
-import { MessageAttachment, Util, GuildAuditLogs, MessageEmbed } from 'discord.js'
+import { AttachmentBuilder, AuditLogEvent, EmbedBuilder } from 'discord.js'
 import bent from 'bent'
 
 const getLinkBuffer = url => {
@@ -48,7 +48,7 @@ export default async (message, client) => {
 	const fetchedLog = (
 		await message.guild
 			.fetchAuditLogs({
-				type: GuildAuditLogs.Actions.MESSAGE_DELETE,
+				type: AuditLogEvent.MessageDelete,
 				limit: 1,
 			})
 			.catch(() => false)
@@ -67,7 +67,7 @@ export default async (message, client) => {
 			else thread.delete()
 	}
 
-	const logEmbed = new MessageEmbed()
+	const logEmbed = new EmbedBuilder()
 		.setColor('57C92A')
 		.setAuthor({
 			name: displayNameAndID(message.member, message.author),
@@ -102,22 +102,22 @@ export default async (message, client) => {
 		fetchedLog.createdTimestamp > Date.now() - 5000 &&
 		extra.count >= 1
 	) {
-		logEmbed.color = 'fc3c3c'
-		logEmbed.footer = {
+		logEmbed.data.color = 16530492
+		logEmbed.data.footer = {
 			iconURL: executor.displayAvatarURL({ dynamic: true }),
 			text: `Message supprimé par ${executor.tag}`,
 		}
 	} else {
-		logEmbed.color = '00FF00'
-		logEmbed.footer = {
+		logEmbed.data.color = 65280
+		logEmbed.data.footer = {
 			text: "Message supprimé par l'auteur du message",
 		}
 	}
 
 	// Partie contenu écrit du message
 	if (message.content) {
-		const escapedcontent = Util.escapeCodeBlock(message.content)
-		logEmbed.description = `\`\`\`\n${escapedcontent}\`\`\``
+		const escapedcontent = message.content.replace(/```/g, '\\`\\`\\`')
+		logEmbed.data.description = `\`\`\`\n${escapedcontent}\`\`\``
 	}
 
 	// Partie attachments (fichiers, images, etc.)
@@ -150,14 +150,14 @@ export default async (message, client) => {
 			const buffer = await getLinkBuffer(attachment.proxyURL).catch(() => null)
 			if (!buffer) {
 				const { name, type } = getFileInfos(attachment.name)
-				return logEmbed.fields.push({
+				return logEmbed.data.fields.push({
 					name: `Fichier ${type}`,
 					value: name,
 					inline: true,
 				})
 			}
 
-			return messageAttachments.push(new MessageAttachment(buffer, attachment.name))
+			return messageAttachments.push(new AttachmentBuilder(buffer, attachment.name))
 		}),
 	)
 
@@ -168,7 +168,7 @@ export default async (message, client) => {
 	// TODO : trouver une solution
 	for (const [, attachment] of otherAttachments) {
 		const { name, type } = getFileInfos(attachment.name)
-		return logEmbed.fields.push({
+		return logEmbed.data.fields.push({
 			name: `Fichier ${type}`,
 			value: name,
 			inline: true,

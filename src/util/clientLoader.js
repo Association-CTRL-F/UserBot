@@ -1,4 +1,4 @@
-import { Client, Collection, Constants, Intents } from 'discord.js'
+import { Client, Collection, GatewayIntentBits, Partials } from 'discord.js'
 import { pool } from './util.js'
 import { readFileSync } from 'fs'
 const { version } = JSON.parse(readFileSync('./package.json'))
@@ -6,21 +6,17 @@ const { version } = JSON.parse(readFileSync('./package.json'))
 // Création du client et de ses propriétés
 export default async () => {
 	const client = new Client({
-		partials: [
-			Constants.PartialTypes.GUILD_MEMBER,
-			Constants.PartialTypes.MESSAGE,
-			Constants.PartialTypes.REACTION,
-			Constants.PartialTypes.CHANNEL,
-		],
+		partials: [Partials.GuildMember, Partials.Message, Partials.Reaction, Partials.Channel],
 		intents: [
-			Intents.FLAGS.GUILDS,
-			Intents.FLAGS.GUILD_PRESENCES,
-			Intents.FLAGS.GUILD_MEMBERS,
-			Intents.FLAGS.GUILD_BANS,
-			Intents.FLAGS.GUILD_MESSAGES,
-			Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-			Intents.FLAGS.GUILD_VOICE_STATES,
-			Intents.FLAGS.DIRECT_MESSAGES,
+			GatewayIntentBits.Guilds,
+			GatewayIntentBits.GuildPresences,
+			GatewayIntentBits.GuildMembers,
+			GatewayIntentBits.GuildBans,
+			GatewayIntentBits.GuildMessages,
+			GatewayIntentBits.GuildMessageReactions,
+			GatewayIntentBits.GuildVoiceStates,
+			GatewayIntentBits.DirectMessages,
+			GatewayIntentBits.MessageContent,
 		],
 	})
 
@@ -48,11 +44,11 @@ export default async () => {
 	try {
 		const POOL_urlsAPI = await pool({
 			...client.config.db,
-			dbName: process.env.DN_NAME_URLS_API,
+			dbName: process.env.DB_NAME_URLS_API,
 		})
 		const POOL_userbot = await pool({
 			...client.config.db,
-			dbName: process.env.DN_NAME_USERBOT,
+			dbName: process.env.DB_NAME_USERBOT,
 		})
 
 		client.config.db.pools = {

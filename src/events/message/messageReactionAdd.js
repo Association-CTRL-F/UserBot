@@ -1,5 +1,5 @@
 import { convertDateForDiscord } from '../../util/util.js'
-import { Constants, MessageEmbed } from 'discord.js'
+import { Constants, EmbedBuilder } from 'discord.js'
 import ms from 'ms'
 
 export default async (messageReaction, user, client) => {
@@ -121,7 +121,7 @@ export default async (messageReaction, user, client) => {
 			}
 
 			// S'il n'y a pas de report déjà posté
-			const sendLogReport = new MessageEmbed()
+			const sendLogReport = new EmbedBuilder()
 				.setDescription(`**Contenu du message**\n\`\`\`${message.content}\`\`\``)
 				.setAuthor({
 					name: 'Nouveau signalement',

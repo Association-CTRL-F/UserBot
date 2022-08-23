@@ -1,7 +1,6 @@
 /* eslint-disable default-case */
 /* eslint-disable no-case-declarations */
-import { SlashCommandBuilder } from '@discordjs/builders'
-import { Constants, GuildMember, MessageEmbed } from 'discord.js'
+import { SlashCommandBuilder, Constants, GuildMember, EmbedBuilder } from 'discord.js'
 import { isGuildSetup } from '../../util/util.js'
 
 export default {
@@ -103,7 +102,7 @@ export default {
 					})
 
 				// Envoi du message d'unmute en message privé
-				const embed = new MessageEmbed()
+				const embed = new EmbedBuilder()
 					.setColor('#C27C0E')
 					.setTitle('Mute terminé')
 					.setDescription(unmuteDM)
@@ -254,7 +253,7 @@ export default {
 							})
 
 						// Envoi du message d'unmute en message privé
-						const embedUnmuteGroup = new MessageEmbed()
+						const embedUnmuteGroup = new EmbedBuilder()
 							.setColor('#C27C0E')
 							.setTitle('Mute terminé')
 							.setDescription(unmuteDM)

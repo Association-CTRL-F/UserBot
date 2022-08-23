@@ -1,4 +1,4 @@
-import { Modal, TextInputComponent, MessageActionRow } from 'discord.js'
+import { ModalBuilder, TextInputBuilder, ActionRowBuilder } from 'discord.js'
 
 export default {
 	data: {
@@ -35,15 +35,15 @@ export default {
 				ephemeral: true,
 			})
 
-		const modalEdit = new Modal()
+		const modalEdit = new ModalBuilder()
 			.setCustomId('form-edit')
 			.setTitle("Modification d'un formulaire")
 			.addComponents(
-				new MessageActionRow().addComponents(
-					new TextInputComponent()
+				new ActionRowBuilder().addComponents(
+					new TextInputBuilder()
 						.setCustomId('form-edit-name')
 						.setLabel('Nom du formulaire')
-						.setStyle('SHORT')
+						.setStyle('Short')
 						.setMinLength(1)
 						.setMaxLength(255)
 						.setValue(form.name)
@@ -51,11 +51,11 @@ export default {
 				),
 			)
 			.addComponents(
-				new MessageActionRow().addComponents(
-					new TextInputComponent()
+				new ActionRowBuilder().addComponents(
+					new TextInputBuilder()
 						.setCustomId('form-edit-content')
 						.setLabel('Nouveau contenu du formulaire')
-						.setStyle('PARAGRAPH')
+						.setStyle('Paragraph')
 						.setMinLength(1)
 						.setValue(form.content)
 						.setRequired(true),

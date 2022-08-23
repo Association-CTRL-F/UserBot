@@ -1,8 +1,7 @@
 /* eslint-disable default-case */
 /* eslint-disable no-case-declarations */
 import { convertDateForDiscord, diffDate, displayNameAndID, isGuildSetup } from '../../util/util.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
-import discordjs, { MessageEmbed } from 'discord.js'
+import discordjs, { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
 
 // import nodePackage from '../../../package.json'
 import { readFileSync } from 'fs'
@@ -47,7 +46,7 @@ export default {
 
 		switch (interaction.options.getSubcommand()) {
 			case 'bot':
-				const embedBot = new MessageEmbed()
+				const embedBot = new EmbedBuilder()
 					.setColor('#3366FF')
 					.setAuthor({
 						name: displayNameAndID(client.user, client.user),
@@ -80,23 +79,23 @@ export default {
 
 			case 'server':
 				const premiumTier = {
-					NONE: 'Non spécifié',
-					TIER_1: 'Niveau 1',
-					TIER_2: 'Niveau 2',
-					TIER_3: 'Niveau 3',
+					0: 'Aucun Boost',
+					1: 'Niveau 1',
+					2: 'Niveau 2',
+					3: 'Niveau 3',
 				}
 
-				const mfaLevel = { NONE: 'Désactivé', ELEVATED: 'Activé' }
+				const mfaLevel = { 0: 'Désactivé', 1: 'Activé' }
 
 				const verificationLevel = {
-					NONE: 'Non spécifié',
-					LOW: 'Faible : email vérifié requis.',
-					MEDIUM: 'Moyen : sur Discord depuis 5 minutes.',
-					HIGH: 'Élevé : sur le serveur depuis 10 minutes.',
-					VERY_HIGH: 'Très élevé : numéro de téléphone vérifié.',
+					0: 'Non spécifié',
+					1: 'Faible : email vérifié requis',
+					2: 'Moyen : sur Discord depuis 5 minutes',
+					3: 'Élevé : sur le serveur depuis 10 minutes',
+					4: 'Très élevé : numéro de téléphone vérifié',
 				}
 
-				const embedServer = new MessageEmbed()
+				const embedServer = new EmbedBuilder()
 					.setColor('#3366FF')
 					.setAuthor({
 						name: `${interaction.guild.name} (ID : ${interaction.guild.id})`,

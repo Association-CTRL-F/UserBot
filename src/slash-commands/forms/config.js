@@ -1,5 +1,4 @@
-import { Constants, MessageEmbed } from 'discord.js'
-import { SlashCommandBuilder, ContextMenuCommandBuilder } from '@discordjs/builders'
+import { SlashCommandBuilder, ContextMenuCommandBuilder, Constants, EmbedBuilder } from 'discord.js'
 import { isGuildSetup } from '../../util/util.js'
 
 export default {
@@ -23,7 +22,7 @@ export default {
 
 		// Acquisition du membre
 		let user = {}
-		if (interaction.isUserContextMenu()) user = interaction.targetUser
+		if (interaction.commandType === 2) user = interaction.targetUser
 		else user = interaction.options.getUser('membre') || interaction.user
 
 		const member = interaction.guild.members.cache.get(user.id)
@@ -77,7 +76,7 @@ export default {
 		}
 
 		// Création de l'embed
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor('#C27C0E')
 			.setTitle('Formulaire de config')
 			.setAuthor({
@@ -97,7 +96,7 @@ export default {
 
 		// Ajout salon du formulaire si le salon a été trouvé
 		if (configChannel)
-			embed.fields.unshift({
+			embed.data.fields.unshift({
 				name: 'Salon dans lequel renvoyer le formulaire complété',
 				value: configChannel.toString(),
 			})

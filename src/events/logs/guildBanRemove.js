@@ -1,5 +1,5 @@
 import { convertDateForDiscord, diffDate, displayNameAndID } from '../../util/util.js'
-import { GuildAuditLogs, MessageEmbed } from 'discord.js'
+import { AuditLogEvent, EmbedBuilder } from 'discord.js'
 
 export default async (ban, client) => {
 	if (ban.user.bot || !ban.guild.available) return
@@ -27,14 +27,14 @@ export default async (ban, client) => {
 	// Fetch de l'event d'unban
 	const fetchedLog = (
 		await ban.guild.fetchAuditLogs({
-			type: GuildAuditLogs.Actions.MEMBER_BAN_REMOVE,
+			type: AuditLogEvent.MemberBanRemove,
 			limit: 1,
 		})
 	).entries.first()
 	if (!fetchedLog) return
 
 	// Création de l'embed
-	const logEmbed = new MessageEmbed()
+	const logEmbed = new EmbedBuilder()
 		.setColor('57C92A')
 		.setAuthor({
 			name: displayNameAndID(ban.member, ban.user),
@@ -63,12 +63,12 @@ export default async (ban, client) => {
 
 	// Détermination du modérateur ayant effectué le débannissement
 	if (target.id === ban.user.id && fetchedLog.createdTimestamp > Date.now() - 5000)
-		logEmbed.footer = {
-			iconURL: executor.displayAvatarURL({ dynamic: true }),
+		logEmbed.data.footer = {
+			icon_url: executor.displayAvatarURL({ dynamic: true }),
 			text: `Membre débanni par ${executor.tag}`,
 		}
 	else
-		logEmbed.footer = {
+		logEmbed.data.footer = {
 			text: 'Membre débanni',
 		}
 

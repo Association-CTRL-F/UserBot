@@ -5,7 +5,7 @@ import {
 	displayNameAndID,
 } from '../../util/util.js'
 import { readFile } from 'fs/promises'
-import { Constants, Permissions, Message, GuildMember, MessageEmbed } from 'discord.js'
+import { Constants, PermissionsBitField, Message, GuildMember, EmbedBuilder } from 'discord.js'
 
 const removeAddedReactions = reactions => Promise.all(reactions.map(reaction => reaction.remove()))
 
@@ -36,7 +36,7 @@ export default async (guildMember, client) => {
 	if (!leaveJoinChannel) return
 
 	// Envoi du message de join
-	const embedJoin = new MessageEmbed()
+	const embedJoin = new EmbedBuilder()
 		.setColor('57C92A')
 		.setAuthor({
 			name: displayNameAndID(guildMember),
@@ -87,7 +87,7 @@ export default async (guildMember, client) => {
 		guild.members.cache
 			.get(user.id)
 			.permissionsIn(leaveJoinChannel)
-			.has(Permissions.FLAGS.BAN_MEMBERS) &&
+			.has(PermissionsBitField.Flags.BanMembers) &&
 		!user.bot
 
 	// Création du collecteur de réactions de ban
@@ -155,7 +155,7 @@ export default async (guildMember, client) => {
 	}
 
 	// Envoi du message de bannissement en message privé
-	const embed = new MessageEmbed()
+	const embed = new EmbedBuilder()
 		.setColor('#C27C0E')
 		.setTitle('Bannissement')
 		.setDescription(banDM)
@@ -189,18 +189,18 @@ export default async (guildMember, client) => {
 
 	// Ban du membre
 	const banAction = await guildMember
-		.ban({ days: 7, reason: `${client.user.tag} : ${reason}` })
+		.ban({ deleteMessageDays: 7, reason: `${client.user.tag} : ${reason}` })
 		.catch(async error => {
 			console.error(error)
 			await sentMessage.react('❌')
 
 			// Edit du message envoyé en DM
-			const editedDMMessageEmbed = new MessageEmbed(DMMessage.embeds[0])
-			editedDMMessageEmbed.title = 'Avertissement'
-			editedDMMessageEmbed.description = 'Tu as reçu un avertissement !'
-			editedDMMessageEmbed.fields[0].name = "Raison de l'avertissement"
+			const editedDMEmbedBuilder = new EmbedBuilder(DMMessage.embeds[0])
+			editedDMEmbedBuilder.title = 'Avertissement'
+			editedDMEmbedBuilder.description = 'Tu as reçu un avertissement !'
+			editedDMEmbedBuilder.fields[0].name = "Raison de l'avertissement"
 			await DMMessage.edit({
-				embeds: [editedDMMessageEmbed],
+				embeds: [editedDMEmbedBuilder],
 			})
 
 			return error

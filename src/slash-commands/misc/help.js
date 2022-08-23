@@ -1,5 +1,4 @@
-import { SlashCommandBuilder } from '@discordjs/builders'
-import { MessageEmbed } from 'discord.js'
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
 import { isGuildSetup } from '../../util/util.js'
 
 const capitalize = string => `${string.charAt(0).toUpperCase()}${string.slice(1)}`
@@ -42,7 +41,7 @@ export default {
 				})
 			})
 
-			const embed = new MessageEmbed()
+			const embed = new EmbedBuilder()
 				.setColor('FF8000')
 				.setTitle('Commandes principales disponibles')
 				.setDescription(
@@ -64,7 +63,7 @@ export default {
 			})
 
 		// Création de l'embed avec les options
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor('FF8000')
 			.setTitle(command.data.name)
 			.setDescription(command.data.description)

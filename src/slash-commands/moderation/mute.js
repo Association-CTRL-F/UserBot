@@ -1,8 +1,7 @@
 /* eslint-disable default-case */
 /* eslint-disable no-case-declarations */
 /* eslint-disable no-mixed-operators */
-import { SlashCommandBuilder } from '@discordjs/builders'
-import { Constants, GuildMember, MessageEmbed } from 'discord.js'
+import { SlashCommandBuilder, Constants, GuildMember, EmbedBuilder } from 'discord.js'
 import { convertMinutesToString, isGuildSetup } from '../../util/util.js'
 
 export default {
@@ -147,7 +146,7 @@ export default {
 				// Envoi du message de mute en message privé
 				let errorDM = ''
 
-				const embed = new MessageEmbed()
+				const embed = new EmbedBuilder()
 					.setColor('#C27C0E')
 					.setTitle('Mute')
 					.setDescription(muteDM)
@@ -274,7 +273,7 @@ export default {
 					}
 
 					// Si pas d'erreur, envoi du message privé
-					const embedUnmute = new MessageEmbed()
+					const embedUnmute = new EmbedBuilder()
 						.setColor('#C27C0E')
 						.setTitle('Mute terminé')
 						.setDescription(unmuteDM)
@@ -355,7 +354,7 @@ export default {
 							})
 
 						// Envoi du message de mute en message privé
-						const embedMuteGroup = new MessageEmbed()
+						const embedMuteGroup = new EmbedBuilder()
 							.setColor('#C27C0E')
 							.setTitle('Mute')
 							.setDescription(muteDM)
@@ -492,7 +491,7 @@ export default {
 							}
 
 							// Si pas d'erreur, envoi du message privé
-							const embedUnmuteGroup = new MessageEmbed()
+							const embedUnmuteGroup = new EmbedBuilder()
 								.setColor('#C27C0E')
 								.setTitle('Mute terminé')
 								.setDescription(unmuteDM)

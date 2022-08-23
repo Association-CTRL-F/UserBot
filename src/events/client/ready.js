@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import { readFile } from 'fs/promises'
-import { Constants, MessageEmbed } from 'discord.js'
+import { Constants, EmbedBuilder } from 'discord.js'
 import { pluralize } from '../../util/util.js'
 import ms from 'ms'
 
@@ -118,7 +118,7 @@ export default async client => {
 					}
 
 					// Si pas d'erreur, envoi du message privé
-					const embed = new MessageEmbed()
+					const embed = new EmbedBuilder()
 						.setColor('#C27C0E')
 						.setTitle('Mute terminé')
 						.setDescription(unmuteDM)
@@ -167,7 +167,7 @@ export default async client => {
 						}
 
 						// Si pas d'erreur, envoi du message privé
-						const embed = new MessageEmbed()
+						const embed = new EmbedBuilder()
 							.setColor('#C27C0E')
 							.setTitle('Mute terminé')
 							.setDescription(unmuteDM)
@@ -241,7 +241,7 @@ export default async client => {
 					// Envoi du rappel en message privé
 					if (deletedReminder.affectedRows === 1) {
 						if (reminder.private) {
-							const embed = new MessageEmbed()
+							const embed = new EmbedBuilder()
 								.setColor('#C27C0E')
 								.setTitle('Rappel')
 								.setDescription(reminder.reminder)
@@ -295,7 +295,7 @@ export default async client => {
 					// Envoi du rappel en message privé
 					if (deletedReminder.affectedRows === 1) {
 						if (reminder.private) {
-							const embed = new MessageEmbed()
+							const embed = new EmbedBuilder()
 								.setColor('#C27C0E')
 								.setTitle('Rappel')
 								.setDescription(reminder.reminder)
@@ -414,7 +414,7 @@ export default async client => {
 					}
 
 					// Modification de l'embed
-					const embedWin = new MessageEmbed()
+					const embedWin = new EmbedBuilder()
 						.setColor('#BB2528')
 						.setTitle('🎁 GIVEAWAY 🎁')
 						.addFields([

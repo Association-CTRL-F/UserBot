@@ -60,6 +60,15 @@ export default {
 					})
 				break
 
+			case 'NO_ENTRAIDE_ROLE_ID':
+				const matches_NO_ENTRAIDE_ROLE_ID = contenu.match(regexId)
+				if (!matches_NO_ENTRAIDE_ROLE_ID || matches_NO_ENTRAIDE_ROLE_ID.length > 1)
+					return modal.reply({
+						content: "Tu n'as pas donné un ID valide 😕",
+						ephemeral: true,
+					})
+				break
+
 			case 'MUTED_ROLE_ID':
 				const matches_MUTED_ROLE_ID = contenu.match(regexId)
 				if (!matches_MUTED_ROLE_ID || matches_MUTED_ROLE_ID.length > 1)
@@ -99,6 +108,15 @@ export default {
 			case 'BLABLA_CHANNEL_ID':
 				const matches_BLABLA_CHANNEL_ID = contenu.match(regexId)
 				if (!matches_BLABLA_CHANNEL_ID || matches_BLABLA_CHANNEL_ID.length > 1)
+					return modal.reply({
+						content: "Tu n'as pas donné un ID valide 😕",
+						ephemeral: true,
+					})
+				break
+
+			case 'ACCESS_CHANNEL_ID':
+				const matches_ACCESS_CHANNEL_ID = contenu.match(regexId)
+				if (!matches_ACCESS_CHANNEL_ID || matches_ACCESS_CHANNEL_ID.length > 1)
 					return modal.reply({
 						content: "Tu n'as pas donné un ID valide 😕",
 						ephemeral: true,
@@ -182,11 +200,13 @@ export default {
 						LOGS_MESSAGES_CHANNEL_ID IS NULL OR
 						LOGS_BANS_CHANNEL_ID IS NULL OR
 						JOIN_ROLE_ID IS NULL OR
+						NO_ENTRAIDE_ROLE_ID IS NULL OR
 						MUTED_ROLE_ID IS NULL OR
 						TRIBUNAL_CHANNEL_ID IS NULL OR
 						CONFIG_CHANNEL_ID IS NULL OR
 						UPGRADE_CHANNEL_ID IS NULL OR
 						BLABLA_CHANNEL_ID IS NULL OR
+						ACCESS_CHANNEL_ID IS NULL OR
 						STAFF_ROLES_MANAGER_IDS IS NULL`
 			const data = [modal.guild.id]
 			const [result] = await bdd.execute(sql, data)

@@ -1,6 +1,5 @@
 import { convertDateForDiscord, diffDate, displayNameAndID, isGuildSetup } from '../../util/util.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
-import { MessageEmbed } from 'discord.js'
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -27,7 +26,7 @@ export default {
 			})
 
 		// Création de l'embed
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(member.displayColor)
 			.setAuthor({
 				name: displayNameAndID(member),

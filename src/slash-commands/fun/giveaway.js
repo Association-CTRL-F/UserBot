@@ -2,8 +2,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 /* eslint-disable no-mixed-operators */
-import { SlashCommandBuilder } from '@discordjs/builders'
-import { MessageEmbed } from 'discord.js'
+import { SlashCommandBuilder, EmbedBuilder, ChannelType } from 'discord.js'
 import {
 	convertDateForDiscord,
 	convertMsToString,
@@ -206,7 +205,7 @@ export default {
 					ephemeral: false,
 					prevDescription: '',
 					postDescription: '',
-					buttonStyle: 'SECONDARY',
+					buttonStyle: 'Secondary',
 					loop: false,
 				})
 
@@ -222,7 +221,7 @@ export default {
 
 			case 'create':
 				// Vérification si le salon est bien textuel
-				if (channel.type !== 'GUILD_TEXT')
+				if (channel.type !== ChannelType.GuildText)
 					return interaction.reply({
 						content: "Le salon fournit n'est pas un salon textuel 😬",
 						ephemeral: true,
@@ -307,7 +306,7 @@ export default {
 					})
 
 				// Vérification si le salon est bien textuel
-				if (channel.type !== 'GUILD_TEXT')
+				if (channel.type !== ChannelType.GuildText)
 					return interaction.reply({
 						content: "Le salon fournit n'est pas un salon textuel 😬",
 						ephemeral: true,
@@ -363,6 +362,13 @@ export default {
 				if (fetchGiveaway.hostedBy !== interaction.user.id)
 					return interaction.reply({
 						content: "Ce giveaway ne t'appartient pas 😬",
+						ephemeral: true,
+					})
+
+				// Vérification si le giveaway est lancé
+				if (fetchGiveaway.started === 1)
+					return interaction.reply({
+						content: 'Ce giveaway est déjà lancé 😬',
 						ephemeral: true,
 					})
 
@@ -437,7 +443,7 @@ export default {
 				await interaction.deferReply()
 
 				// Création de l'embed
-				const embed = new MessageEmbed()
+				const embed = new EmbedBuilder()
 					.setColor('#BB2528')
 					.setTitle('🎁 GIVEAWAY 🎁')
 					.setDescription('Réagissez avec 🎉 pour participer !')
@@ -542,7 +548,7 @@ export default {
 					}
 
 					// Modification de l'embed
-					const embedWin = new MessageEmbed()
+					const embedWin = new EmbedBuilder()
 						.setColor('#BB2528')
 						.setTitle('🎁 GIVEAWAY 🎁')
 						.addFields([
@@ -565,7 +571,7 @@ export default {
 					}
 
 					if (winnersTirageString === '' || !usersReactions) {
-						embedWin.fields.push({
+						embedWin.data.fields.push({
 							name: '0 gagnant',
 							value: 'Aucun participant',
 						})
@@ -577,7 +583,7 @@ export default {
 						})
 					}
 
-					embedWin.fields.push({
+					embedWin.data.fields.push({
 						name: pluralize('gagnant', i),
 						value: winnersTirageString,
 					})
@@ -716,7 +722,7 @@ export default {
 				}
 
 				// Modification de l'embed
-				const embedWinEnd = new MessageEmbed()
+				const embedWinEnd = new EmbedBuilder()
 					.setColor('#BB2528')
 					.setTitle('🎁 GIVEAWAY 🎁')
 					.addFields([
@@ -739,7 +745,7 @@ export default {
 				}
 
 				if (winnersTirageStringEnd === '' || !usersReactionsEnd) {
-					embedWinEnd.fields.push({
+					embedWinEnd.data.fields.push({
 						name: '0 gagnant',
 						value: 'Aucun participant',
 					})
@@ -757,7 +763,7 @@ export default {
 					})
 				}
 
-				embedWinEnd.fields.push({
+				embedWinEnd.data.fields.push({
 					name: pluralize('gagnant', iEnd),
 					value: winnersTirageStringEnd,
 				})
@@ -868,7 +874,7 @@ export default {
 				}
 
 				// Modification de l'embed
-				const embedWinReroll = new MessageEmbed()
+				const embedWinReroll = new EmbedBuilder()
 					.setColor('#BB2528')
 					.setTitle('🎁 GIVEAWAY 🎁')
 					.addFields([
@@ -891,7 +897,7 @@ export default {
 				}
 
 				if (winnersTirageString === '' || !usersReactions) {
-					embedWinReroll.fields.push({
+					embedWinReroll.data.fields.push({
 						name: '0 gagnant',
 						value: 'Aucun participant',
 					})
@@ -907,7 +913,7 @@ export default {
 					})
 				}
 
-				embedWinReroll.fields.push({
+				embedWinReroll.data.fields.push({
 					name: pluralize('gagnant', i),
 					value: winnersTirageString,
 				})

@@ -1,5 +1,5 @@
 import { convertDateForDiscord, diffDate, displayNameAndID } from '../../util/util.js'
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 
 export default async (guildMember, client) => {
 	const guild = guildMember.guild
@@ -25,7 +25,7 @@ export default async (guildMember, client) => {
 	const leaveJoinChannel = guild.channels.cache.get(configGuild.LEAVE_JOIN_CHANNEL_ID)
 	if (!leaveJoinChannel) return
 
-	const embedLeave = new MessageEmbed()
+	const embedLeave = new EmbedBuilder()
 		.setColor('C9572A')
 		.setAuthor({
 			name: displayNameAndID(guildMember),
@@ -54,7 +54,7 @@ export default async (guildMember, client) => {
 		.setTimestamp(new Date())
 
 	if (guildMember.joinedAt)
-		embedLeave.fields.push(
+		embedLeave.data.fields.push(
 			{
 				name: 'Serveur rejoint le',
 				value: convertDateForDiscord(guildMember.joinedAt),

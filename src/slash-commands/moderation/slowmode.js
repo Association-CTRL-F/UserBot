@@ -1,7 +1,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 import { convertSecondsToString, isGuildSetup } from '../../util/util.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { SlashCommandBuilder } from 'discord.js'
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 

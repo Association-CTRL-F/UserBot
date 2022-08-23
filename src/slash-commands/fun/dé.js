@@ -1,5 +1,4 @@
-import { SlashCommandBuilder } from '@discordjs/builders'
-import { MessageEmbed } from 'discord.js'
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
 import { isGuildSetup } from '../../util/util.js'
 
 export default {
@@ -26,7 +25,7 @@ export default {
 
 		if (randomSurprise === randomTirage) {
 			// Création de l'embed surprise
-			const embed = new MessageEmbed()
+			const embed = new EmbedBuilder()
 				.setColor('#1ABC9C')
 				.setTitle('Lancer de dé')
 				.setDescription('**SURPRISE**')
@@ -39,7 +38,7 @@ export default {
 		}
 
 		// Création de l'embed
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor('#C27C0E')
 			.setTitle('Lancer de dé')
 			.setDescription(`Tu es tombé sur **${face}**`)

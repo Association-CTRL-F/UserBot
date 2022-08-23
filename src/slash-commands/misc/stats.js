@@ -1,7 +1,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { SlashCommandBuilder } from 'discord.js'
 import { Pagination } from 'pagination.djs'
 import { isGuildSetup } from '../../util/util.js'
 
@@ -75,7 +75,7 @@ export default {
 					ephemeral: false,
 					prevDescription: '',
 					postDescription: '',
-					buttonStyle: 'SECONDARY',
+					buttonStyle: 'Secondary',
 					loop: false,
 				})
 

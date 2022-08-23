@@ -1,5 +1,5 @@
 import { convertDateForDiscord, diffDate, displayNameAndID } from '../../util/util.js'
-import { Util, GuildAuditLogs, MessageEmbed } from 'discord.js'
+import { AuditLogEvent, EmbedBuilder } from 'discord.js'
 
 export default async (ban, client) => {
 	if (ban.user.bot || !ban.guild.available) return
@@ -27,7 +27,7 @@ export default async (ban, client) => {
 	// Fetch de l'event de ban
 	const fetchedLog = (
 		await ban.guild.fetchAuditLogs({
-			type: GuildAuditLogs.Actions.MEMBER_BAN_ADD,
+			type: AuditLogEvent.MemberBanAdd,
 			limit: 1,
 		})
 	).entries.first()
@@ -37,7 +37,7 @@ export default async (ban, client) => {
 	const bannedUser = await ban.fetch()
 
 	// Création de l'embed
-	const logEmbed = new MessageEmbed()
+	const logEmbed = new EmbedBuilder()
 		.setColor('C9572A')
 		.setAuthor({
 			name: displayNameAndID(bannedUser.member, bannedUser.user),
@@ -66,19 +66,19 @@ export default async (ban, client) => {
 
 	// Détermination du modérateur ayant effectué le bannissement
 	if (target.id === bannedUser.user.id && fetchedLog.createdTimestamp > Date.now() - 5000)
-		logEmbed.footer = {
-			iconURL: executor.displayAvatarURL({ dynamic: true }),
+		logEmbed.data.footer = {
+			icon_url: executor.displayAvatarURL({ dynamic: true }),
 			text: `Membre banni par ${executor.tag}`,
 		}
 	else
-		logEmbed.footer = {
+		logEmbed.data.footer = {
 			text: 'Membre banni',
 		}
 
 	// Raison du bannissement
 	if (bannedUser.reason) {
-		const escapedcontent = Util.escapeCodeBlock(bannedUser.reason)
-		logEmbed.description = `\`\`\`\n${escapedcontent}\`\`\``
+		const escapedcontent = bannedUser.reason.replace(/```/g, '\\`\\`\\`')
+		logEmbed.data.description = `\`\`\`\n${escapedcontent}\`\`\``
 	}
 
 	return logsChannel.send({ embeds: [logEmbed] })

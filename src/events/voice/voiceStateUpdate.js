@@ -1,3 +1,5 @@
+import { PermissionsBitField, ChannelType } from 'discord.js'
+
 const handleLeave = async (oldState, newState, client) => {
 	// Acquisition de la base de données
 	const bdd = client.config.db.pools.userbot
@@ -82,18 +84,21 @@ const handleJoin = async (newState, client) => {
 		const permissions = newState.channel.permissionOverwrites.cache.clone().set(member, {
 			id: member,
 			type: 'member',
-			allow: ['VIEW_CHANNEL', 'CONNECT', 'MANAGE_CHANNELS', 'MOVE_MEMBERS'],
+			allow: [
+				PermissionsBitField.Flags.ViewChannel,
+				PermissionsBitField.Flags.Connect,
+				PermissionsBitField.Flags.ManageChannels,
+				PermissionsBitField.Flags.MoveMembers,
+			],
 		})
 
 		// Création du salon vocal
-		const createdChannel = await newState.guild.channels.create(
-			`Vocal de ${member.displayName}`,
-			{
-				type: 'GUILD_VOICE',
-				parent: newState.channel.parent,
-				permissionOverwrites: permissions,
-			},
-		)
+		const createdChannel = await newState.guild.channels.create({
+			name: `Vocal de ${member.displayName}`,
+			type: ChannelType.GuildVoice,
+			parent: newState.channel.parent,
+			permissionOverwrites: permissions,
+		})
 
 		// Déplacement du membre dans son nouveau salon vocal
 		const moveAction = await member.voice.setChannel(createdChannel).catch(() => null)

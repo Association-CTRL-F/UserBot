@@ -1,7 +1,12 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-import { MessageActionRow, MessageSelectMenu, Modal, TextInputComponent } from 'discord.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
+import {
+	SlashCommandBuilder,
+	ActionRowBuilder,
+	SelectMenuBuilder,
+	ModalBuilder,
+	TextInputBuilder,
+} from 'discord.js'
 import { isGuildSetup } from '../../util/util.js'
 
 export default {
@@ -27,26 +32,26 @@ export default {
 		switch (interaction.options.getSubcommand()) {
 			// Nouveau formulaire
 			case 'create':
-				const modalConfig = new Modal()
+				const modalConfig = new ModalBuilder()
 					.setCustomId('form-create')
 					.setTitle("Création d'un nouveau formulaire")
 					.addComponents(
-						new MessageActionRow().addComponents(
-							new TextInputComponent()
+						new ActionRowBuilder().addComponents(
+							new TextInputBuilder()
 								.setCustomId('form-create-name')
 								.setLabel('Nom')
-								.setStyle('SHORT')
+								.setStyle('Short')
 								.setMinLength(1)
 								.setMaxLength(255)
 								.setRequired(true),
 						),
 					)
 					.addComponents(
-						new MessageActionRow().addComponents(
-							new TextInputComponent()
+						new ActionRowBuilder().addComponents(
+							new TextInputBuilder()
 								.setCustomId('form-create-content')
 								.setLabel('Contenu')
-								.setStyle('PARAGRAPH')
+								.setStyle('Paragraph')
 								.setMinLength(1)
 								.setRequired(true),
 						),
@@ -96,8 +101,8 @@ export default {
 					})
 				})
 
-				const menu = new MessageActionRow().addComponents(
-					new MessageSelectMenu()
+				const menu = new ActionRowBuilder().addComponents(
+					new SelectMenuBuilder()
 						.setCustomId('select-edit-form')
 						.setPlaceholder('Sélectionnez le formulaire')
 						.addOptions(arrayForms),

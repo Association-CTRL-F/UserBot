@@ -3,9 +3,9 @@ import {
 	displayNameAndID,
 	convertDateForDiscord,
 	isGuildSetup,
+	splitMessage,
 } from '../../util/util.js'
-import { Util, MessageEmbed } from 'discord.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
 
 const isEmbedExceedingLimits = embeds =>
 	embeds.reduce((acc, { title, description, fields, footer, author }) => {
@@ -125,12 +125,12 @@ export default {
 			// 1er : titre + 1ère partie des messages
 			// 2nd : 2nd partie des messsages
 			// 3ème: 3ème partie des messages + fields exécuté par / le et salon
-			const splitedDescriptions = Util.splitMessage(text, { maxLength: 4096 })
+			const splitedDescriptions = splitMessage(text, { maxLength: 4096 })
 			const firstDescription = splitedDescriptions.shift()
 			const lastDescription = splitedDescriptions.pop()
 
 			const embeds = [
-				new MessageEmbed()
+				new EmbedBuilder()
 					.setColor('0000FF')
 					.setTitle('Clean')
 					.setDescription(firstDescription)
@@ -148,7 +148,7 @@ export default {
 					color: '0000FF',
 					description: description,
 				})),
-				new MessageEmbed()
+				new EmbedBuilder()
 					.setColor('0000FF')
 					.setTitle('Clean')
 					.setDescription(lastDescription)
@@ -175,7 +175,7 @@ export default {
 		}
 
 		// Si les messages tiennent dans un seul embed
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor('0000FF')
 			.setTitle('Clean')
 			.setDescription(text)

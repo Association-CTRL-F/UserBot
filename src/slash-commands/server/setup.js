@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { SlashCommandBuilder } from '@discordjs/builders'
-import { Modal, TextInputComponent, MessageActionRow, MessageEmbed } from 'discord.js'
+import { SlashCommandBuilder, ModalBuilder, TextInputBuilder, ActionRowBuilder } from 'discord.js'
 import { Pagination } from 'pagination.djs'
 
 const subCommands = {
@@ -39,6 +38,9 @@ const subCommands = {
 	},
 	'blabla-channel': {
 		BLABLA_CHANNEL_ID: 'Salon blabla-hs',
+	},
+	'access-channel': {
+		ACCESS_CHANNEL_ID: 'Salon acces-aux-canaux',
 	},
 	'voice-channels': {
 		VOICE_MANAGER_CHANNELS_IDS: 'Salons vocaux',
@@ -117,7 +119,7 @@ export default {
 				ephemeral: false,
 				prevDescription: '',
 				postDescription: '',
-				buttonStyle: 'SECONDARY',
+				buttonStyle: 'Secondary',
 				loop: false,
 			})
 
@@ -152,15 +154,15 @@ export default {
 			})
 		}
 
-		const modalEdit = new Modal()
+		const modalEdit = new ModalBuilder()
 			.setCustomId('setup')
 			.setTitle('Configuration du serveur')
 			.addComponents(
-				new MessageActionRow().addComponents(
-					new TextInputComponent()
+				new ActionRowBuilder().addComponents(
+					new TextInputBuilder()
 						.setCustomId(Object.keys(config)[0])
 						.setLabel(Object.keys(config)[0])
-						.setStyle('PARAGRAPH')
+						.setStyle('Paragraph')
 						.setValue(Object.values(config)[0] ? Object.values(config)[0] : '')
 						.setRequired(true),
 				),

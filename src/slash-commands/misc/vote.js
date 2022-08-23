@@ -1,7 +1,6 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-import { SlashCommandBuilder } from '@discordjs/builders'
-import { Constants, MessageEmbed } from 'discord.js'
+import { SlashCommandBuilder, Constants, EmbedBuilder } from 'discord.js'
 import { convertDate, displayNameAndID, isGuildSetup } from '../../util/util.js'
 
 export default {
@@ -59,7 +58,7 @@ export default {
 			// Nouveau vote
 			case 'create':
 				// Envoi du message de vote
-				const embed = new MessageEmbed()
+				const embed = new EmbedBuilder()
 					.setColor('00FF00')
 					.setTitle('Nouveau vote')
 					.setDescription(`\`\`\`${proposition}\`\`\``)
@@ -122,7 +121,7 @@ export default {
 
 				// Handle des mauvais cas
 				if (message instanceof Error) return
-				if (!message.interaction || message.interaction.commandName !== 'vote')
+				if (!message.interaction || message.interaction.commandName !== 'vote create')
 					return interaction.reply({
 						content: "Le message initial n'est pas un vote 😕",
 						ephemeral: true,
@@ -135,7 +134,7 @@ export default {
 					})
 
 				// Modification du message
-				const embedEdit = new MessageEmbed()
+				const embedEdit = new EmbedBuilder()
 					.setColor('00FF00')
 					.setTitle('Nouveau vote (modifié)')
 					.setDescription(`\`\`\`${proposition}\`\`\``)

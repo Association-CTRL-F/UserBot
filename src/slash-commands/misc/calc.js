@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { SlashCommandBuilder } from 'discord.js'
 import { create, all } from 'mathjs'
 import { isGuildSetup } from '../../util/util.js'
 

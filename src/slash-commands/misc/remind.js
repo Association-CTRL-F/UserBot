@@ -1,9 +1,7 @@
 /* eslint-disable no-mixed-operators */
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-
-import { SlashCommandBuilder } from '@discordjs/builders'
-import { MessageEmbed } from 'discord.js'
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
 import { convertDateForDiscord, isGuildSetup } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
 import ms from 'ms'
@@ -126,7 +124,7 @@ export default {
 					ephemeral: false,
 					prevDescription: '',
 					postDescription: '',
-					buttonStyle: 'SECONDARY',
+					buttonStyle: 'Secondary',
 					loop: false,
 				})
 
@@ -173,7 +171,7 @@ export default {
 
 						const member = interaction.guild.members.cache.get(interaction.user.id)
 
-						const embed = new MessageEmbed()
+						const embed = new EmbedBuilder()
 							.setColor('#C27C0E')
 							.setTitle('Rappel')
 							.setDescription(rappel)
@@ -281,7 +279,7 @@ export default {
 
 						const member = interaction.guild.members.cache.get(interaction.user.id)
 
-						const embed = new MessageEmbed()
+						const embed = new EmbedBuilder()
 							.setColor('#C27C0E')
 							.setTitle('Rappel')
 							.setDescription(rappelEdit)

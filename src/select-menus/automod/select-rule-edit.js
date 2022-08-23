@@ -1,4 +1,4 @@
-import { Modal, TextInputComponent, MessageActionRow } from 'discord.js'
+import { ModalBuilder, TextInputBuilder, ActionRowBuilder } from 'discord.js'
 
 export default {
 	data: {
@@ -35,15 +35,15 @@ export default {
 				ephemeral: true,
 			})
 
-		const modalCreate = new Modal()
+		const modalCreate = new ModalBuilder()
 			.setCustomId('rule-edit')
 			.setTitle("Modification d'une règle")
 			.addComponents(
-				new MessageActionRow().addComponents(
-					new TextInputComponent()
+				new ActionRowBuilder().addComponents(
+					new TextInputBuilder()
 						.setCustomId('rule-edit-type')
 						.setLabel('Type de la règle')
-						.setStyle('SHORT')
+						.setStyle('Short')
 						.setMinLength(1)
 						.setMaxLength(255)
 						.setValue(rule.type)
@@ -51,11 +51,11 @@ export default {
 				),
 			)
 			.addComponents(
-				new MessageActionRow().addComponents(
-					new TextInputComponent()
+				new ActionRowBuilder().addComponents(
+					new TextInputBuilder()
 						.setCustomId('rule-edit-id')
 						.setLabel('ID de la règle')
-						.setStyle('SHORT')
+						.setStyle('Short')
 						.setMinLength(1)
 						.setMaxLength(255)
 						.setValue(rule.customId)
@@ -63,33 +63,33 @@ export default {
 				),
 			)
 			.addComponents(
-				new MessageActionRow().addComponents(
-					new TextInputComponent()
+				new ActionRowBuilder().addComponents(
+					new TextInputBuilder()
 						.setCustomId('rule-edit-regex')
 						.setLabel('Regex de la règle')
-						.setStyle('PARAGRAPH')
+						.setStyle('Paragraph')
 						.setMinLength(1)
 						.setValue(rule.regex)
 						.setRequired(true),
 				),
 			)
 			.addComponents(
-				new MessageActionRow().addComponents(
-					new TextInputComponent()
+				new ActionRowBuilder().addComponents(
+					new TextInputBuilder()
 						.setCustomId('rule-edit-ignored-roles')
 						.setLabel('Rôles à ignorer')
-						.setStyle('PARAGRAPH')
+						.setStyle('Paragraph')
 						.setMinLength(1)
 						.setValue(rule.ignoredRoles)
 						.setRequired(true),
 				),
 			)
 			.addComponents(
-				new MessageActionRow().addComponents(
-					new TextInputComponent()
+				new ActionRowBuilder().addComponents(
+					new TextInputBuilder()
 						.setCustomId('rule-edit-reason')
 						.setLabel('Raison')
-						.setStyle('PARAGRAPH')
+						.setStyle('Paragraph')
 						.setMinLength(1)
 						.setValue(rule.reason)
 						.setRequired(true),

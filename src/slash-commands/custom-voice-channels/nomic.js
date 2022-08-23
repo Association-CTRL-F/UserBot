@@ -1,5 +1,5 @@
 import { displayNameAndID, isGuildSetup } from '../../util/util.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { ChannelType, SlashCommandBuilder } from 'discord.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -43,17 +43,15 @@ export default {
 			})
 
 		// Crée le salon no mic
-		const noMicChannel = await interaction.guild.channels.create(
-			`No-mic ${voiceChannel.name}`,
-			{
-				type: 'text',
-				topic: `Salon temporaire créé pour ${displayNameAndID(
-					interaction.member,
-					interaction.user,
-				)}`,
-				parent: voiceChannel.parent,
-			},
-		)
+		const noMicChannel = await interaction.guild.channels.create({
+			name: `No-mic ${voiceChannel.name}`,
+			type: ChannelType.GuildText,
+			topic: `Salon temporaire créé pour ${displayNameAndID(
+				interaction.member,
+				interaction.user,
+			)}`,
+			parent: voiceChannel.parent,
+		})
 
 		// Suppression des permissions existantes sauf
 		// pour les rôles qui peuvent supprimer les messages (modos)
@@ -63,8 +61,8 @@ export default {
 				.filter(
 					permissionOverwrites =>
 						!(
-							permissionOverwrites.allow.has('MANAGE_MESSAGES') ||
-							permissionOverwrites.deny.has('SEND_MESSAGES')
+							permissionOverwrites.allow.has('ManageMessages') ||
+							permissionOverwrites.deny.has('SendMessages')
 						),
 				)
 				.map(permission => permission.delete()),
@@ -75,28 +73,15 @@ export default {
 			// Accès au salon pour les membres présents
 			...voiceChannel.members.map(member =>
 				noMicChannel.permissionOverwrites.edit(member, {
-					CREATE_INSTANT_INVITE: false,
-					VIEW_CHANNEL: true,
-					SEND_MESSAGES: true,
-					READ_MESSAGE_HISTORY: true,
+					CreateInstantInvite: false,
+					ViewChannel: true,
+					SendMessages: true,
+					ReadMessageHistory: true,
 				}),
 			),
 			// Setup les permissions (pas d'accès) pour le role everyone
 			noMicChannel.permissionOverwrites.edit(interaction.guild.id, {
-				CREATE_INSTANT_INVITE: false,
-				MANAGE_CHANNELS: false,
-				MANAGE_ROLES: false,
-				MANAGE_WEBHOOKS: false,
-				VIEW_CHANNEL: false,
-				SEND_MESSAGES: false,
-				SEND_TTS_MESSAGES: false,
-				MANAGE_MESSAGES: false,
-				EMBED_LINKS: false,
-				ATTACH_FILES: false,
-				READ_MESSAGE_HISTORY: false,
-				MENTION_EVERYONE: false,
-				USE_EXTERNAL_EMOJIS: false,
-				ADD_REACTIONS: false,
+				ViewChannel: false,
 			}),
 		])
 
