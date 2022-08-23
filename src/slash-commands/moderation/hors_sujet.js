@@ -1,5 +1,5 @@
 import { isGuildSetup } from '../../util/util.js'
-import { EmbedBuilder, ContextMenuCommandBuilder } from 'discord.js'
+import { EmbedBuilder, ContextMenuCommandBuilder, RESTJSONErrorCodes } from 'discord.js'
 
 export default {
 	contextMenu: new ContextMenuCommandBuilder().setName('hors_sujet').setType(3),
@@ -71,13 +71,27 @@ export default {
 			.addFields([
 				{
 					name: 'Message posté',
-					value: `\`\`\`${message.content}\`\`\``,
+					value: `\`\`\`${
+						message.content.length < 1024
+							? message.content
+							: `${message.content.substr(0, 1012)} [...]`
+					}\`\`\``,
 				},
 			])
 
-		await member.send({
-			embeds: [embed],
-		})
+		try {
+			await member.send({
+				embeds: [embed],
+			})
+		} catch (error) {
+			if (error.code !== RESTJSONErrorCodes.CannotSendMessagesToThisUser) throw error
+
+			return interaction.editReply({
+				content:
+					"Hors-sujet non déclaré 😬\nL'utilisateur m'a sûrement bloqué / désactivé les messages provenant du serveur",
+				ephemeral: true,
+			})
+		}
 
 		await message.delete()
 
