@@ -21,6 +21,9 @@ const subCommands = {
 	'join-role': {
 		JOIN_ROLE_ID: 'Rôle @Pas de blabla',
 	},
+	'no-entraide-role': {
+		NO_ENTRAIDE_ROLE_ID: "Rôle @Pas d'entraide",
+	},
 	'timeout-join': {
 		TIMEOUT_JOIN: 'Timeout rôle @Pas de blabla',
 	},
