@@ -128,7 +128,7 @@ export default {
 				} else {
 					i.reply({ content: 'Tu as déjà validé ta réponse 😬', ephemeral: true })
 				}
-			else i.reply({ content: 'Tu ne fais pas parti du jeu 😬', ephemeral: true })
+			else i.reply({ content: 'Tu ne fais pas partie du jeu 😬', ephemeral: true })
 		})
 
 		// Affichage du gagnant
@@ -149,6 +149,7 @@ export default {
 							`${reactionUser} a accepté le shifumi avec ${interaction.user} !\n\nLes joueurs ont choisi le même symbole (${playerOneChoice}) 😕`,
 						),
 					],
+					components: [],
 				})
 			} else if (outcomes[playerOneChoice][playerTwoChoice]) {
 				winner = interaction.user
