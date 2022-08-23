@@ -1,5 +1,4 @@
-import { SlashCommandBuilder } from '@discordjs/builders'
-import { Constants, GuildBan, MessageEmbed, User } from 'discord.js'
+import { SlashCommandBuilder, Constants, GuildBan, EmbedBuilder, User } from 'discord.js'
 import { isGuildSetup } from '../../util/util.js'
 
 export default {
@@ -11,6 +10,9 @@ export default {
 		)
 		.addStringOption(option =>
 			option.setName('raison').setDescription('Raison du bannissement').setRequired(true),
+		)
+		.addAttachmentOption(option =>
+			option.setName('preuve').setDescription('Preuve du bannissement'),
 		)
 		.addIntegerOption(option =>
 			option
@@ -57,8 +59,12 @@ export default {
 				ephemeral: true,
 			})
 
-		// Acquisition de la raison du bannissement
+		// Acquisition de la raison du bannissement ainsi que la preuve
 		const reason = interaction.options.getString('raison')
+		let preuve = ''
+		if (interaction.options.getAttachment('preuve'))
+			preuve = interaction.options.getAttachment('preuve').attachment
+		else preuve = null
 
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
@@ -87,7 +93,7 @@ export default {
 		// Envoi du message de bannissement en message privé
 		let errorDM = ''
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor('#C27C0E')
 			.setTitle('Bannissement')
 			.setDescription(banDM)
@@ -98,10 +104,16 @@ export default {
 			})
 			.addFields([
 				{
-					name: 'Raison du bannissement',
+					name: 'Raison',
 					value: reason,
 				},
 			])
+
+		if (preuve)
+			embed.data.fields.push({
+				name: 'Preuve',
+				value: preuve,
+			})
 
 		let DMMessage = false
 		if (member)
@@ -118,7 +130,10 @@ export default {
 		// Ban du membre
 		const banDays = interaction.options.getInteger('messages') || 0
 		const banAction = await interaction.guild.members
-			.ban(user, { days: banDays, reason: `${interaction.user.tag} : ${reason}` })
+			.ban(user, {
+				deleteMessageDays: banDays,
+				reason: `${interaction.user.tag} : ${reason}`,
+			})
 			.catch(error => {
 				// Suppression du message privé envoyé
 				// car action de bannissement non réalisée
@@ -148,7 +163,9 @@ export default {
 			return interaction.editReply({
 				content: `🔨 \`${
 					member ? member.user.tag : user
-				}\` a été banni définitivement\n\nRaison : ${reason}${errorDM}`,
+				}\` a été banni définitivement\n\nRaison : ${reason}${errorDM}${
+					preuve ? `\n\nPreuve : <${preuve}>` : ''
+				}`,
 			})
 
 		// Si au moins une erreur, throw

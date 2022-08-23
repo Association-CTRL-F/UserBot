@@ -1,7 +1,6 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-import { SlashCommandBuilder } from '@discordjs/builders'
-import { MessageEmbed } from 'discord.js'
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
 import { convertDateForDiscord, displayNameAndID, isGuildSetup } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
 
@@ -29,6 +28,9 @@ export default {
 						.setName('raison')
 						.setDescription("Raison de l'avertissement")
 						.setRequired(true),
+				)
+				.addAttachmentOption(option =>
+					option.setName('preuve').setDescription("Preuve de l'avertissement"),
 				),
 		)
 		.addSubcommand(subcommand =>
@@ -75,7 +77,10 @@ export default {
 		let member = ''
 
 		// Acquisition du membre
-		if (interaction.options.getSubcommand() !== 'edit') {
+		if (
+			interaction.options.getSubcommand() !== 'edit' &&
+			interaction.options.getSubcommand() !== 'del'
+		) {
 			user = interaction.options.getString('membre')
 			member = interaction.guild.members.cache.get(user)
 			const matchID = user.match(/^(\d{17,19})$/)
@@ -127,7 +132,9 @@ export default {
 					if (warnedBy)
 						warnText = `Par ${warnedBy.user.tag} - ${convertDateForDiscord(
 							warning.warnedAt * 1000,
-						)}\nRaison : ${warning.warnReason}`
+						)}\nRaison : ${warning.warnReason}${
+							warning.warnPreuve ? `\nPreuve : <${warning.warnPreuve}>` : ''
+						}`
 					else warnText = `Le ${convertDateForDiscord(warning.warnedAt * 1000)}`
 
 					fieldsEmbed.push({
@@ -147,7 +154,7 @@ export default {
 					ephemeral: false,
 					prevDescription: '',
 					postDescription: '',
-					buttonStyle: 'SECONDARY',
+					buttonStyle: 'Secondary',
 					loop: false,
 				})
 
@@ -172,18 +179,23 @@ export default {
 
 			// Crée un nouvel avertissement
 			case 'create':
-				// Acquisition de la raison
+				// Acquisition de la raison et de la preuve
 				const reason = interaction.options.getString('raison')
+				let preuve = ''
+				if (interaction.options.getAttachment('preuve'))
+					preuve = interaction.options.getAttachment('preuve').attachment
+				else preuve = null
 
 				// Création de l'avertissement en base de données
 				try {
 					const sqlCreate =
-						'INSERT INTO warnings (guildId, discordID, warnedBy, warnReason, warnedAt) VALUES (?, ?, ?, ?, ?)'
+						'INSERT INTO warnings (guildId, discordID, warnedBy, warnReason, warnPreuve, warnedAt) VALUES (?, ?, ?, ?, ?, ?)'
 					const dataCreate = [
 						interaction.guild.id,
 						user,
 						interaction.user.id,
 						reason,
+						preuve,
 						Math.round(Date.now() / 1000),
 					]
 
@@ -214,7 +226,7 @@ export default {
 					}
 
 					// Envoi du message d'avertissement en message privé
-					const embedWarn = new MessageEmbed()
+					const embedWarn = new EmbedBuilder()
 						.setColor('#C27C0E')
 						.setTitle('Avertissement')
 						.setDescription(warnDM)
@@ -225,10 +237,16 @@ export default {
 						})
 						.addFields([
 							{
-								name: "Raison de l'avertissement",
+								name: 'Raison',
 								value: reason,
 							},
 						])
+
+					if (preuve)
+						embedWarn.data.fields.push({
+							name: 'Preuve',
+							value: preuve,
+						})
 
 					const DMMessage = await member
 						.send({
@@ -250,7 +268,11 @@ export default {
 				// Message de confirmation
 				await interaction.deferReply()
 				return interaction.editReply({
-					content: `⚠️ \`${member.user.tag}\` a reçu un avertissement\n\nRaison : ${reason}${errorDM}`,
+					content: `⚠️ \`${
+						member ? member.user.tag : user
+					}\` a reçu un avertissement\n\nRaison : ${reason}${errorDM}${
+						preuve ? `\n\nPreuve : <${preuve}>` : ''
+					}`,
 				})
 
 			// Modifie un avertissement
