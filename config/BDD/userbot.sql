@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: Jun 19, 2022 at 03:34 PM
+-- Generation Time: Aug 23, 2022 at 07:19 PM
 -- Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal
 -- PHP Version: 7.4.23
 
@@ -59,6 +59,7 @@ CREATE TABLE `commands` (
   `id` int(11) NOT NULL,
   `guildId` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
+  `aliases` text DEFAULT NULL,
   `content` text NOT NULL,
   `author` varchar(255) NOT NULL,
   `createdAt` varchar(255) NOT NULL,
@@ -82,12 +83,14 @@ CREATE TABLE `config` (
   `LOGS_MESSAGES_CHANNEL_ID` varchar(255) DEFAULT NULL,
   `LOGS_BANS_CHANNEL_ID` varchar(255) DEFAULT NULL,
   `JOIN_ROLE_ID` varchar(255) DEFAULT NULL,
+  `NO_ENTRAIDE_ROLE_ID` varchar(255) DEFAULT NULL,
   `TIMEOUT_JOIN` varchar(255) DEFAULT NULL,
   `MUTED_ROLE_ID` varchar(255) DEFAULT NULL,
   `TRIBUNAL_CHANNEL_ID` varchar(255) DEFAULT NULL,
   `CONFIG_CHANNEL_ID` varchar(255) DEFAULT NULL,
   `UPGRADE_CHANNEL_ID` varchar(255) DEFAULT NULL,
   `BLABLA_CHANNEL_ID` varchar(255) DEFAULT NULL,
+  `ACCESS_CHANNEL_ID` varchar(255) DEFAULT NULL,
   `VOICE_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
   `NOLOGS_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
   `NOTEXT_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
@@ -184,6 +187,7 @@ CREATE TABLE `warnings` (
   `discordID` varchar(255) NOT NULL,
   `warnedBy` varchar(255) NOT NULL,
   `warnReason` text NOT NULL,
+  `warnPreuve` text DEFAULT NULL,
   `warnedAt` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
