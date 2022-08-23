@@ -3,12 +3,19 @@ export default {
 		name: 'command-create',
 	},
 	interaction: async (modal, client) => {
-		// Acquisition du nom et du contenu
+		// Acquisition du nom, des alias et du contenu
 		const nom = modal.fields
 			.getTextInputValue('name-command-create')
 			.trim()
 			.toLowerCase()
 			.replace(/\s+/g, '-')
+
+		const aliases = modal.fields
+			.getTextInputValue('aliases-command-create')
+			.trim()
+			.toLowerCase()
+			.replace(/\s+/g, ',')
+
 		const contenu = modal.fields.getTextInputValue('content-command-create').trim()
 
 		// Acquisition de la base de données
@@ -43,11 +50,12 @@ export default {
 		// Sinon, création de la nouvelle commande en base de données
 		try {
 			const sqlInsert =
-				'INSERT INTO commands (guildId, name, content, author, createdAt, lastModificationBy, lastModificationAt, numberOfUses) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+				'INSERT INTO commands (guildId, name, aliases, content, author, createdAt, lastModificationBy, lastModificationAt, numberOfUses) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
 
 			const dataInsert = [
 				modal.guild.id,
 				nom,
+				aliases,
 				contenu,
 				modal.user.id,
 				Math.round(new Date() / 1000),
@@ -66,7 +74,9 @@ export default {
 		}
 
 		return modal.reply({
-			content: `La commande **${nom}** a bien été créée 👌`,
+			content: `La commande **${nom}** a bien été créée 👌\n\nContenu :\n\`\`\`${contenu}\`\`\`${
+				aliases ? `\nAlias :\n\`\`\`${aliases}\`\`\`` : ''
+			}`,
 		})
 	},
 }

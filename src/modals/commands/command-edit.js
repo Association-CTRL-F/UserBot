@@ -3,8 +3,15 @@ export default {
 		name: 'command-edit',
 	},
 	interaction: async (modal, client) => {
-		// Acquisition du nom et du contenu
+		// Acquisition du nom, des alias et du contenu
 		const nom = modal.fields.getTextInputValue('name-command-edit').trim().replace(/\s+/g, '-')
+
+		const aliases = modal.fields
+			.getTextInputValue('aliases-command-edit')
+			.trim()
+			.toLowerCase()
+			.replace(/\s+/g, ',')
+
 		const contenu = modal.fields.getTextInputValue('content-command-edit').trim()
 
 		// Acquisition de la base de données
@@ -39,8 +46,9 @@ export default {
 		// Sinon, mise à jour de la commande en base de données
 		try {
 			const sqlEdit =
-				'UPDATE commands SET content = ?, lastModificationBy = ?, lastModificationAt = ? WHERE name = ? AND guildId = ?'
+				'UPDATE commands SET aliases = ?, content = ?, lastModificationBy = ?, lastModificationAt = ? WHERE name = ? AND guildId = ?'
 			const dataEdit = [
+				aliases,
 				contenu,
 				modal.user.id,
 				Math.round(new Date() / 1000),
@@ -58,7 +66,9 @@ export default {
 		}
 
 		return modal.reply({
-			content: `La commande **${nom}** a bien été modifiée 👌`,
+			content: `La commande **${nom}** a bien été modifiée 👌\n\nContenu :\n\`\`\`${contenu}\`\`\`${
+				aliases ? `\nAlias :\n\`\`\`${aliases}\`\`\`` : ''
+			}`,
 		})
 	},
 }

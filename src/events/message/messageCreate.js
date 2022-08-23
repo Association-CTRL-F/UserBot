@@ -1,6 +1,6 @@
 /* eslint-disable default-case */
 /* eslint-disable no-case-declarations */
-import { Collection, Constants, GuildMember, MessageEmbed } from 'discord.js'
+import { Collection, Constants, GuildMember, EmbedBuilder } from 'discord.js'
 import {
 	modifyWrongUsernames,
 	convertDate,
@@ -104,7 +104,7 @@ export default async (message, client) => {
 				}
 
 				// Envoi du message de bannissement en message privé
-				const embed = new MessageEmbed()
+				const embed = new EmbedBuilder()
 					.setColor('#C27C0E')
 					.setTitle('Bannissement')
 					.setDescription(banDM)
@@ -130,7 +130,10 @@ export default async (message, client) => {
 
 				// Ban du membre
 				const banAction = await guildMember
-					.ban({ days: 7, reason: `${client.user.tag} : Scam Nitro / Steam (Automod)` })
+					.ban({
+						deleteMessageDays: 7,
+						reason: `${client.user.tag} : Scam Nitro / Steam (Automod)`,
+					})
 					.catch(error => {
 						// Suppression du message privé envoyé
 						// car action de bannissement non réalisée
@@ -227,7 +230,7 @@ export default async (message, client) => {
 						}
 
 						// Envoi du message de bannissement en message privé
-						const embedBan = new MessageEmbed()
+						const embedBan = new EmbedBuilder()
 							.setColor('#C27C0E')
 							.setTitle('Bannissement')
 							.setDescription(banDM)
@@ -253,7 +256,10 @@ export default async (message, client) => {
 
 						// Ban du membre
 						const banAction = await guildMember
-							.ban({ days: 0, reason: `${client.user.tag} : ${rule.reason}` })
+							.ban({
+								deleteMessageDays: 0,
+								reason: `${client.user.tag} : ${rule.reason}`,
+							})
 							.catch(error => {
 								// Suppression du message privé envoyé
 								// car action de bannissement non réalisée
@@ -316,7 +322,7 @@ export default async (message, client) => {
 						}
 
 						// Envoi du message d'avertissement en message privé
-						const embedWarn = new MessageEmbed()
+						const embedWarn = new EmbedBuilder()
 							.setColor('#C27C0E')
 							.setTitle('Avertissement')
 							.setDescription(warnDM)
@@ -399,8 +405,8 @@ export default async (message, client) => {
 		const commandName = args.shift().toLowerCase()
 
 		// Vérification si la commande existe
-		const sqlCheckName = 'SELECT * FROM commands WHERE name = ? AND guildId = ?'
-		const dataCheckName = [commandName, configGuild.GUILD_ID]
+		const sqlCheckName = `SELECT * FROM commands WHERE name = ? OR aliases LIKE ? AND guildId = ?`
+		const dataCheckName = [commandName, `%${commandName}%`, configGuild.GUILD_ID]
 		const [rowsCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 
 		if (!rowsCheckName[0]) return
@@ -495,7 +501,7 @@ export default async (message, client) => {
 			.filter(Boolean)
 
 		const sentMessages = validMessages.map(validMessage => {
-			const embed = new MessageEmbed()
+			const embed = new EmbedBuilder()
 				.setColor('2F3136')
 				.setAuthor({
 					name: `${displayNameAndID(validMessage.member, validMessage.author)}`,

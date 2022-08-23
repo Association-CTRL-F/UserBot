@@ -1,7 +1,6 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-import { SlashCommandBuilder } from '@discordjs/builders'
-import { MessageEmbed } from 'discord.js'
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
 import { convertDateForDiscord, isGuildSetup } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
 
@@ -112,7 +111,7 @@ export default {
 							commandBdd.lastModificationAt * 1000,
 						)}\n`
 
-					const embed = new MessageEmbed()
+					const embed = new EmbedBuilder()
 						.setColor('C27C0E')
 						.setTitle(`Commande personnalisée "${commandBdd.name}"`)
 						.addFields([
@@ -122,7 +121,13 @@ export default {
 							},
 						])
 
-					embed.fields.push({
+					if (commandBdd.aliases)
+						embed.data.fields.push({
+							name: 'Alias',
+							value: `\`\`\`${commandBdd.aliases}\`\`\``,
+						})
+
+					embed.data.fields.push({
 						name: 'Historique',
 						value: `${creationText}${modificationText}Utilisée ${commandBdd.numberOfUses} fois`,
 					})
@@ -179,7 +184,7 @@ export default {
 					ephemeral: false,
 					prevDescription: '',
 					postDescription: '',
-					buttonStyle: 'SECONDARY',
+					buttonStyle: 'Secondary',
 					loop: false,
 				})
 
@@ -247,7 +252,7 @@ export default {
 					ephemeral: false,
 					prevDescription: '',
 					postDescription: '',
-					buttonStyle: 'SECONDARY',
+					buttonStyle: 'Secondary',
 					loop: false,
 				})
 

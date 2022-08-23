@@ -1,7 +1,6 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-import { SlashCommandBuilder } from '@discordjs/builders'
-import { Modal, TextInputComponent, MessageActionRow } from 'discord.js'
+import { SlashCommandBuilder, ModalBuilder, TextInputBuilder, ActionRowBuilder } from 'discord.js'
 import { isGuildSetup } from '../../util/util.js'
 
 export default {
@@ -72,26 +71,35 @@ export default {
 		switch (interaction.options.getSubcommand()) {
 			// Nouvelle commande
 			case 'create':
-				const modalCreate = new Modal()
+				const modalCreate = new ModalBuilder()
 					.setCustomId('command-create')
 					.setTitle("Création d'une nouvelle commande")
 					.addComponents(
-						new MessageActionRow().addComponents(
-							new TextInputComponent()
+						new ActionRowBuilder().addComponents(
+							new TextInputBuilder()
 								.setCustomId('name-command-create')
 								.setLabel('Nom de la commande')
-								.setStyle('SHORT')
+								.setStyle('Short')
 								.setMinLength(1)
 								.setMaxLength(255)
 								.setRequired(true),
 						),
 					)
 					.addComponents(
-						new MessageActionRow().addComponents(
-							new TextInputComponent()
+						new ActionRowBuilder().addComponents(
+							new TextInputBuilder()
+								.setCustomId('aliases-command-create')
+								.setLabel('Alias de la commande')
+								.setStyle('Paragraph')
+								.setMinLength(1),
+						),
+					)
+					.addComponents(
+						new ActionRowBuilder().addComponents(
+							new TextInputBuilder()
 								.setCustomId('content-command-create')
 								.setLabel('Contenu de la commande')
-								.setStyle('PARAGRAPH')
+								.setStyle('Paragraph')
 								.setMinLength(1)
 								.setRequired(true),
 						),
@@ -108,15 +116,15 @@ export default {
 						ephemeral: true,
 					})
 
-				const modalEdit = new Modal()
+				const modalEdit = new ModalBuilder()
 					.setCustomId('command-edit')
 					.setTitle("Modification d'une commande")
 					.addComponents(
-						new MessageActionRow().addComponents(
-							new TextInputComponent()
+						new ActionRowBuilder().addComponents(
+							new TextInputBuilder()
 								.setCustomId('name-command-edit')
 								.setLabel('Nom de la commande')
-								.setStyle('SHORT')
+								.setStyle('Short')
 								.setValue(commandBdd.name)
 								.setMinLength(1)
 								.setMaxLength(255)
@@ -124,11 +132,21 @@ export default {
 						),
 					)
 					.addComponents(
-						new MessageActionRow().addComponents(
-							new TextInputComponent()
+						new ActionRowBuilder().addComponents(
+							new TextInputBuilder()
+								.setCustomId('aliases-command-edit')
+								.setLabel('Alias de la commande')
+								.setStyle('Paragraph')
+								.setValue(commandBdd.aliases)
+								.setMinLength(1),
+						),
+					)
+					.addComponents(
+						new ActionRowBuilder().addComponents(
+							new TextInputBuilder()
 								.setCustomId('content-command-edit')
 								.setLabel('Nouveau contenu de la commande')
-								.setStyle('PARAGRAPH')
+								.setStyle('Paragraph')
 								.setValue(commandBdd.content)
 								.setMinLength(1)
 								.setRequired(true),
