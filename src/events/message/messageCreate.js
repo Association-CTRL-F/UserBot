@@ -512,11 +512,12 @@ export default async (message, client) => {
 				})
 
 			const description = `${validMessage.content}\n[Aller au message](${validMessage.url}) - ${validMessage.channel}`
+
 			// Si la description dépasse la limite
 			// autorisée, les liens sont contenus dans des fields
 			if (description.length > 4096) {
 				embed.data.description = validMessage.content
-				embed.data.fields.push(
+				embed.addFields([
 					{
 						name: 'Message',
 						value: `[Aller au message](${validMessage.url})`,
@@ -527,7 +528,7 @@ export default async (message, client) => {
 						value: validMessage.channel.toString(),
 						inline: true,
 					},
-				)
+				])
 			} else {
 				embed.data.description = description
 			}
@@ -550,11 +551,13 @@ export default async (message, client) => {
 			else
 				attachments.forEach(attachment => {
 					const { name, type } = getFileInfos(attachment.name)
-					embed.data.fields.push({
-						name: `Fichier ${type}`,
-						value: `[${name}](${attachment.url})`,
-						inline: true,
-					})
+					embed.addFields([
+						{
+							name: `Fichier ${type}`,
+							value: `[${name}](${attachment.url})`,
+							inline: true,
+						},
+					])
 				})
 
 			return message.channel.send({ embeds: [embed] })
