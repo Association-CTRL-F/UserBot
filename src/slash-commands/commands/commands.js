@@ -181,7 +181,7 @@ export default {
 					lastEmoji: '⏭',
 					limit: 5,
 					idle: 120000,
-					ephemeral: false,
+					ephemeral: true,
 					prevDescription: '',
 					postDescription: '',
 					buttonStyle: 'Secondary',
@@ -194,7 +194,7 @@ export default {
 				)
 				paginationView.setColor('#C27C0E')
 				paginationView.setFields(fieldsEmbedView)
-				paginationView.footer = { text: 'Page : {pageNumber} / {totalPages}' }
+				paginationView.setFooter({ text: 'Page : {pageNumber} / {totalPages}' })
 				paginationView.paginateFields(true)
 
 				// Envoi de l'embed
@@ -249,7 +249,7 @@ export default {
 					lastEmoji: '⏭',
 					limit: 5,
 					idle: 120000,
-					ephemeral: false,
+					ephemeral: true,
 					prevDescription: '',
 					postDescription: '',
 					buttonStyle: 'Secondary',
@@ -262,7 +262,7 @@ export default {
 				)
 				paginationSearch.setColor('#C27C0E')
 				paginationSearch.setFields(fieldsEmbedSearch)
-				paginationSearch.footer = { text: 'Page : {pageNumber} / {totalPages}' }
+				paginationSearch.setFooter({ text: 'Page : {pageNumber} / {totalPages}' })
 				paginationSearch.paginateFields(true)
 
 				// Envoi de l'embed

@@ -171,7 +171,7 @@ export default {
 				pagination.setDescription(`**Total : ${warnings.length}**`)
 				pagination.setColor('#C27C0E')
 				pagination.setFields(fieldsEmbed)
-				pagination.footer = { text: 'Page : {pageNumber} / {totalPages}' }
+				pagination.setFooter({ text: 'Page : {pageNumber} / {totalPages}' })
 				pagination.paginateFields(true)
 
 				// Envoi de l'embed

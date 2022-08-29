@@ -104,7 +104,7 @@ export default async (message, client) => {
 	) {
 		logEmbed.data.color = 16530492
 		logEmbed.data.footer = {
-			iconURL: executor.displayAvatarURL({ dynamic: true }),
+			icon_url: executor.displayAvatarURL({ dynamic: true }),
 			text: `Message supprimé par ${executor.tag}`,
 		}
 	} else {

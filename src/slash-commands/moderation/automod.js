@@ -212,7 +212,7 @@ export default {
 						pagination.setDescription(`**Total : ${rules.length}**`)
 						pagination.setColor('#C27C0E')
 						pagination.setFields(fieldsEmbed)
-						pagination.footer = { text: 'Page : {pageNumber} / {totalPages}' }
+						pagination.setFooter({ text: 'Page : {pageNumber} / {totalPages}' })
 						pagination.paginateFields(true)
 
 						// Envoi de l'embed
@@ -330,7 +330,7 @@ export default {
 						paginationView.setDescription(`**Total : ${domainsView.length}**`)
 						paginationView.setColor('#C27C0E')
 						paginationView.setFields(fieldsEmbedView)
-						paginationView.footer = { text: 'Page : {pageNumber} / {totalPages}' }
+						paginationView.setFooter({ text: 'Page : {pageNumber} / {totalPages}' })
 						paginationView.paginateFields(true)
 
 						// Envoi de l'embed

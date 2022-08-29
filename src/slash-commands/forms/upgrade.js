@@ -34,7 +34,6 @@ export default {
 		if (!member)
 			return interaction.editReply({
 				content: "Je n'ai pas trouvé cet utilisateur, vérifie la mention ou l'ID 😕",
-				ephemeral: true,
 			})
 
 		// Acquisition de la base de données
@@ -42,7 +41,6 @@ export default {
 		if (!bdd)
 			return interaction.editReply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
-				ephemeral: true,
 			})
 
 		// Acquisition des paramètres de la guild
@@ -76,7 +74,6 @@ export default {
 		} catch {
 			return interaction.editReply({
 				content: 'Une erreur est survenue lors de la récupération du formulaire 😬',
-				ephemeral: true,
 			})
 		}
 
@@ -117,20 +114,17 @@ export default {
 				return interaction.editReply({
 					content:
 						"Je n'ai pas réussi à envoyer le message privé, tu m'as sûrement bloqué / désactivé tes messages provenant du serveur 😬",
-					ephemeral: true,
 				})
 
 			return interaction.editReply({
 				content:
 					"Je n'ai pas réussi à envoyer le DM, l'utilisateur mentionné m'a sûrement bloqué / désactivé les messages provenant du serveur 😬",
-				ephemeral: true,
 			})
 		}
 
 		if (member.user === interaction.user)
 			return interaction.editReply({
 				content: 'Formulaire envoyé en message privé 👌',
-				ephemeral: true,
 			})
 
 		return upgradeChannel

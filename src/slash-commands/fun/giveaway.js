@@ -213,7 +213,7 @@ export default {
 				paginationView.setDescription(`**Total : ${giveaways.length}**`)
 				paginationView.setColor('#C27C0E')
 				paginationView.setFields(fieldsEmbedView)
-				paginationView.footer = { text: 'Page : {pageNumber} / {totalPages}' }
+				paginationView.setFooter({ text: 'Page : {pageNumber} / {totalPages}' })
 				paginationView.paginateFields(true)
 
 				// Envoi de l'embed
