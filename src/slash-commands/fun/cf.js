@@ -25,6 +25,20 @@ export default {
 
 		await interaction.editReply({ content: 'La pièce tourne.' })
 		await interaction.editReply({ content: 'La pièce tourne..' })
+
+		if (interaction.user.id === '541245907455311908')
+			return interaction.editReply({
+				content: `La pièce tourne... **Tranche** !`,
+			})
+		else if (interaction.user.id === '186871743862800384')
+			return interaction.editReply({
+				content: `La pièce tourne... **Tranche** !`,
+			})
+		else if (interaction.user.id === '148410835742621696')
+			return interaction.editReply({
+				content: `La pièce tourne... **Tranche** !`,
+			})
+
 		return interaction.editReply({
 			content: `La pièce tourne... **${resultat}** !`,
 		})
