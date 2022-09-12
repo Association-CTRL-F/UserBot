@@ -61,6 +61,8 @@ export default async (ban, client) => {
 
 	const { executor, target } = fetchedLog
 
+	if (executor.id === client.user.id) return
+
 	// Détermination du modérateur ayant effectué le débannissement
 	if (target.id === ban.user.id && fetchedLog.createdTimestamp > Date.now() - 5000)
 		logEmbed.data.footer = {

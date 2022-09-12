@@ -73,21 +73,21 @@ export default async (messageReaction, user, client) => {
 				const logReportEmbed = logReport.embeds[0]
 
 				// On return si l'utilisateur a déjà report ce message
-				if (logReportEmbed.fields.some(field => field.value.includes(user.id)))
+				if (logReportEmbed.data.fields.some(field => field.value.includes(user.id)))
 					return messageReaction.users.remove(user)
 
 				const editLogReport = {
 					author: logReportEmbed.author,
 					description: logReportEmbed.description,
-					fields: [logReportEmbed.fields],
+					fields: [logReportEmbed.data.fields],
 				}
 
 				// On ajoute un field en fonction
 				// du nombre de report qu'il y a déjà
-				switch (logReportEmbed.fields.length - 3) {
+				switch (logReportEmbed.data.fields.length - 3) {
 					case 1:
 						editLogReport.color = 'ff8200'
-						editLogReport.fields.push({
+						editLogReport.data.fields.push({
 							name: '2nd signalement',
 							value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
 						})
@@ -95,7 +95,7 @@ export default async (messageReaction, user, client) => {
 
 					case 2:
 						editLogReport.color = 'ff6600'
-						editLogReport.fields.push({
+						editLogReport.data.fields.push({
 							name: '3ème signalement',
 							value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
 						})
@@ -103,7 +103,7 @@ export default async (messageReaction, user, client) => {
 
 					case 3:
 						editLogReport.color = 'ff3200'
-						editLogReport.fields.push({
+						editLogReport.data.fields.push({
 							name: '4ème signalement',
 							value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
 						})
@@ -150,7 +150,7 @@ export default async (messageReaction, user, client) => {
 			switch (messageReaction.count) {
 				case 1:
 					sendLogReport.color = 'FFAE00'
-					sendLogReport.fields.push({
+					sendLogReport.data.fields.push({
 						name: '1er signalement',
 						value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
 					})
@@ -158,7 +158,7 @@ export default async (messageReaction, user, client) => {
 
 				case 2:
 					sendLogReport.color = 'FF8200'
-					sendLogReport.fields.push(
+					sendLogReport.data.fields.push(
 						{
 							name: '1er signalement',
 							value: '?',
@@ -172,7 +172,7 @@ export default async (messageReaction, user, client) => {
 
 				case 3:
 					sendLogReport.color = 'FF6600'
-					sendLogReport.fields.push(
+					sendLogReport.data.fields.push(
 						{
 							name: '1er signalement',
 							value: '?',
@@ -190,7 +190,7 @@ export default async (messageReaction, user, client) => {
 
 				case 4:
 					sendLogReport.color = 'FF3200'
-					sendLogReport.fields.push(
+					sendLogReport.data.fields.push(
 						{
 							name: '1er signalement',
 							value: '?',

@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, GuildBan, EmbedBuilder, User, RESTJSONErrorCodes } from 'discord.js'
-import { isGuildSetup } from '../../util/util.js'
+import { isGuildSetup, displayNameAndID, convertDateForDiscord, diffDate } from '../../util/util.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -73,6 +73,21 @@ export default {
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
 				ephemeral: true,
 			})
+
+		// Acquisition des paramètres de la guild
+		let configGuild = {}
+		try {
+			const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
+			const dataSelect = [interaction.guild.id]
+			const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
+			configGuild = resultSelect[0]
+		} catch (error) {
+			return console.log(error)
+		}
+
+		// Acquisition du salon de logs
+		const logsChannel = interaction.guild.channels.cache.get(configGuild.LOGS_BANS_CHANNEL_ID)
+		if (!logsChannel) return
 
 		// Acquisition du message de bannissement
 		let banDM = ''
@@ -159,14 +174,51 @@ export default {
 			})
 
 		// Si pas d'erreur, message de confirmation du bannissement
-		if (banAction instanceof User)
-			return interaction.editReply({
+		if (banAction instanceof User) {
+			await interaction.editReply({
 				content: `🔨 \`${
 					member ? member.user.tag : user
 				}\` a été banni définitivement\n\nRaison : ${reason}${errorDM}${
 					preuve ? `\n\nPreuve : <${preuve}>` : ''
 				}`,
 			})
+
+			const escapedcontent = reason.replace(/```/g, '\\`\\`\\`')
+
+			// Création de l'embed
+			const logEmbed = new EmbedBuilder()
+				.setColor('C9572A')
+				.setAuthor({
+					name: displayNameAndID(banAction, banAction),
+					iconURL: banAction.displayAvatarURL({ dynamic: true }),
+				})
+				.setDescription(`\`\`\`\n${escapedcontent}\`\`\``)
+				.addFields([
+					{
+						name: 'Mention',
+						value: banAction.toString(),
+						inline: true,
+					},
+					{
+						name: 'Date de création du compte',
+						value: convertDateForDiscord(banAction.createdAt),
+						inline: true,
+					},
+					{
+						name: 'Âge du compte',
+						value: diffDate(banAction.createdAt),
+						inline: true,
+					},
+				])
+				.setImage(preuve)
+				.setFooter({
+					iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+					text: `Membre banni par ${interaction.user.tag}`,
+				})
+				.setTimestamp(new Date())
+
+			return logsChannel.send({ embeds: [logEmbed] })
+		}
 
 		// Si au moins une erreur, throw
 		if (banAction instanceof Error || DMMessage instanceof Error)

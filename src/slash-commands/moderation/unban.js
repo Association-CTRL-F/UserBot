@@ -1,5 +1,5 @@
-import { SlashCommandBuilder, User, RESTJSONErrorCodes } from 'discord.js'
-import { isGuildSetup } from '../../util/util.js'
+import { SlashCommandBuilder, EmbedBuilder, User, RESTJSONErrorCodes } from 'discord.js'
+import { isGuildSetup, displayNameAndID, convertDateForDiscord, diffDate } from '../../util/util.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -31,6 +31,14 @@ export default {
 				ephemeral: true,
 			})
 
+		// Acquisition de la base de données
+		const bdd = client.config.db.pools.userbot
+		if (!bdd)
+			return interaction.editReply({
+				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
+				ephemeral: true,
+			})
+
 		// Vérification si le ban existe déjà
 		const ban = await interaction.guild.bans.fetch(user).catch(error => console.log(error))
 		if (!ban)
@@ -38,6 +46,21 @@ export default {
 				content: "Cet utilisateur n'est pas banni 😬",
 				ephemeral: true,
 			})
+
+		// Acquisition des paramètres de la guild
+		let configGuild = {}
+		try {
+			const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
+			const dataSelect = [interaction.guild.id]
+			const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
+			configGuild = resultSelect[0]
+		} catch (error) {
+			return console.log(error)
+		}
+
+		// Acquisition du salon de logs
+		const logsChannel = interaction.guild.channels.cache.get(configGuild.LOGS_BANS_CHANNEL_ID)
+		if (!logsChannel) return
 
 		// Unban du membre
 		const unbanAction = await interaction.guild.members.unban(user).catch(error => {
@@ -68,9 +91,42 @@ export default {
 		})
 
 		// Si pas d'erreur, message de confirmation d'unban
-		if (unbanAction instanceof User)
-			return interaction.editReply({
+		if (unbanAction instanceof User) {
+			await interaction.editReply({
 				content: `🔓 Le bannissement de \`${user}\` a été levé`,
 			})
+
+			// Création de l'embed
+			const logEmbed = new EmbedBuilder()
+				.setColor('57C92A')
+				.setAuthor({
+					name: displayNameAndID(unbanAction, unbanAction),
+					iconURL: unbanAction.displayAvatarURL({ dynamic: true }),
+				})
+				.addFields([
+					{
+						name: 'Mention',
+						value: unbanAction.toString(),
+						inline: true,
+					},
+					{
+						name: 'Date de création du compte',
+						value: convertDateForDiscord(unbanAction.createdAt),
+						inline: true,
+					},
+					{
+						name: 'Âge du compte',
+						value: diffDate(unbanAction.createdAt),
+						inline: true,
+					},
+				])
+				.setFooter({
+					iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+					text: `Membre débanni par ${interaction.user.tag}`,
+				})
+				.setTimestamp(new Date())
+
+			return logsChannel.send({ embeds: [logEmbed] })
+		}
 	},
 }
