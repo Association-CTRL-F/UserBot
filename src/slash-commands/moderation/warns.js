@@ -242,12 +242,6 @@ export default {
 							},
 						])
 
-					if (preuve)
-						embedWarn.data.fields.push({
-							name: 'Preuve',
-							value: preuve,
-						})
-
 					const DMMessage = await member
 						.send({
 							embeds: [embedWarn],

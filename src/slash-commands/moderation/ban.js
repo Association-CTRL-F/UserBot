@@ -124,12 +124,6 @@ export default {
 				},
 			])
 
-		if (preuve)
-			embed.data.fields.push({
-				name: 'Preuve',
-				value: preuve,
-			})
-
 		let DMMessage = false
 		if (member)
 			DMMessage = await member
@@ -192,7 +186,7 @@ export default {
 					name: displayNameAndID(banAction, banAction),
 					iconURL: banAction.displayAvatarURL({ dynamic: true }),
 				})
-				.setDescription(`\`\`\`\n${escapedcontent}\`\`\``)
+				.setDescription(`\`\`\`\n${interaction.user.tag} : ${escapedcontent}\`\`\``)
 				.addFields([
 					{
 						name: 'Mention',
