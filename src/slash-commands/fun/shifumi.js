@@ -133,11 +133,20 @@ export default {
 
 		// Affichage du gagnant
 		collector.on('end', () => {
-			if (playerOneChoice === '' || playerTwoChoice === '') {
+			if (playerOneChoice === '') {
 				return interaction.editReply({
 					embeds: [
 						embedStart.setDescription(
-							`${reactionUser} a accepté le shifumi avec ${interaction.user} !\n\nLes joueurs n'ont rien choisi 😬`,
+							`${reactionUser} a accepté le shifumi avec ${interaction.user} !\n\n${interaction.user} n'a rien choisi 😬`,
+						),
+					],
+					components: [],
+				})
+			} else if (playerTwoChoice === '') {
+				return interaction.editReply({
+					embeds: [
+						embedStart.setDescription(
+							`${reactionUser} a accepté le shifumi avec ${interaction.user} !\n\n${reactionUser} n'a rien choisi 😬`,
 						),
 					],
 					components: [],
