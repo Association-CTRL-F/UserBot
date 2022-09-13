@@ -41,7 +41,7 @@ export default {
 
 		// Filtre pour la réaction
 		const reactionFilter = (emoji, user) =>
-			interaction.guild.members.cache.get(user.id) && !user.bot
+			interaction.guild.members.cache.get(user.id) && !user.bot && user !== interaction.user
 
 		// Création du collecteur de réactions
 		const reactions = await awaitPlayer.awaitReactions({
