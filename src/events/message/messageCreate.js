@@ -404,6 +404,8 @@ export default async (message, client) => {
 		const args = message.content.slice(configGuild.COMMANDS_PREFIX.length).split(/ +/)
 		const commandName = args.shift().toLowerCase()
 
+		if (!commandName) return
+
 		// Vérification si la commande existe
 		const sqlCheckName = `SELECT * FROM commands WHERE name = ? OR aliases LIKE ? AND guildId = ?`
 		const dataCheckName = [commandName, `%${commandName}%`, configGuild.GUILD_ID]
