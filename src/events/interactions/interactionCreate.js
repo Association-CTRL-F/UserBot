@@ -15,6 +15,7 @@ export default (interaction, client) => {
 
 				return command.interaction(interaction, client)
 			}
+
 			const contextMenu = client.contextmenus.get(interaction.commandName)
 			if (!contextMenu)
 				return interaction.reply({

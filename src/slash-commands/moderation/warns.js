@@ -159,12 +159,12 @@ export default {
 				})
 
 				if (member)
-					pagination.author = {
+					pagination.data.author = {
 						name: displayNameAndID(member),
 						icon_url: member.user.displayAvatarURL({ dynamic: true }),
 					}
 				else
-					pagination.author = {
+					pagination.data.author = {
 						name: `ID ${user}`,
 					}
 
