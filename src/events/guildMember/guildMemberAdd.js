@@ -37,9 +37,13 @@ export default async (guildMember, client) => {
 		return console.log(error)
 	}
 
-	// Acquisition du salon de logs
+	// Acquisition du salon de logs join-leave
 	const leaveJoinChannel = guild.channels.cache.get(configGuild.LEAVE_JOIN_CHANNEL_ID)
 	if (!leaveJoinChannel) return
+
+	// Acquisition du salon de logs liste-ban
+	const logsChannel = guild.channels.cache.get(configGuild.LOGS_BANS_CHANNEL_ID)
+	if (!logsChannel) return
 
 	// Envoi du message de join
 	const embedJoin = new EmbedBuilder()
@@ -195,7 +199,7 @@ export default async (guildMember, client) => {
 
 	// Ban du membre
 	const banAction = await guildMember
-		.ban({ deleteMessageDays: 7, reason: `${client.user.tag} : ${reason}` })
+		.ban({ deleteMessageDays: 7, reason: `${banReactionUser.tag} : ${reason}` })
 		.catch(async error => {
 			console.error(error)
 			await sentMessage.react('❌')
@@ -213,7 +217,42 @@ export default async (guildMember, client) => {
 		})
 
 	// Si pas d'erreur, réaction avec 🚪 pour confirmer le ban
-	if (banAction instanceof GuildMember) await sentMessage.react('🚪')
+	if (banAction instanceof GuildMember) {
+		await sentMessage.react('🚪')
+
+		// Création de l'embed
+		const logEmbed = new EmbedBuilder()
+			.setColor('C9572A')
+			.setAuthor({
+				name: displayNameAndID(banAction, banAction),
+				iconURL: banAction.displayAvatarURL({ dynamic: true }),
+			})
+			.setDescription(`\`\`\`\n${banReactionUser.tag} : ${reason} (réaction)\`\`\``)
+			.addFields([
+				{
+					name: 'Mention',
+					value: banAction.toString(),
+					inline: true,
+				},
+				{
+					name: 'Date de création du compte',
+					value: convertDateForDiscord(banAction.user.createdAt),
+					inline: true,
+				},
+				{
+					name: 'Âge du compte',
+					value: diffDate(banAction.user.createdAt),
+					inline: true,
+				},
+			])
+			.setFooter({
+				iconURL: banReactionUser.displayAvatarURL({ dynamic: true }),
+				text: `Membre banni par ${banReactionUser.tag}`,
+			})
+			.setTimestamp(new Date())
+
+		return logsChannel.send({ embeds: [logEmbed] })
+	}
 
 	// Si au moins une erreur, throw
 	if (banAction instanceof Error || DMMessage instanceof Error)

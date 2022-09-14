@@ -8,6 +8,8 @@ import {
 	getFileInfos,
 	displayNameAndID,
 	isStaffMember,
+	convertDateForDiscord,
+	diffDate,
 } from '../../util/util.js'
 
 export default async (message, client) => {
@@ -48,6 +50,10 @@ export default async (message, client) => {
 	}
 
 	// Automod //
+
+	// Acquisition du salon de logs liste-ban
+	const logsChannel = message.guild.channels.cache.get(configGuild.LOGS_BANS_CHANNEL_ID)
+	if (!logsChannel) return
 
 	// Partie domaines
 	const staffRoles = configGuild.STAFF_ROLES_MANAGER_IDS
@@ -150,8 +156,43 @@ export default async (message, client) => {
 						)
 					})
 
-				// Si pas d'erreur
-				if (banAction instanceof GuildMember) return
+				// Si pas d'erreur, réaction avec 🚪 pour confirmer le ban
+				if (banAction instanceof GuildMember) {
+					// Création de l'embed
+					const logEmbed = new EmbedBuilder()
+						.setColor('C9572A')
+						.setAuthor({
+							name: displayNameAndID(banAction, banAction),
+							iconURL: banAction.displayAvatarURL({ dynamic: true }),
+						})
+						.setDescription(
+							`\`\`\`\n${client.user.tag} : Scam Nitro / Steam (Automod)\`\`\``,
+						)
+						.addFields([
+							{
+								name: 'Mention',
+								value: banAction.toString(),
+								inline: true,
+							},
+							{
+								name: 'Date de création du compte',
+								value: convertDateForDiscord(banAction.user.createdAt),
+								inline: true,
+							},
+							{
+								name: 'Âge du compte',
+								value: diffDate(banAction.user.createdAt),
+								inline: true,
+							},
+						])
+						.setFooter({
+							iconURL: banAction.user.displayAvatarURL({ dynamic: true }),
+							text: `Membre banni par ${banAction.user.tag}`,
+						})
+						.setTimestamp(new Date())
+
+					return logsChannel.send({ embeds: [logEmbed] })
+				}
 
 				if (banAction instanceof Error || DMMessageBan instanceof Error)
 					// Si au moins une erreur, throw
@@ -275,6 +316,45 @@ export default async (message, client) => {
 									'Une erreur est survenue lors du bannissement du membre (Automod)',
 								)
 							})
+
+						// Si pas d'erreur,
+						// réaction avec 🚪 pour confirmer le ban
+						if (banAction instanceof GuildMember) {
+							// Création de l'embed
+							const logEmbed = new EmbedBuilder()
+								.setColor('C9572A')
+								.setAuthor({
+									name: displayNameAndID(banAction, banAction),
+									iconURL: banAction.displayAvatarURL({ dynamic: true }),
+								})
+								.setDescription(
+									`\`\`\`\n${client.user.tag} : Scam Nitro / Steam (Automod)\`\`\``,
+								)
+								.addFields([
+									{
+										name: 'Mention',
+										value: banAction.toString(),
+										inline: true,
+									},
+									{
+										name: 'Date de création du compte',
+										value: convertDateForDiscord(banAction.user.createdAt),
+										inline: true,
+									},
+									{
+										name: 'Âge du compte',
+										value: diffDate(banAction.user.createdAt),
+										inline: true,
+									},
+								])
+								.setFooter({
+									iconURL: banAction.user.displayAvatarURL({ dynamic: true }),
+									text: `Membre banni par ${banAction.user.tag}`,
+								})
+								.setTimestamp(new Date())
+
+							return logsChannel.send({ embeds: [logEmbed] })
+						}
 
 						// Si au moins une erreur, throw
 						if (banAction instanceof Error || DMMessageBan instanceof Error)
@@ -401,7 +481,7 @@ export default async (message, client) => {
 
 	// Command handler
 	if (message.content.startsWith(configGuild.COMMANDS_PREFIX)) {
-		const args = message.content.slice(configGuild.COMMANDS_PREFIX.length).split(/ +/)
+		const args = message.content.slice(configGuild.COMMANDS_PREFIX.length).trim().split(/ +/g)
 		const commandName = args.shift().toLowerCase()
 
 		if (!commandName) return
