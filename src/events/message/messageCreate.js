@@ -487,8 +487,8 @@ export default async (message, client) => {
 		if (!commandName) return
 
 		// Vérification si la commande existe
-		const sqlCheckName = `SELECT * FROM commands WHERE name = ? OR aliases LIKE ? AND guildId = ?`
-		const dataCheckName = [commandName, `%${commandName}%`, configGuild.GUILD_ID]
+		const sqlCheckName = `SELECT * FROM commands WHERE guildId = ? AND name = ? OR aliases REGEXP ?`
+		const dataCheckName = [configGuild.GUILD_ID, commandName, `(?:^|,)(${commandName})(?:,|$)`]
 		const [rowsCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 
 		if (!rowsCheckName[0]) return
