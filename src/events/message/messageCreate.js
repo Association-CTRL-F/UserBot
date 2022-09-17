@@ -481,7 +481,7 @@ export default async (message, client) => {
 
 	// Command handler
 	if (message.content.startsWith(configGuild.COMMANDS_PREFIX)) {
-		const args = message.content.slice(configGuild.COMMANDS_PREFIX.length).trim().split(/ +/g)
+		const args = message.content.slice(configGuild.COMMANDS_PREFIX.length).trim().split(/ +/)
 		const commandName = args.shift().toLowerCase()
 
 		if (!commandName) return
