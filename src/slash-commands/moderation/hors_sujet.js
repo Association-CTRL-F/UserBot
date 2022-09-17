@@ -50,6 +50,12 @@ export default {
 			})
 
 		const member = interaction.guild.members.cache.get(message.author.id)
+		if (!member)
+			return interaction.editReply({
+				content:
+					"Je n'ai pas trouvé cet utilisateur, il n'est sans doute plus présent sur le serveur 😕",
+				ephemeral: true,
+			})
 
 		let description = `Ton message est hors-sujet, merci de veiller à bien respecter les salons du serveur.\n\n• Il n'y a pas d'entraide dans le salon <#${configGuild.BLABLA_CHANNEL_ID}>.\n• Si tu ne trouves pas le bon salon, tu peux te référer au salon <#${configGuild.ACCESS_CHANNEL_ID}> afin de choisir tes différents accès.`
 
