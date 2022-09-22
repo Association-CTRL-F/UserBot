@@ -121,7 +121,7 @@ export default {
 					lastEmoji: '⏭',
 					limit: 5,
 					idle: 120000,
-					ephemeral: false,
+					ephemeral: true,
 					prevDescription: '',
 					postDescription: '',
 					buttonStyle: 'Secondary',
