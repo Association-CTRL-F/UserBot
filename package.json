@@ -12,7 +12,7 @@
 		"docker-compose-build-stop": "docker-compose -f ./docker/docker-compose-build.yml down -d"
 	},
 	"dependencies": {
-		"@discordjs/rest": "^1.1.0",
+		"@discordjs/rest": "^1.2.0",
 		"bent": "^7.3.12",
 		"discord-api-types": "^0.37.10",
 		"discord.js": "^14.4.0",
