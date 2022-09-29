@@ -133,7 +133,7 @@ export default {
 				iconURL: interaction.guild.iconURL({ dynamic: true }),
 			})
 			paginationView.setFields(fieldsEmbedView)
-			paginationView.data.footer = { text: 'Page : {pageNumber} / {totalPages}' }
+			paginationView.setFooter({ text: 'Page : {pageNumber} / {totalPages}' })
 			paginationView.paginateFields(true)
 
 			// Envoi de l'embed
