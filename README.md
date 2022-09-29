@@ -47,12 +47,14 @@ Cela s'effectue de la façon suivante avec la commande `/setup` :
 * `/setup logs-messages-channel` : salon logs messages
 * `/setup logs-bans-channel` : salon logs bans
 * `/setup join-role` : rôle Pas de blabla
+* `/setup no-entraide-role` : rôle Pas d'entraide'
 * `/setup timeout-join` : timeout rôle Pas de blabla (`30m` par défaut)
 * `/setup muted-role` : rôle Muted
 * `/setup tribunal-channel` : salon tribunal
 * `/setup config-channel` : salon config
 * `/setup upgrade-channel` : salon upgrade
 * `/setup blabla-channel` : salon blabla-hs
+* `/setup access-channel` : salon acces-aux-canaux
 * `/setup voice-channels` : salons vocaux "créer-ton-vocal"
 * `/setup no-logs-channels` : salons no-logs messages
 * `/setup no-text-channels` : salons no-text messages
@@ -177,8 +179,8 @@ Le bot repose sur les variables d'environnement pour pouvoir fonctionner.
 > DB_HOST=""
 > DB_USER=""
 > DB_PASS=""
-> DN_NAME_URLS_API=""
-> DN_NAME_USERBOT=""
+> DB_NAME_URLS_API=""
+> DB_NAME_USERBOT=""
 > RICH_PRESENCE_TEXT=""
 > ```
 
@@ -189,8 +191,8 @@ Le bot repose sur les variables d'environnement pour pouvoir fonctionner.
 | DB_HOST            | Serveur MySQL                                                                                                    |
 | DB_USER            | Nom d'utilisateur MySQL                                                                                          |
 | DB_PASS            | Mot de passe MySQL                                                                                               |
-| DN_NAME_URLS_API   | Base de données des URLs courtes                                                                                 |
-| DN_NAME_USERBOT    | Base de données du bot                                                                                           |
+| DB_NAME_URLS_API   | Base de données des URLs courtes                                                                                 |
+| DB_NAME_USERBOT    | Base de données du bot                                                                                           |
 | RICH_PRESENCE_TEXT | Texte de présence du bot                                                                                         |
 
 > Pour pouvoir récupérer les identifiants (ID) sur Discord, il faut [activer le mode développeur](https://support.discord.com/hc/fr/articles/206346498-O%C3%B9-trouver-l-ID-de-mon-compte-utilisateur-serveur-message).
