@@ -26,6 +26,14 @@ export default {
 				ephemeral: true,
 			})
 
+		const regexCommand = /^([a-zA-Z0-9]+)$/
+		const validCommand = nom.match(regexCommand)
+		if (!validCommand)
+			return modal.reply({
+				content: "Le nom de commande n'est pas valide (alphanumérique) 😕",
+				ephemeral: true,
+			})
+
 		// Vérification si la commande existe
 		let command = {}
 		try {

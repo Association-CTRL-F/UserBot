@@ -481,7 +481,7 @@ export default async (message, client) => {
 
 	// Command handler
 	if (message.content.startsWith(configGuild.COMMANDS_PREFIX)) {
-		const regexCommands = `${configGuild.COMMANDS_PREFIX}([a-zA-Z0-9+]+)(?: .*|$)`
+		const regexCommands = `${configGuild.COMMANDS_PREFIX}([a-zA-Z0-9]+)(?: .*|$)`
 
 		const args = message.content.match(regexCommands)
 		if (!args) return
