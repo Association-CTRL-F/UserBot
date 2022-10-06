@@ -14,7 +14,7 @@
 	"dependencies": {
 		"@discordjs/rest": "^1.2.0",
 		"bent": "^7.3.12",
-		"discord-api-types": "^0.37.11",
+		"discord-api-types": "^0.37.12",
 		"discord.js": "^14.5.0",
 		"mathjs": "^11.2.1",
 		"ms": "^2.1.3",
