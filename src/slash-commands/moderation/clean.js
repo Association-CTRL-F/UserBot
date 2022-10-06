@@ -137,31 +137,17 @@ export default {
 					.setAuthor({
 						name: `${displayNameAndID(interaction.member, interaction.user)}`,
 						iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
-					})
-					.addFields([
-						{
-							name: 'Clean',
-							value: firstDescription,
-						},
-					]),
+					}),
 				...splitedDescriptions.map(description => ({
 					color: '0000FF',
 					description: description,
 				})),
 				new EmbedBuilder()
 					.setColor('0000FF')
-					.setTitle('Clean')
 					.setDescription(lastDescription)
-					.addFields([
-						{
-							name: 'Salon',
-							value: interaction.channel.toString(),
-							inline: true,
-						},
-					])
 					.setFooter({
 						iconURL: interaction.member.displayAvatarURL({ dynamic: true }),
-						text: `Exécuté par ${interaction.user.tag}`,
+						text: `Exécuté par ${interaction.user.tag} dans #${interaction.channel.name}`,
 					})
 					.setTimestamp(new Date()),
 			]
