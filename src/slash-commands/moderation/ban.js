@@ -17,9 +17,9 @@ export default {
 		.addIntegerOption(option =>
 			option
 				.setName('messages')
-				.setDescription('Nombre de jours de messages à supprimer (0 à 7 inclus)')
+				.setDescription('Nombre de secondes de messages à supprimer (0 à 604800 inclus)')
 				.setMinValue(0)
-				.setMaxValue(7),
+				.setMaxValue(604800),
 		),
 	interaction: async (interaction, client) => {
 		// Vérification que la guild soit entièrement setup
@@ -137,10 +137,10 @@ export default {
 				})
 
 		// Ban du membre
-		const banDays = interaction.options.getInteger('messages') || 0
+		const banSeconds = interaction.options.getInteger('messages') || 0
 		const banAction = await interaction.guild.members
 			.ban(user, {
-				deleteMessageDays: banDays,
+				deleteMessageSeconds: banSeconds,
 				reason: `${interaction.user.tag} : ${reason}`,
 			})
 			.catch(error => {
