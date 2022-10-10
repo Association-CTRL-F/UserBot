@@ -131,7 +131,7 @@ export default {
 
 			const embeds = [
 				new EmbedBuilder()
-					.setColor('0000FF')
+					.setColor('#0000FF')
 					.setTitle('Clean')
 					.setDescription(firstDescription)
 					.setAuthor({
@@ -139,11 +139,11 @@ export default {
 						iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
 					}),
 				...splitedDescriptions.map(description => ({
-					color: '0000FF',
+					color: '#0000FF',
 					description: description,
 				})),
 				new EmbedBuilder()
-					.setColor('0000FF')
+					.setColor('#0000FF')
 					.setDescription(lastDescription)
 					.setFooter({
 						iconURL: interaction.member.displayAvatarURL({ dynamic: true }),
@@ -162,7 +162,7 @@ export default {
 
 		// Si les messages tiennent dans un seul embed
 		const embed = new EmbedBuilder()
-			.setColor('0000FF')
+			.setColor('#0000FF')
 			.setTitle('Clean')
 			.setDescription(text)
 			.setFooter({
