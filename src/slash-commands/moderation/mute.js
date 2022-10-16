@@ -1,8 +1,15 @@
 /* eslint-disable default-case */
 /* eslint-disable no-case-declarations */
 /* eslint-disable no-mixed-operators */
-import { SlashCommandBuilder, GuildMember, EmbedBuilder, RESTJSONErrorCodes } from 'discord.js'
+import {
+	SlashCommandBuilder,
+	GuildMember,
+	EmbedBuilder,
+	RESTJSONErrorCodes,
+	ChannelType,
+} from 'discord.js'
 import { convertMinutesToString, isGuildSetup } from '../../util/util.js'
+import ms from 'ms'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -141,6 +148,12 @@ export default {
 				if (member.id === interaction.user.id)
 					return interaction.editReply({
 						content: 'Tu ne peux pas te mute toi-même 😕',
+					})
+
+				if (ms(duration).toString(2).length > 31)
+					return interaction.reply({
+						content: 'Le délai est trop grand : supérieur à 24 jours 😬',
+						ephemeral: true,
 					})
 
 				// Envoi du message de mute en message privé
@@ -302,7 +315,8 @@ export default {
 					const thread = await tribunalChannel.threads.create({
 						name: `Mute de ${member.user.username}`,
 						autoArchiveDuration: 24 * 60,
-						// type: 'GUILD_PRIVATE_THREAD',
+						type: ChannelType.PublicThread,
+						invitable: false,
 					})
 
 					await thread.members.add(member.id)
