@@ -21,7 +21,7 @@ export default {
 
 		if (message.author.bot || !message.guild)
 			return interaction.editReply({
-				content: "Tu ne peux pas signaler le message d'un bot 😕",
+				content: "Tu ne peux pas déclarer hors-sujet le message d'un bot 😕",
 			})
 
 		// Acquisition de la base de données
