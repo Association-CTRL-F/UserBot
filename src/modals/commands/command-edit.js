@@ -66,7 +66,7 @@ export default {
 		}
 
 		return modal.reply({
-			content: `La commande **${nom}** a bien été modifiée 👌\n\nContenu :\n\`\`\`${contenu}\`\`\`${
+			content: `La commande **${nom}** a bien été modifiée 👌\n\nPrévisualisation :\n\n${contenu}${
 				aliases ? `\nAlias :\n\`\`\`${aliases}\`\`\`` : ''
 			}`,
 		})
