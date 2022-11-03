@@ -66,9 +66,9 @@ export default {
 		}
 
 		return modal.reply({
-			content: `La commande **${nom}** a bien été modifiée 👌\n\n__Prévisualisation :__\n\n${contenu}${
-				aliases ? `\n\n__Alias :__\n\`\`\`${aliases}\`\`\`` : ''
-			}`,
+			content: `La commande **${nom}** a bien été modifiée 👌\n${
+				aliases ? `\n__Alias :__\n\`\`\`${aliases}\`\`\`` : ''
+			}\n__Prévisualisation :__\n\n${contenu}`,
 		})
 	},
 }

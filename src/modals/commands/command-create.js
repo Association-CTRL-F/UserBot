@@ -82,9 +82,9 @@ export default {
 		}
 
 		return modal.reply({
-			content: `La commande **${nom}** a bien été créée 👌\n\n__Prévisualisation :__\n\n${contenu}${
-				aliases ? `\n\n__Alias :__\n\`\`\`${aliases}\`\`\`` : ''
-			}`,
+			content: `La commande **${nom}** a bien été créée 👌\n${
+				aliases ? `\n__Alias :__\n\`\`\`${aliases}\`\`\`` : ''
+			}\n__Prévisualisation :__\n\n${contenu}`,
 		})
 	},
 }
