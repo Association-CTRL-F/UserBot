@@ -12,6 +12,14 @@ export default {
 			.toLowerCase()
 			.replace(/\s+/g, ',')
 
+		const active = modal.fields.getTextInputValue('active-command-edit').trim().toLowerCase()
+
+		if (active !== '0' && active !== '1')
+			return modal.reply({
+				content: 'Le champ activation doit être défini sur 0 ou 1 😕',
+				ephemeral: true,
+			})
+
 		const contenu = modal.fields.getTextInputValue('content-command-edit').trim()
 
 		// Acquisition de la base de données
@@ -46,9 +54,10 @@ export default {
 		// Sinon, mise à jour de la commande en base de données
 		try {
 			const sqlEdit =
-				'UPDATE commands SET aliases = ?, content = ?, lastModificationBy = ?, lastModificationAt = ? WHERE name = ? AND guildId = ?'
+				'UPDATE commands SET aliases = ?, active = ?, content = ?, lastModificationBy = ?, lastModificationAt = ? WHERE name = ? AND guildId = ?'
 			const dataEdit = [
-				aliases,
+				aliases ? aliases : null,
+				active,
 				contenu,
 				modal.user.id,
 				Math.round(new Date() / 1000),
@@ -65,8 +74,15 @@ export default {
 			})
 		}
 
+		if (active === '0')
+			return modal.reply({
+				content: `La commande **${nom}** a bien été modifiée et est **désactivée** 👌\n${
+					aliases ? `\n__Alias :__\n\`\`\`${aliases}\`\`\`` : ''
+				}\n__Prévisualisation :__\n\n${contenu}`,
+			})
+
 		return modal.reply({
-			content: `La commande **${nom}** a bien été modifiée 👌\n${
+			content: `La commande **${nom}** a bien été modifiée et est **activée** 👌\n${
 				aliases ? `\n__Alias :__\n\`\`\`${aliases}\`\`\`` : ''
 			}\n__Prévisualisation :__\n\n${contenu}`,
 		})

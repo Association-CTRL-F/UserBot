@@ -16,6 +16,8 @@ export default {
 			.toLowerCase()
 			.replace(/\s+/g, ',')
 
+		const active = modal.fields.getTextInputValue('active-command-create').trim().toLowerCase()
+
 		const contenu = modal.fields.getTextInputValue('content-command-create').trim()
 
 		// Acquisition de la base de données
@@ -31,6 +33,12 @@ export default {
 		if (!validCommand)
 			return modal.reply({
 				content: "Le nom de commande n'est pas valide (alphanumérique) 😕",
+				ephemeral: true,
+			})
+
+		if (active !== '0' && active !== '1')
+			return modal.reply({
+				content: 'Le champ activation doit être défini sur 0 ou 1 😕',
 				ephemeral: true,
 			})
 
@@ -58,12 +66,13 @@ export default {
 		// Sinon, création de la nouvelle commande en base de données
 		try {
 			const sqlInsert =
-				'INSERT INTO commands (guildId, name, aliases, content, author, createdAt, lastModificationBy, lastModificationAt, numberOfUses) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+				'INSERT INTO commands (guildId, name, aliases, active, content, author, createdAt, lastModificationBy, lastModificationAt, numberOfUses) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
 
 			const dataInsert = [
 				modal.guild.id,
 				nom,
 				aliases ? aliases : null,
+				active,
 				contenu,
 				modal.user.id,
 				Math.round(new Date() / 1000),
@@ -81,8 +90,15 @@ export default {
 			})
 		}
 
+		if (active === '0')
+			return modal.reply({
+				content: `La commande **${nom}** a bien été créée et est **désactivée** 👌\n${
+					aliases ? `\n__Alias :__\n\`\`\`${aliases}\`\`\`` : ''
+				}\n__Prévisualisation :__\n\n${contenu}`,
+			})
+
 		return modal.reply({
-			content: `La commande **${nom}** a bien été créée 👌\n${
+			content: `La commande **${nom}** a bien été créée et est **activée** 👌\n${
 				aliases ? `\n__Alias :__\n\`\`\`${aliases}\`\`\`` : ''
 			}\n__Prévisualisation :__\n\n${contenu}`,
 		})

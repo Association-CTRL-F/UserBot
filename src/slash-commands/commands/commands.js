@@ -117,7 +117,7 @@ export default {
 						.addFields([
 							{
 								name: 'Contenu',
-								value: `\`\`\`${commandBdd.content}\`\`\``,
+								value: `${commandBdd.content}`,
 							},
 						])
 
@@ -126,6 +126,11 @@ export default {
 							name: 'Alias',
 							value: `\`\`\`${commandBdd.aliases}\`\`\``,
 						})
+
+					embed.data.fields.push({
+						name: 'Activation',
+						value: `${commandBdd.active === 0 ? 'Désactivée' : 'Activée'}`,
+					})
 
 					embed.data.fields.push({
 						name: 'Historique',
@@ -160,6 +165,8 @@ export default {
 				const fieldsEmbedView = []
 
 				commands.forEach(command => {
+					if (!command.active) return
+
 					const commandContent = String.raw`${command.content}`
 					let commandContentCut = ''
 

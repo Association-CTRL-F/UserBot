@@ -98,6 +98,18 @@ export default {
 					.addComponents(
 						new ActionRowBuilder().addComponents(
 							new TextInputBuilder()
+								.setCustomId('active-command-create')
+								.setLabel('Activation de la commande')
+								.setStyle('Short')
+								.setValue('1')
+								.setMinLength(1)
+								.setMaxLength(1)
+								.setRequired(true),
+						),
+					)
+					.addComponents(
+						new ActionRowBuilder().addComponents(
+							new TextInputBuilder()
 								.setCustomId('content-command-create')
 								.setLabel('Contenu de la commande')
 								.setStyle('Paragraph')
@@ -116,6 +128,8 @@ export default {
 						content: `La commande **${nom}** n'existe pas 😕`,
 						ephemeral: true,
 					})
+
+				console.log(commandBdd)
 
 				const modalEdit = new ModalBuilder()
 					.setCustomId('command-edit')
@@ -141,6 +155,22 @@ export default {
 								.setValue(commandBdd.aliases ? commandBdd.aliases : '')
 								.setMinLength(1)
 								.setRequired(false),
+						),
+					)
+					.addComponents(
+						new ActionRowBuilder().addComponents(
+							new TextInputBuilder()
+								.setCustomId('active-command-edit')
+								.setLabel('Activation de la commande')
+								.setStyle('Short')
+								.setValue(
+									commandBdd.active.toString()
+										? commandBdd.active.toString()
+										: '',
+								)
+								.setMinLength(1)
+								.setMaxLength(1)
+								.setRequired(true),
 						),
 					)
 					.addComponents(
