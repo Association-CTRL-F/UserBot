@@ -489,12 +489,14 @@ export default async (message, client) => {
 		const commandName = args[1].toLowerCase()
 		if (!commandName) return
 
-		// Vérification si la commande existe
+		// Vérification si la commande existe et est activée
 		const sqlCheckName = `SELECT * FROM commands WHERE guildId = ? AND name = ? OR aliases REGEXP ?`
 		const dataCheckName = [configGuild.GUILD_ID, commandName, `(?:^|,)(${commandName})(?:,|$)`]
 		const [rowsCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
 
 		if (!rowsCheckName[0]) return
+
+		if (!rowsCheckName[0].active) return
 
 		// Partie cooldown
 		if (!client.cooldowns.has(commandName))

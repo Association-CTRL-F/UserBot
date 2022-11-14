@@ -164,6 +164,7 @@ export default {
 				// Boucle d'ajout des champs
 				const fieldsEmbedView = []
 
+				commands = commands.filter(command => command.active)
 				commands.forEach(command => {
 					if (!command.active) return
 
