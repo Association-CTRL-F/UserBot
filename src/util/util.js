@@ -165,21 +165,10 @@ export const modifyWrongUsernames = guildMember => {
 	// Trigger si le premier caractère n'est pas "normal" ou s'il vaut "Change ton pseudo"
 	const triggerRegex = /^[^a-zA-Z0-9áàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ].*/
 
-	// Si le pseudo a déjà été changé
-	if (guildMember.nickname === 'Change ton pseudo') {
-		// Si son pseudo d'utilisateur est correct, on le supprime
-		if (!guildMember.user.username.match(triggerRegex)) return guildMember.setNickname(null)
-		// Sinon, il garde "Change ton pseudo"
-		return Promise.resolve()
-	}
-
 	// Si son nom de compte ou son pseudo est incorrect
-	if (guildMember.displayName.match(triggerRegex)) {
-		// Si son nom de compte est correct, on enlève son pseudo
-		if (!guildMember.user.username.match(triggerRegex)) return guildMember.setNickname(null)
-		// Sinon on le renomme "Change ton pseudo"
+	if (guildMember.displayName.match(triggerRegex))
+		// On le renomme "Change ton pseudo"
 		return guildMember.setNickname('Change ton pseudo')
-	}
 
 	return Promise.resolve()
 }
