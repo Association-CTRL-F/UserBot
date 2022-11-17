@@ -1,8 +1,16 @@
 /* eslint-disable no-await-in-loop */
 import { readFile } from 'fs/promises'
-import { EmbedBuilder, RESTJSONErrorCodes } from 'discord.js'
+import {
+	EmbedBuilder,
+	RESTJSONErrorCodes,
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+} from 'discord.js'
 import { pluralize } from '../../util/util.js'
 import ms from 'ms'
+import fs from 'node:fs'
+import axios from 'axios'
 
 export const once = true
 
@@ -538,8 +546,98 @@ export default async client => {
 					console.log("Une erreur est survenue lors de la suppression d'un salon vocal")
 				}
 			})
+
+		// ALERTES NVIDIA
+
+		// Récupérer les données de l'API toutes les 10 secondes:
+		setInterval(() => {
+			// Lire le fichier gpu.json qui contient la liste des gpus Nvidia
+			let gpusJSON = fs.readFileSync('./config/env/gpu.json', (err, data) => data)
+
+			gpusJSON = JSON.parse(gpusJSON)
+
+			// Parcourir les cartes graphiques contenue dans le gpu.json
+			// eslint-disable-next-line require-await
+			Object.values(Object.values(gpusJSON)).forEach(async gpu => {
+				// Récupérer les données de l'API
+				axios
+					.get(
+						`https://api.store.nvidia.com/partner/v1/feinventory?skus=${gpu.code}&locale=fr-fr`,
+					)
+					.then(async res => {
+						// Si la carte graphique est disponible
+						// et qu'annonce non envoyée
+						if (res.data.listMap[0].is_active === 'true' && gpu.active !== 'true') {
+							// On change les états des deux variables
+							gpu.active = 'true'
+
+							const grade = `<@&${gpu.gradeId}>` || ''
+							const channel = guild.channels.cache.get(gpu.channelId)
+
+							// On prépare un embed avec un bouton de redirection
+							const row = new ActionRowBuilder().addComponents(
+								new ButtonBuilder()
+									.setLabel('Acheter')
+									.setURL(
+										`https://store.nvidia.com/fr-fr/geforce/store/?page=1&limit=9&locale=fr-fr&manufacturer=NVIDIA&gpu=${gpu.url}`,
+									)
+									.setStyle(ButtonStyle.Link),
+							)
+
+							const exampleEmbed = new EmbedBuilder()
+								.setTitle(`DROP DE ${gpu.name} FE !`)
+								.setColor('#2AE300')
+								.addFields({
+									name: 'Prix',
+									value: `${res.data.listMap[0].price}€`,
+									inline: true,
+								})
+
+							// On envoie le message
+							await channel.send({
+								content: grade,
+								embeds: [exampleEmbed],
+								components: [row],
+							})
+						}
+
+						if (res.data.listMap[0].is_active === 'false' && gpu.active === 'false') {
+							// Si la carte graphique n'est pas disponible
+							// et que la variable active est à false
+							// on ne fait rien
+							// Si besoin on peut écrire quelque chose ici
+						}
+
+						// Si la carte graphique n'est pas disponible
+						// et que la variable active
+						if (res.data.listMap[0].is_active === 'false' && gpu.active === 'true') {
+							// On change la variable active à false
+							gpu.active = 'false'
+
+							const channel = guild.channels.cache.get(gpu.channelId)
+
+							// On prépare un embed
+							const exampleEmbed = new EmbedBuilder()
+								.setTitle(`DROP DE ${gpu.name} FE TERMINÉ !`)
+								.setColor('#FF0022')
+
+							// On envoie le message
+							await channel.send({ embeds: [exampleEmbed] })
+						}
+					})
+			})
+			// On écrit dans le fichier gpu.json les nouvelles valeurs*
+			// après 5 secondes afin de s'assurer que les requêtes d'API
+			// aient le temps de s'effectuer
+			setTimeout(() => {
+				fs.writeFileSync('./config/env/gpu.json', JSON.stringify(gpusJSON, null, 2))
+			}, 5000)
+		}, 10000)
+
+		// FIN ALERTES NVIDIA
 	})
 
+	// Rich presence
 	const richPresenceText = client.config.bot.richPresenceText
 	if (richPresenceText && richPresenceText !== '')
 		await client.user.setPresence({

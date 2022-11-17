@@ -8,6 +8,7 @@ node_modules/
 # fichiers d'environnement
 bot.env
 banEmotesAtJoin.json
+gpu.json
 
 # fichiers de config
 reactionRoleConfig.json
