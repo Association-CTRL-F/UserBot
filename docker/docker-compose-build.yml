@@ -14,3 +14,4 @@ services:
             - ../config/env/reactionRoleConfig.json:/usr/src/app/config/env/reactionRoleConfig.json
             - ../config/env/banEmotesAtJoin.json:/usr/src/app/config/env/banEmotesAtJoin.json
             - ../config/commands:/usr/src/app/config/commands
+            - ../config/env/gpu.json:/usr/src/app/config/env/gpu.json

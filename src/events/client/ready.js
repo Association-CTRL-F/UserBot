@@ -571,7 +571,7 @@ export default async client => {
 							// On change les états des deux variables
 							gpu.active = 'true'
 
-							const grade = `<@&${gpu.gradeId}>` || ''
+							const role = `<@&${gpu.roleId}>` || ''
 							const channel = guild.channels.cache.get(gpu.channelId)
 
 							// On prépare un embed avec un bouton de redirection
@@ -595,7 +595,7 @@ export default async client => {
 
 							// On envoie le message
 							await channel.send({
-								content: grade,
+								content: role,
 								embeds: [exampleEmbed],
 								components: [row],
 							})
