@@ -36,6 +36,13 @@ export default (interaction, client) => {
 			return modal.interaction(interaction, client)
 
 		case InteractionType.MessageComponent:
+			if (interaction.componentType === 2) {
+				const button = client.buttons.get(interaction.customId)
+				if (button) return button.interaction(interaction, client)
+
+				return interaction
+			}
+
 			const selectMenu = client.selectmenus.get(interaction.customId)
 			if (selectMenu) return selectMenu.interaction(interaction, client)
 

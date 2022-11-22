@@ -2,6 +2,7 @@ import prepareClient from './util/clientLoader.js'
 import eventsLoader from './events/loader.js'
 import modalsLoader from './modals/loader.js'
 import menusLoader from './select-menus/loader.js'
+import buttons from './buttons/loader.js'
 import slashCommandsLoader from './slash-commands/loader.js'
 import { closeGracefully } from './util/util.js'
 
@@ -37,6 +38,13 @@ const run = async () => {
 		console.log('Select Menus ✅')
 	} catch {
 		console.log('Select Menus ❌')
+	}
+
+	try {
+		await buttons(client)
+		console.log('Buttons ✅')
+	} catch {
+		console.log('Buttons ❌')
 	}
 
 	await client.login(client.config.bot.token)

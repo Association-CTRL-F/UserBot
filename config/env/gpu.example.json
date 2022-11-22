@@ -55,6 +55,14 @@
     "channelId": "",
     "active": "false"
   },
+  "NVGFT480": {
+    "name": "RTX 4080",
+    "code": "NVGFT480",
+    "url": "RTX%204080",
+    "roleId": "",
+    "channelId": "",
+    "active": "false"
+  },
   "NVGFT490": {
     "name": "RTX 4090",
     "code": "NVGFT490",

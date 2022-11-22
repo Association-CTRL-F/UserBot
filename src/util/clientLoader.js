@@ -24,6 +24,7 @@ export default async () => {
 	client.contextmenus = new Collection()
 	client.modals = new Collection()
 	client.selectmenus = new Collection()
+	client.buttons = new Collection()
 	client.cooldowns = new Collection()
 
 	client.config = {
@@ -69,6 +70,7 @@ export default async () => {
 	client.commandsCategories = new Map()
 	client.modalsCategories = new Map()
 	client.selectMenusCategories = new Map()
+	client.buttonsCategories = new Map()
 
 	// Map utilisée pour la gestion des salons vocaux
 	client.voiceManager = new Map()
