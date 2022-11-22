@@ -111,13 +111,14 @@ export default {
 							commandBdd.lastModificationAt * 1000,
 						)}\n`
 
+					const escapedcontent = commandBdd.content.replace(/```/g, '\\`\\`\\`')
 					const embed = new EmbedBuilder()
 						.setColor('C27C0E')
 						.setTitle(`Commande personnalisée "${commandBdd.name}"`)
 						.addFields([
 							{
 								name: 'Contenu',
-								value: `${commandBdd.content}`,
+								value: `\`\`\`${escapedcontent}\`\`\``,
 							},
 						])
 
