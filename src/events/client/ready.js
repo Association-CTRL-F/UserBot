@@ -586,7 +586,7 @@ export default async client => {
 
 							const exampleEmbed = new EmbedBuilder()
 								.setTitle(`DROP DE ${gpu.name} FE !`)
-								.setColor('#2AE300')
+								.setColor('57C92A')
 								.addFields({
 									name: 'Prix',
 									value: `${res.data.listMap[0].price}€`,
@@ -619,14 +619,15 @@ export default async client => {
 							// On prépare un embed
 							const exampleEmbed = new EmbedBuilder()
 								.setTitle(`DROP DE ${gpu.name} FE TERMINÉ !`)
-								.setColor('#FF0022')
+								.setColor('C9572A')
 
 							// On envoie le message
 							await channel.send({ embeds: [exampleEmbed] })
 						}
 					})
 			})
-			// On écrit dans le fichier gpu.json les nouvelles valeurs*
+
+			// On écrit dans le fichier gpu.json les nouvelles valeurs
 			// après 5 secondes afin de s'assurer que les requêtes d'API
 			// aient le temps de s'effectuer
 			setTimeout(() => {
