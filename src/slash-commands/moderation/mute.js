@@ -315,7 +315,7 @@ export default {
 					const thread = await tribunalChannel.threads.create({
 						name: `Mute de ${member.user.username}`,
 						autoArchiveDuration: 24 * 60,
-						type: ChannelType.PublicThread,
+						type: ChannelType.PrivateThread,
 						invitable: false,
 					})
 
@@ -349,7 +349,8 @@ export default {
 				const threadGroup = await tribunalChannel.threads.create({
 					name: `Mute groupé`,
 					autoArchiveDuration: 24 * 60,
-					// type: 'GUILD_PRIVATE_THREAD',
+					type: ChannelType.PrivateThread,
+					invitable: false,
 				})
 
 				await Promise.all(
