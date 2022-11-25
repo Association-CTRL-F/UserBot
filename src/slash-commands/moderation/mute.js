@@ -312,10 +312,6 @@ export default {
 
 				// Si pas d'erreur, message de confirmation du mute
 				if (muteAction instanceof GuildMember) {
-					const message = await tribunalChannel.send({
-						content: `Mute de ${member.user.username}`,
-					})
-
 					const thread = await tribunalChannel.threads.create({
 						name: `Mute de ${member.user.username}`,
 						autoArchiveDuration: 24 * 60,
@@ -323,7 +319,7 @@ export default {
 						invitable: false,
 					})
 
-					await message.edit({
+					await tribunalChannel.send({
 						content: `Mute de \`${member.user.tag}\`\nhttps://discord.com/channels/${interaction.guild.id}/${thread.id}`,
 					})
 
@@ -354,10 +350,6 @@ export default {
 				let muteMessage = ''
 				let errorDMGroup = ''
 
-				const message = await tribunalChannel.send({
-					content: `Mute de ${member.user.username}`,
-				})
-
 				const threadGroup = await tribunalChannel.threads.create({
 					name: `Mute groupé`,
 					autoArchiveDuration: 24 * 60,
@@ -365,7 +357,7 @@ export default {
 					invitable: false,
 				})
 
-				await message.edit({
+				await tribunalChannel.send({
 					content: `Mute de groupé\nhttps://discord.com/channels/${interaction.guild.id}/${threadGroup.id}`,
 				})
 
