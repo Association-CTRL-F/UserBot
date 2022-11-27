@@ -4,7 +4,7 @@ export default {
 	data: {
 		name: 'select-gpu',
 	},
-	interaction: async menu => {
+	interaction: menu => {
 		// Lire le fichier gpu.json qui contient la liste des gpus Nvidia
 		let gpusJSON = fs.readFileSync('./config/env/gpu.json', (err, data) => data)
 		gpusJSON = JSON.parse(gpusJSON)
@@ -18,11 +18,11 @@ export default {
 			await gpuArray.push(gpu.roleId)
 		})
 
-		await gpuArray.forEach(role => {
-			member.roles.remove(role)
+		gpuArray.forEach(role => {
+			if (member.roles.cache.has(role)) member.roles.remove(role)
 		})
 
-		await menu.values.forEach(role => {
+		menu.values.forEach(role => {
 			member.roles.add(role)
 		})
 
