@@ -565,10 +565,13 @@ export default async client => {
 						`https://api.store.nvidia.com/partner/v1/feinventory?skus=${gpu.code}&locale=fr-fr`,
 					)
 					.then(async res => {
+						// Vérification si la requête retourne des données
+						if (res.data.listMap.length === 0) return
+
 						// Si la carte graphique est disponible
 						// et qu'annonce non envoyée
 						if (res.data.listMap[0].is_active === 'true' && gpu.active !== 'true') {
-							// On change les états des deux variables
+							// On change la variable active à false
 							gpu.active = 'true'
 
 							const role = `<@&${gpu.roleId}>` || ''
@@ -609,7 +612,7 @@ export default async client => {
 						}
 
 						// Si la carte graphique n'est pas disponible
-						// et que la variable active
+						// et que la variable est active
 						if (res.data.listMap[0].is_active === 'false' && gpu.active === 'true') {
 							// On change la variable active à false
 							gpu.active = 'false'
