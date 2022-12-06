@@ -21,7 +21,7 @@
 		"mysql2": "^2.3.3",
 		"node-fetch": "^2.6.7",
 		"pagination.djs": "^4.0.9",
-		"axios": "^1.2.0",
+		"axios": "^1.2.1",
 		"fs": "^0.0.1-security",
     	"http": "^0.0.1-security"
 	},
