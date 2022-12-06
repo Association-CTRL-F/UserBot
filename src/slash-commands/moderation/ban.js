@@ -14,12 +14,20 @@ export default {
 		.addAttachmentOption(option =>
 			option.setName('preuve').setDescription('Preuve du bannissement'),
 		)
-		.addIntegerOption(option =>
+		.addStringOption(option =>
 			option
 				.setName('messages')
-				.setDescription('Nombre de secondes de messages à supprimer (0 à 604800 inclus)')
-				.setMinValue(0)
-				.setMaxValue(604800),
+				.setDescription('Nombre de jours de messages à supprimer (0 à 7 inclus)')
+				.addChoices(
+					{ name: 'Ne pas supprimer', value: '0' },
+					{ name: '1 jour', value: '1' },
+					{ name: '2 jours', value: '2' },
+					{ name: '3 jours', value: '3' },
+					{ name: '4 jours', value: '4' },
+					{ name: '5 jours', value: '5' },
+					{ name: '6 jours', value: '6' },
+					{ name: '7 jours', value: '7' },
+				),
 		),
 	interaction: async (interaction, client) => {
 		// Vérification que la guild soit entièrement setup
@@ -137,10 +145,10 @@ export default {
 				})
 
 		// Ban du membre
-		const banSeconds = interaction.options.getInteger('messages') || 0
+		const banMessagesDays = interaction.options.getString('messages') || 0
 		const banAction = await interaction.guild.members
 			.ban(user, {
-				deleteMessageSeconds: banSeconds,
+				deleteMessageSeconds: banMessagesDays * 86400,
 				reason: `${interaction.user.tag} : ${reason}`,
 			})
 			.catch(error => {
