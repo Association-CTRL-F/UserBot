@@ -1,6 +1,11 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-import { SlashCommandBuilder, ActionRowBuilder, SelectMenuBuilder, EmbedBuilder } from 'discord.js'
+import {
+	SlashCommandBuilder,
+	ActionRowBuilder,
+	StringSelectMenuBuilder,
+	EmbedBuilder,
+} from 'discord.js'
 import { Pagination } from 'pagination.djs'
 import { isGuildSetup } from '../../util/util.js'
 
@@ -221,7 +226,7 @@ export default {
 					// Créer une règle d'automod
 					case 'create':
 						const menuType = new ActionRowBuilder().addComponents(
-							new SelectMenuBuilder()
+							new StringSelectMenuBuilder()
 								.setCustomId('select-rule-create')
 								.setPlaceholder('Sélectionnez un type de règle')
 								.addOptions([
@@ -247,7 +252,7 @@ export default {
 					// Modifier une règle d'automod
 					case 'edit':
 						const menuRulesEdit = new ActionRowBuilder().addComponents(
-							new SelectMenuBuilder()
+							new StringSelectMenuBuilder()
 								.setCustomId('select-rule-edit')
 								.setPlaceholder('Sélectionnez la règle')
 								.addOptions(arrayRules),
@@ -262,7 +267,7 @@ export default {
 					// Supprimer une règle d'automod
 					case 'del':
 						const menuRulesDel = new ActionRowBuilder().addComponents(
-							new SelectMenuBuilder()
+							new StringSelectMenuBuilder()
 								.setCustomId('select-rule-del')
 								.setPlaceholder('Sélectionnez la règle')
 								.addOptions(arrayRules),

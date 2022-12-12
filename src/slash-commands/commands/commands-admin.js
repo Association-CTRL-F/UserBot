@@ -129,8 +129,6 @@ export default {
 						ephemeral: true,
 					})
 
-				console.log(commandBdd)
-
 				const modalEdit = new ModalBuilder()
 					.setCustomId('command-edit')
 					.setTitle("Modification d'une commande")

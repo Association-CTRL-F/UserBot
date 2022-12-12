@@ -3,7 +3,7 @@
 import {
 	SlashCommandBuilder,
 	ActionRowBuilder,
-	SelectMenuBuilder,
+	StringSelectMenuBuilder,
 	ModalBuilder,
 	TextInputBuilder,
 } from 'discord.js'
@@ -102,7 +102,7 @@ export default {
 				})
 
 				const menu = new ActionRowBuilder().addComponents(
-					new SelectMenuBuilder()
+					new StringSelectMenuBuilder()
 						.setCustomId('select-edit-form')
 						.setPlaceholder('Sélectionnez le formulaire')
 						.addOptions(arrayForms),
