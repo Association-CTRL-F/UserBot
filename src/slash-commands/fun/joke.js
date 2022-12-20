@@ -44,8 +44,8 @@ export default {
 			// Création de l'embed
 			const embed = new EmbedBuilder()
 				.setColor('#C27C0E')
-				.setTitle(answer)
-				.setDescription(joke)
+				.setTitle(joke)
+				.setDescription(answer)
 
 			return interaction.editReply({
 				embeds: [embed],
