@@ -39,6 +39,9 @@ export default async () => {
 			richPresenceText: process.env.RICH_PRESENCE_TEXT,
 			version: version,
 		},
+		others: {
+			jokeToken: process.env.JOKE_TOKEN,
+		},
 	}
 
 	// Création des pools
