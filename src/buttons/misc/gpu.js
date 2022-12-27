@@ -1,4 +1,4 @@
-import { ActionRowBuilder, SelectMenuBuilder } from 'discord.js'
+import { ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'
 import { isGuildSetup } from '../../util/util.js'
 import fs from 'fs'
 
@@ -44,7 +44,7 @@ export default {
 		})
 
 		const gpuAlertes = new ActionRowBuilder().addComponents(
-			new SelectMenuBuilder()
+			new StringSelectMenuBuilder()
 				.setCustomId('select-gpu')
 				.setPlaceholder('Sélectionnez vos alertes')
 				.setMinValues(0)
