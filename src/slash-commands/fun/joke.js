@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
-import fetch from 'node-fetch'
 import { isGuildSetup } from '../../util/util.js'
+import BlaguesAPI from 'blagues-api'
 
 export default {
 	data: new SlashCommandBuilder().setName('joke').setDescription('Blague'),
@@ -17,26 +17,21 @@ export default {
 		// On diffère la réponse pour avoir plus de 3 secondes
 		await interaction.deferReply()
 
-		// Acquisition de la base de données
-		const bdd = client.config.db.pools.urlsAPI
-		if (!bdd)
-			return interaction.editReply({
-				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
-			})
-
 		try {
-			// Requête
-			const res = await fetch('https://www.blagues-api.fr/api/random', {
-				method: 'GET',
-				headers: {
-					Authorization: `Bearer ${client.config.others.jokeToken}`,
-				},
-			})
+			const blagues = new BlaguesAPI(client.config.others.jokeToken)
 
-			const { joke, answer } = await res.json()
+			const blague = await blagues
+				.random({
+					disallow: [
+						blagues.categories.DARK,
+						blagues.categories.LIMIT,
+						blagues.categories.BLONDES,
+						blagues.categories.BEAUF,
+					],
+				})
+				.catch(error => error)
 
-			// S'il y a une erreur en retour
-			if (!res.ok)
+			if (!blague)
 				return interaction.editReply({
 					content: 'Une erreur est survenue 😕',
 				})
@@ -44,8 +39,8 @@ export default {
 			// Création de l'embed
 			const embed = new EmbedBuilder()
 				.setColor('#C27C0E')
-				.setTitle(joke)
-				.setDescription(answer)
+				.setTitle(blague.joke)
+				.setDescription(blague.answer)
 
 			return interaction.editReply({
 				embeds: [embed],
