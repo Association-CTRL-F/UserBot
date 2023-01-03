@@ -221,6 +221,24 @@ export default async (messageReaction, user, client) => {
 			return reportChannel.send({ embeds: [sendLogReport] })
 		}
 
+		// Si c'est un auto-thread
+		case '💬': {
+			// Si c'est un salon auto-thread
+			const THREADS = configGuild.THREADS_MANAGER_CHANNELS_IDS
+				? configGuild.THREADS_MANAGER_CHANNELS_IDS.split(/, */)
+				: []
+
+			if (THREADS.includes(message.channel.id) && !message.hasThread)
+				// Création automatique du thread associé
+				await message.startThread({
+					name: `Thread de ${message.member.displayName}`,
+					// Archivage après 24H
+					autoArchiveDuration: 24 * 60,
+				})
+
+			return messageReaction.remove()
+		}
+
 		default:
 			break
 	}

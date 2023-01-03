@@ -465,13 +465,11 @@ export default async (message, client) => {
 		? configGuild.THREADS_MANAGER_CHANNELS_IDS.split(/, */)
 		: []
 
-	if (THREADS.includes(message.channel.id) && !message.hasThread)
-		// Création automatique du thread associé
-		return message.startThread({
-			name: `Thread de ${message.member.displayName}`,
-			// Archivage après 24H
-			autoArchiveDuration: 24 * 60,
-		})
+	if (THREADS.includes(message.channel.id)) {
+		await message.react('⬆️')
+		await message.react('⬇️')
+		await message.react('💬')
+	}
 
 	// Répondre émoji si @bot
 	if (message.mentions.users.has(client.user.id)) {
