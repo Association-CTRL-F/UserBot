@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: Aug 23, 2022 at 07:19 PM
+-- Generation Time: Jan 03, 2023 at 05:06 PM
 -- Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal
 -- PHP Version: 7.4.23
 
@@ -52,6 +52,20 @@ CREATE TABLE `automod_rules` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `cf`
+--
+
+CREATE TABLE `cf` (
+  `id` int(11) NOT NULL,
+  `guildId` varchar(255) NOT NULL,
+  `pseudo` varchar(255) NOT NULL,
+  `discordId` varchar(255) NOT NULL,
+  `active` tinyint(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `commands`
 --
 
@@ -60,6 +74,7 @@ CREATE TABLE `commands` (
   `guildId` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
   `aliases` text DEFAULT NULL,
+  `active` tinyint(1) NOT NULL,
   `content` text NOT NULL,
   `author` varchar(255) NOT NULL,
   `createdAt` varchar(255) NOT NULL,
@@ -208,6 +223,12 @@ ALTER TABLE `automod_rules`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `cf`
+--
+ALTER TABLE `cf`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `commands`
 --
 ALTER TABLE `commands`
@@ -271,6 +292,12 @@ ALTER TABLE `automod_domains`
 -- AUTO_INCREMENT for table `automod_rules`
 --
 ALTER TABLE `automod_rules`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `cf`
+--
+ALTER TABLE `cf`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
