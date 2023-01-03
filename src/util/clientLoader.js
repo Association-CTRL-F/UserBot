@@ -67,6 +67,8 @@ export default async () => {
 		// Messages supprimés par le bot pour ne pas
 		// les log lors de l'event "messageDelete"
 		deleteMessagesID: new Set(),
+		// Anti-spam commandes /config et /upgrade
+		conseilsUsersID: new Set(),
 	}
 
 	// Maps

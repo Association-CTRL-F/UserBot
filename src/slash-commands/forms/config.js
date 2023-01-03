@@ -36,6 +36,19 @@ export default {
 				content: "Je n'ai pas trouvé cet utilisateur, vérifie la mention ou l'ID 😕",
 			})
 
+		if (client.cache.conseilsUsersID.has(`config-${member.user.id}`)) {
+			if (member.user === interaction.user)
+				return interaction.editReply({
+					content:
+						"Merci de patienter quelques instants avant d'effectuer à nouveau la commande 😕",
+				})
+
+			return interaction.editReply({
+				content:
+					"Merci de patienter quelques instants avant d'envoyer un nouveau formulaire à cette personne 😕",
+			})
+		}
+
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
 		if (!bdd)
@@ -107,6 +120,12 @@ export default {
 		try {
 			await member.send({ embeds: [embed] })
 			await member.send(config)
+
+			client.cache.conseilsUsersID.add(`config-${member.user.id}`)
+
+			setTimeout(() => {
+				client.cache.conseilsUsersID.delete(`config-${member.user.id}`)
+			}, 5000)
 		} catch (error) {
 			if (error.code !== RESTJSONErrorCodes.CannotSendMessagesToThisUser) throw error
 
