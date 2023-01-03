@@ -20,21 +20,14 @@ export default {
 		try {
 			const blagues = new BlaguesAPI(client.config.others.jokeToken)
 
-			const blague = await blagues
-				.random({
-					disallow: [
-						blagues.categories.DARK,
-						blagues.categories.LIMIT,
-						blagues.categories.BLONDES,
-						blagues.categories.BEAUF,
-					],
-				})
-				.catch(error => error)
-
-			if (!blague)
-				return interaction.editReply({
-					content: 'Une erreur est survenue 😕',
-				})
+			const blague = await blagues.random({
+				disallow: [
+					blagues.categories.DARK,
+					blagues.categories.LIMIT,
+					blagues.categories.BLONDES,
+					blagues.categories.BEAUF,
+				],
+			})
 
 			// Création de l'embed
 			const embed = new EmbedBuilder()
