@@ -630,6 +630,7 @@ export default async client => {
 							await channel.send({ embeds: [exampleEmbed] })
 						}
 					})
+					.catch(error => console.error(error))
 			})
 
 			// On écrit dans le fichier gpu.json les nouvelles valeurs
