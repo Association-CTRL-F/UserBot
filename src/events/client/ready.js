@@ -549,10 +549,12 @@ export default async client => {
 
 		// ALERTES NVIDIA
 
-		// Récupérer les données de l'API toutes les 10 secondes:
+		// Récupérer les données de l'API toutes les 10 secondes
 		setInterval(() => {
 			// Lire le fichier gpu.json qui contient la liste des gpus Nvidia
 			let gpusJSON = fs.readFileSync('./config/env/gpu.json', (err, data) => data)
+
+			if (gpusJSON.length === 0) return
 
 			gpusJSON = JSON.parse(gpusJSON)
 
