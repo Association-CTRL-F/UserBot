@@ -221,9 +221,8 @@ export default async (messageReaction, user, client) => {
 			return reportChannel.send({ embeds: [sendLogReport] })
 		}
 
-		// Si c'est un auto-thread
+		// Si c'est un salon auto-thread
 		case '💬': {
-			// Si c'est un salon auto-thread
 			const THREADS = configGuild.THREADS_MANAGER_CHANNELS_IDS
 				? configGuild.THREADS_MANAGER_CHANNELS_IDS.split(/, */)
 				: []
