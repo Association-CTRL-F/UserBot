@@ -125,7 +125,7 @@ export default {
 
 			setTimeout(() => {
 				client.cache.conseilsUsersID.delete(`config-${member.user.id}`)
-			}, 5000)
+			}, 60000)
 		} catch (error) {
 			if (error.code !== RESTJSONErrorCodes.CannotSendMessagesToThisUser) throw error
 
