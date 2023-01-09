@@ -16,7 +16,7 @@
 		"axios": "^1.2.2",
 		"bent": "^7.3.12",
 		"blagues-api": "^2.1.0",
-		"discord-api-types": "^0.37.26",
+		"discord-api-types": "^0.37.27",
 		"discord.js": "^14.7.1",
 		"fs": "^0.0.1-security",
 		"http": "^0.0.1-security",
