@@ -56,6 +56,8 @@ export default {
 				const fieldsEmbedView = []
 				let count = 1
 				commands.forEach(command => {
+					if (command.active === 0) return
+
 					fieldsEmbedView.push({
 						name: `${count}. ${command.name}`,
 						value: `Utilisée ${command.numberOfUses} fois`,
