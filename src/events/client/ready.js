@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop */
-import { readFile } from 'fs/promises'
+import { readFile, writeFile } from 'fs/promises'
 import {
 	EmbedBuilder,
 	RESTJSONErrorCodes,
@@ -9,7 +9,6 @@ import {
 } from 'discord.js'
 import { pluralize } from '../../util/util.js'
 import ms from 'ms'
-import fs from 'node:fs'
 import axios from 'axios'
 
 export const once = true
@@ -550,9 +549,9 @@ export default async client => {
 		// ALERTES NVIDIA
 
 		// Récupérer les données de l'API toutes les 10 secondes
-		setInterval(() => {
+		setInterval(async () => {
 			// Lire le fichier gpu.json qui contient la liste des gpus Nvidia
-			let gpusJSON = fs.readFileSync('./config/env/gpu.json', (err, data) => data)
+			let gpusJSON = await readFile('./config/env/gpu.json', (err, data) => data)
 
 			if (gpusJSON.length === 0) return
 
@@ -636,8 +635,8 @@ export default async client => {
 			// On écrit dans le fichier gpu.json les nouvelles valeurs
 			// après 5 secondes afin de s'assurer que les requêtes d'API
 			// aient le temps de s'effectuer
-			setTimeout(() => {
-				fs.writeFileSync('./config/env/gpu.json', JSON.stringify(gpusJSON, null, 2))
+			setTimeout(async () => {
+				await writeFile('./config/env/gpu.json', JSON.stringify(gpusJSON, null, 2))
 			}, 5000)
 		}, 10000)
 
