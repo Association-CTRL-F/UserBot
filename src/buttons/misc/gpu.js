@@ -1,21 +1,11 @@
 import { ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'
-import { isGuildSetup } from '../../util/util.js'
 import fs from 'fs'
 
 export default {
 	data: {
 		name: 'gpu',
 	},
-	interaction: async (interaction, client) => {
-		// Vérification que la guild soit entièrement setup
-		const isSetup = await isGuildSetup(interaction.guild, client)
-
-		if (!isSetup)
-			return interaction.reply({
-				content: "Le serveur n'est pas entièrement configuré 😕",
-				ephemeral: true,
-			})
-
+	interaction: async interaction => {
 		// On diffère la réponse pour avoir plus de 3 secondes
 		await interaction.deferReply({ ephemeral: true })
 
@@ -28,15 +18,15 @@ export default {
 		const member = interaction.guild.members.cache.get(interaction.user.id)
 
 		// Parcourir les cartes graphiques contenue dans le gpu.json
-		Object.values(Object.values(gpusJSON)).forEach(async gpu => {
+		Object.values(Object.values(gpusJSON)).forEach(gpu => {
 			if (member.roles.cache.has(gpu.roleId))
-				await gpuArray.push({
+				gpuArray.push({
 					label: gpu.name,
 					value: `${gpu.roleId}`,
 					default: true,
 				})
 			else
-				await gpuArray.push({
+				gpuArray.push({
 					label: gpu.name,
 					value: `${gpu.roleId}`,
 					default: false,

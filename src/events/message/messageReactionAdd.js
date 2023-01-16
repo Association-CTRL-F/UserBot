@@ -10,23 +10,7 @@ export default async (messageReaction, user, client) => {
 
 	if (user.bot || !message.guild || !message.guild.available) return
 
-	// Acquisition de la base de données
-	const bdd = client.config.db.pools.userbot
-	if (!bdd)
-		return console.log('Une erreur est survenue lors de la connexion à la base de données')
-
-	// Acquisition des paramètres de la guild
-	let configGuild = {}
-	try {
-		const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
-		const dataSelect = [message.guild.id]
-		const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
-		configGuild = resultSelect[0]
-	} catch (error) {
-		return console.log(error)
-	}
-
-	// Partie système de réactions / rôles
+	// Partie système de réaction / rôle
 	if (client.reactionRoleMap.has(message.id)) {
 		const emojiRoleMap = client.reactionRoleMap.get(message.id)
 		const resolvedEmoji = emoji.id || emoji.name
@@ -35,7 +19,7 @@ export default async (messageReaction, user, client) => {
 
 		// Système rôle arrivant
 		if (giveJoinRole) {
-			const joinRole = configGuild.JOIN_ROLE_ID
+			const joinRole = client.config.guild.roles.JOIN_ROLE_ID
 			await guildMember.roles.add(joinRole)
 
 			setTimeout(
@@ -43,7 +27,7 @@ export default async (messageReaction, user, client) => {
 					guildMember.roles.remove(joinRole).catch(error => {
 						if (error.code !== RESTJSONErrorCodes.UnknownMember) throw error
 					}),
-				ms(configGuild.TIMEOUT_JOIN),
+				ms(client.config.guild.TIMEOUT_JOIN),
 			)
 		}
 
@@ -58,7 +42,9 @@ export default async (messageReaction, user, client) => {
 			// On ne peut pas report son propre message
 			if (message.author === user) return messageReaction.users.remove(user)
 
-			const reportChannel = message.guild.channels.cache.get(configGuild.REPORT_CHANNEL_ID)
+			const reportChannel = message.guild.channels.cache.get(
+				client.config.guild.channels.REPORT_CHANNEL_ID,
+			)
 			if (!reportChannel) return
 
 			const fetchedMessages = await reportChannel.messages.fetch()
@@ -223,8 +209,8 @@ export default async (messageReaction, user, client) => {
 
 		// Si c'est un salon auto-thread
 		case '💬': {
-			const THREADS = configGuild.THREADS_MANAGER_CHANNELS_IDS
-				? configGuild.THREADS_MANAGER_CHANNELS_IDS.split(/, */)
+			const THREADS = client.config.guild.managers.THREADS_MANAGER_CHANNELS_IDS
+				? client.config.guild.managers.THREADS_MANAGER_CHANNELS_IDS.split(/, */)
 				: []
 
 			if (THREADS.includes(message.channel.id) && !message.hasThread)

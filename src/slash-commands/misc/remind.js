@@ -2,7 +2,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
-import { convertDateForDiscord, isGuildSetup } from '../../util/util.js'
+import { convertDateForDiscord } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
 import ms from 'ms'
 
@@ -63,15 +63,6 @@ export default {
 				),
 		),
 	interaction: async (interaction, client) => {
-		// Vérification que la guild soit entièrement setup
-		const isSetup = await isGuildSetup(interaction.guild, client)
-
-		if (!isSetup)
-			return interaction.reply({
-				content: "Le serveur n'est pas entièrement configuré 😕",
-				ephemeral: true,
-			})
-
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
 		if (!bdd)

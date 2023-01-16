@@ -1,4 +1,4 @@
-import { displayNameAndID, isGuildSetup } from '../../util/util.js'
+import { displayNameAndID } from '../../util/util.js'
 import { ChannelType, SlashCommandBuilder } from 'discord.js'
 
 export default {
@@ -8,15 +8,6 @@ export default {
 			'Crée un salon textuel nomic si tu es connecté dans un salon vocal personnalisé',
 		),
 	interaction: async (interaction, client) => {
-		// Vérification que la guild soit entièrement setup
-		const isSetup = await isGuildSetup(interaction.guild, client)
-
-		if (!isSetup)
-			return interaction.reply({
-				content: "Le serveur n'est pas entièrement configuré 😕",
-				ephemeral: true,
-			})
-
 		// On diffère la réponse pour avoir plus de 3 secondes
 		await interaction.deferReply({ ephemeral: true })
 

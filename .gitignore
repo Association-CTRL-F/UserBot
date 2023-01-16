@@ -5,10 +5,14 @@ node_modules/
 
 ## Fichiers
 
-# fichiers d'environnement
+# Fichiers d'environnement
 bot.env
+
+# Fichiers de config
+config.json
+reactionRoleConfig.json
 banEmotesAtJoin.json
 gpu.json
 
-# fichiers de config
-reactionRoleConfig.json
+# Autres
+.DS_Store

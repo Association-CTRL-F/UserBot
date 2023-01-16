@@ -1,7 +1,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 import { SlashCommandBuilder, EmbedBuilder, RESTJSONErrorCodes } from 'discord.js'
-import { convertDate, displayNameAndID, isGuildSetup } from '../../util/util.js'
+import { convertDate, displayNameAndID } from '../../util/util.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -41,16 +41,7 @@ export default {
 						.setRequired(true),
 				),
 		),
-	interaction: async (interaction, client) => {
-		// Vérification que la guild soit entièrement setup
-		const isSetup = await isGuildSetup(interaction.guild, client)
-
-		if (!isSetup)
-			return interaction.reply({
-				content: "Le serveur n'est pas entièrement configuré 😕",
-				ephemeral: true,
-			})
-
+	interaction: async interaction => {
 		const proposition = interaction.options.getString('proposition')
 		const thread = interaction.options.getBoolean('thread')
 

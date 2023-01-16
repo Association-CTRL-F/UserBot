@@ -4,24 +4,10 @@ import { AuditLogEvent, EmbedBuilder } from 'discord.js'
 export default async (ban, client) => {
 	if (ban.user.bot || !ban.guild.available) return
 
-	// Acquisition de la base de données
-	const bdd = client.config.db.pools.userbot
-	if (!bdd)
-		return console.log('Une erreur est survenue lors de la connexion à la base de données')
-
-	// Acquisition des paramètres de la guild
-	let configGuild = {}
-	try {
-		const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
-		const dataSelect = [ban.guild.id]
-		const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
-		configGuild = resultSelect[0]
-	} catch (error) {
-		return console.log(error)
-	}
-
 	// Acquisition du salon de logs
-	const logsChannel = ban.guild.channels.cache.get(configGuild.LOGS_BANS_CHANNEL_ID)
+	const logsChannel = ban.guild.channels.cache.get(
+		client.config.guild.channels.LOGS_BANS_CHANNEL_ID,
+	)
 	if (!logsChannel) return
 
 	// Fetch de l'event de ban

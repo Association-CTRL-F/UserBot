@@ -1,7 +1,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
-import { convertDateForDiscord, displayNameAndID, isGuildSetup } from '../../util/util.js'
+import { convertDateForDiscord, displayNameAndID } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
 
 export default {
@@ -64,15 +64,6 @@ export default {
 				),
 		),
 	interaction: async (interaction, client) => {
-		// Vérification que la guild soit entièrement setup
-		const isSetup = await isGuildSetup(interaction.guild, client)
-
-		if (!isSetup)
-			return interaction.reply({
-				content: "Le serveur n'est pas entièrement configuré 😕",
-				ephemeral: true,
-			})
-
 		let user = ''
 		let member = ''
 

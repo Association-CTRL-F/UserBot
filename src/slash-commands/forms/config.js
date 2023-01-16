@@ -4,7 +4,6 @@ import {
 	EmbedBuilder,
 	RESTJSONErrorCodes,
 } from 'discord.js'
-import { isGuildSetup } from '../../util/util.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -13,15 +12,6 @@ export default {
 		.addUserOption(option => option.setName('membre').setDescription('Membre')),
 	contextMenu: new ContextMenuCommandBuilder().setName('config').setType(2),
 	interaction: async (interaction, client) => {
-		// Vérification que la guild soit entièrement setup
-		const isSetup = await isGuildSetup(interaction.guild, client)
-
-		if (!isSetup)
-			return interaction.reply({
-				content: "Le serveur n'est pas entièrement configuré 😕",
-				ephemeral: true,
-			})
-
 		// On diffère la réponse pour avoir plus de 3 secondes
 		await interaction.deferReply()
 

@@ -26,23 +26,14 @@ export default async (guildMember, client) => {
 	if (!bdd)
 		return console.log('Une erreur est survenue lors de la connexion à la base de données')
 
-	// Acquisition des paramètres de la guild
-	let configGuild = {}
-	try {
-		const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
-		const dataSelect = [guild.id]
-		const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
-		configGuild = resultSelect[0]
-	} catch (error) {
-		return console.log(error)
-	}
-
 	// Acquisition du salon de logs join-leave
-	const leaveJoinChannel = guild.channels.cache.get(configGuild.LEAVE_JOIN_CHANNEL_ID)
+	const leaveJoinChannel = guild.channels.cache.get(
+		client.config.guild.channels.LEAVE_JOIN_CHANNEL_ID,
+	)
 	if (!leaveJoinChannel) return
 
 	// Acquisition du salon de logs liste-ban
-	const logsChannel = guild.channels.cache.get(configGuild.LOGS_BANS_CHANNEL_ID)
+	const logsChannel = guild.channels.cache.get(client.config.guild.channels.LOGS_BANS_CHANNEL_ID)
 	if (!logsChannel) return
 
 	// Envoi du message de join
@@ -153,8 +144,8 @@ export default async (guildMember, client) => {
 	// Acquisition du message de bannissement
 	let banDM = ''
 	try {
-		const sqlSelectBan = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
-		const dataSelectBan = ['ban', configGuild.GUILD_ID]
+		const sqlSelectBan = 'SELECT * FROM forms WHERE name = ?'
+		const dataSelectBan = ['ban']
 		const [resultSelectBan] = await bdd.execute(sqlSelectBan, dataSelectBan)
 
 		banDM = resultSelectBan[0].content

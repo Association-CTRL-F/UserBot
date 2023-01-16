@@ -1,7 +1,6 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 import { SlashCommandBuilder, ModalBuilder, TextInputBuilder, ActionRowBuilder } from 'discord.js'
-import { isGuildSetup } from '../../util/util.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -33,15 +32,6 @@ export default {
 				),
 		),
 	interaction: async (interaction, client) => {
-		// Vérification que la guild soit entièrement setup
-		const isSetup = await isGuildSetup(interaction.guild, client)
-
-		if (!isSetup)
-			return interaction.reply({
-				content: "Le serveur n'est pas entièrement configuré 😕",
-				ephemeral: true,
-			})
-
 		// Acquisition du nom
 		const nom = interaction.options.getString('nom')
 
@@ -151,7 +141,6 @@ export default {
 								.setLabel('Alias de la commande')
 								.setStyle('Paragraph')
 								.setValue(commandBdd.aliases ? commandBdd.aliases : '')
-								.setMinLength(1)
 								.setRequired(false),
 						),
 					)
@@ -161,11 +150,7 @@ export default {
 								.setCustomId('active-command-edit')
 								.setLabel('Activation de la commande')
 								.setStyle('Short')
-								.setValue(
-									commandBdd.active.toString()
-										? commandBdd.active.toString()
-										: '',
-								)
+								.setValue(commandBdd.active.toString())
 								.setMinLength(1)
 								.setMaxLength(1)
 								.setRequired(true),

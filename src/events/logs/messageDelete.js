@@ -16,30 +16,16 @@ export default async (message, client) => {
 	)
 		return
 
-	// Acquisition de la base de données
-	const bdd = client.config.db.pools.userbot
-	if (!bdd)
-		return console.log('Une erreur est survenue lors de la connexion à la base de données')
-
-	// Acquisition des paramètres de la guild
-	let configGuild = {}
-	try {
-		const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
-		const dataSelect = [message.guild.id]
-		const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
-		configGuild = resultSelect[0]
-	} catch (error) {
-		return console.log(error)
-	}
-
 	// Acquisition du salon de logs
-	const logsChannel = message.guild.channels.cache.get(configGuild.LOGS_MESSAGES_CHANNEL_ID)
+	const logsChannel = message.guild.channels.cache.get(
+		client.config.guild.channels.LOGS_MESSAGES_CHANNEL_ID,
+	)
 	if (!logsChannel) return
 
 	// Vérification si le salon du message
 	// est dans la liste des salons à ne pas logger
-	const NOLOGS = configGuild.NOLOGS_MANAGER_CHANNELS_IDS
-		? configGuild.NOLOGS_MANAGER_CHANNELS_IDS.split(/, */)
+	const NOLOGS = client.config.guild.managers.NOLOGS_MANAGER_CHANNELS_IDS
+		? client.config.guild.managers.NOLOGS_MANAGER_CHANNELS_IDS.split(/, */)
 		: []
 
 	if (NOLOGS.includes(message.channel.id)) return

@@ -292,36 +292,13 @@ export const isStaffMember = (guildMember, staffRoles) => {
 }
 
 /**
- * Vérifie si la guild est setup ou non
- * @param {Guild} guild
- * @param {Client} client Discord.js
- * @returns true si la guild est setup, sinon false
- */
-export const isGuildSetup = async (guild, client) => {
-	const bdd = client.config.db.pools.userbot
-	if (!bdd) return false
-
-	let config = {}
-	try {
-		const sql = 'SELECT isSetup FROM config WHERE GUILD_ID = ?'
-		const data = [guild.id]
-		const [result] = await bdd.execute(sql, data)
-		config = result[0]
-	} catch (error) {
-		return false
-	}
-
-	return config.isSetup === 1
-}
-
-/**
  * Crée un pool de connexion à la base de données
  * @param {Client} client Discord.js
  * @param {string} dbName nom de la base de données à utiliser
  */
-export const pool = async client => {
+export const pool = client => {
 	try {
-		const createPool = await mysql.createPool({
+		const createPool = mysql.createPool({
 			host: client.dbHost,
 			user: client.dbUser,
 			password: client.dbPass,

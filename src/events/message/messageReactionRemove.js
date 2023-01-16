@@ -6,23 +6,7 @@ export default async (messageReaction, user, client) => {
 
 	if (user.bot || !message.guild || !message.guild.available) return
 
-	// Acquisition de la base de données
-	const bdd = client.config.db.pools.userbot
-	if (!bdd)
-		return console.log('Une erreur est survenue lors de la connexion à la base de données')
-
-	// Acquisition des paramètres de la guild
-	let configGuild = {}
-	try {
-		const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
-		const dataSelect = [message.guild.id]
-		const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
-		configGuild = resultSelect[0]
-	} catch (error) {
-		return console.log(error)
-	}
-
-	// Partie système de réaction/role
+	// Partie système de réaction / rôle
 	if (client.reactionRoleMap.has(message.id)) {
 		const emojiRoleMap = client.reactionRoleMap.get(message.id)
 		const resolvedEmoji = emoji.id || emoji.name
@@ -31,7 +15,7 @@ export default async (messageReaction, user, client) => {
 
 		// Système rôle arrivant
 		if (giveJoinRole) {
-			const joinRole = configGuild.JOIN_ROLE_ID
+			const joinRole = client.config.guild.roles.JOIN_ROLE_ID
 			guildMember.roles.remove(joinRole)
 		}
 

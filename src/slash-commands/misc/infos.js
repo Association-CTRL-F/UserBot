@@ -1,6 +1,6 @@
 /* eslint-disable default-case */
 /* eslint-disable no-case-declarations */
-import { convertDateForDiscord, diffDate, displayNameAndID, isGuildSetup } from '../../util/util.js'
+import { convertDateForDiscord, diffDate, displayNameAndID } from '../../util/util.js'
 import discordjs, { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
 
 // import nodePackage from '../../../package.json'
@@ -16,15 +16,6 @@ export default {
 			subcommand.setName('server').setDescription('Infos du serveur'),
 		),
 	interaction: async (interaction, client) => {
-		// Vérification que la guild soit entièrement setup
-		const isSetup = await isGuildSetup(interaction.guild, client)
-
-		if (!isSetup)
-			return interaction.reply({
-				content: "Le serveur n'est pas entièrement configuré 😕",
-				ephemeral: true,
-			})
-
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
 		if (!bdd)

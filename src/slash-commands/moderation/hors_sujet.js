@@ -1,4 +1,3 @@
-import { isGuildSetup } from '../../util/util.js'
 import { EmbedBuilder, ContextMenuCommandBuilder, RESTJSONErrorCodes } from 'discord.js'
 
 export default {
@@ -8,14 +7,6 @@ export default {
 
 		// On diffère la réponse pour avoir plus de 3 secondes
 		await interaction.deferReply({ ephemeral: true })
-
-		// Vérification que la guild soit entièrement setup
-		const isSetup = await isGuildSetup(interaction.guild, client)
-
-		if (!isSetup)
-			return interaction.editReply({
-				content: "Le serveur n'est pas entièrement configuré 😕",
-			})
 
 		const message = interaction.targetMessage
 

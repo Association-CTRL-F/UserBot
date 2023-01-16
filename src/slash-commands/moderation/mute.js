@@ -8,7 +8,7 @@ import {
 	RESTJSONErrorCodes,
 	ChannelType,
 } from 'discord.js'
-import { convertMinutesToString, isGuildSetup } from '../../util/util.js'
+import { convertMinutesToString } from '../../util/util.js'
 import ms from 'ms'
 
 export default {
@@ -50,15 +50,6 @@ export default {
 				),
 		),
 	interaction: async (interaction, client) => {
-		// Vérification que la guild soit entièrement setup
-		const isSetup = await isGuildSetup(interaction.guild, client)
-
-		if (!isSetup)
-			return interaction.reply({
-				content: "Le serveur n'est pas entièrement configuré 😕",
-				ephemeral: true,
-			})
-
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
 		if (!bdd)
