@@ -1,0 +1,32 @@
+{
+    "timezone": "",
+    "richPresenceText": "",
+    "guild": {
+        "GUILD_ID": "",
+        "TIMEOUT_JOIN": "",
+        "COMMANDS_PREFIX": "",
+        "channels": {
+	        "LEAVE_JOIN_CHANNEL_ID": "",
+	        "REPORT_CHANNEL_ID": "",
+	        "LOGS_MESSAGES_CHANNEL_ID": "",
+	        "LOGS_BANS_CHANNEL_ID": "",
+            "TRIBUNAL_CHANNEL_ID": "",
+            "CONFIG_CHANNEL_ID": "",
+            "UPGRADE_CHANNEL_ID": "",
+            "BLABLA_CHANNEL_ID": "",
+            "ACCESS_CHANNEL_ID": ""
+        },
+        "roles": {
+            "JOIN_ROLE_ID": "",
+            "NO_ENTRAIDE_ROLE_ID": "",
+            "MUTED_ROLE_ID": ""
+        },
+        "managers": {
+            "VOICE_MANAGER_CHANNELS_IDS": "",
+            "NOLOGS_MANAGER_CHANNELS_IDS": "",
+            "NOTEXT_MANAGER_CHANNELS_IDS": "",
+            "THREADS_MANAGER_CHANNELS_IDS": "",
+            "STAFF_ROLES_MANAGER_IDS": ""
+        }
+    }
+}

@@ -1,6 +1,8 @@
 import { Client, Collection, GatewayIntentBits, Partials } from 'discord.js'
 import { pool } from './util.js'
 import { readFileSync } from 'fs'
+import { readFile } from 'fs/promises'
+
 const { version } = JSON.parse(readFileSync('./package.json'))
 
 // Création du client et de ses propriétés
@@ -27,8 +29,12 @@ export default async () => {
 	client.buttons = new Collection()
 	client.cooldowns = new Collection()
 
+	// Lire le fichier config.json
+	let configGuild = await readFile('./config/env/config.json', (err, data) => data)
+	configGuild = JSON.parse(configGuild)
+
 	client.config = {
-		timezone: process.env.TIMEZONE,
+		timezone: configGuild.timezone,
 		db: {
 			dbHost: process.env.DB_HOST,
 			dbUser: process.env.DB_USER,
@@ -36,9 +42,10 @@ export default async () => {
 		},
 		bot: {
 			token: process.env.DISCORD_TOKEN,
-			richPresenceText: process.env.RICH_PRESENCE_TEXT,
+			richPresenceText: configGuild.richPresenceText,
 			version: version,
 		},
+		guild: configGuild.guild,
 		others: {
 			jokeToken: process.env.JOKE_TOKEN,
 		},

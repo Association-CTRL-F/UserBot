@@ -1,5 +1,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
+import { writeFile } from 'fs/promises'
+
 export default {
 	data: {
 		name: 'setup',
@@ -51,33 +53,6 @@ export default {
 					})
 				break
 
-			case 'JOIN_ROLE_ID':
-				const matches_JOIN_ROLE_ID = contenu.match(regexId)
-				if (!matches_JOIN_ROLE_ID || matches_JOIN_ROLE_ID.length > 1)
-					return modal.reply({
-						content: "Tu n'as pas donné un ID valide 😕",
-						ephemeral: true,
-					})
-				break
-
-			case 'NO_ENTRAIDE_ROLE_ID':
-				const matches_NO_ENTRAIDE_ROLE_ID = contenu.match(regexId)
-				if (!matches_NO_ENTRAIDE_ROLE_ID || matches_NO_ENTRAIDE_ROLE_ID.length > 1)
-					return modal.reply({
-						content: "Tu n'as pas donné un ID valide 😕",
-						ephemeral: true,
-					})
-				break
-
-			case 'MUTED_ROLE_ID':
-				const matches_MUTED_ROLE_ID = contenu.match(regexId)
-				if (!matches_MUTED_ROLE_ID || matches_MUTED_ROLE_ID.length > 1)
-					return modal.reply({
-						content: "Tu n'as pas donné un ID valide 😕",
-						ephemeral: true,
-					})
-				break
-
 			case 'TRIBUNAL_CHANNEL_ID':
 				const matches_TRIBUNAL_CHANNEL_ID = contenu.match(regexId)
 				if (!matches_TRIBUNAL_CHANNEL_ID || matches_TRIBUNAL_CHANNEL_ID.length > 1)
@@ -117,6 +92,33 @@ export default {
 			case 'ACCESS_CHANNEL_ID':
 				const matches_ACCESS_CHANNEL_ID = contenu.match(regexId)
 				if (!matches_ACCESS_CHANNEL_ID || matches_ACCESS_CHANNEL_ID.length > 1)
+					return modal.reply({
+						content: "Tu n'as pas donné un ID valide 😕",
+						ephemeral: true,
+					})
+				break
+
+			case 'JOIN_ROLE_ID':
+				const matches_JOIN_ROLE_ID = contenu.match(regexId)
+				if (!matches_JOIN_ROLE_ID || matches_JOIN_ROLE_ID.length > 1)
+					return modal.reply({
+						content: "Tu n'as pas donné un ID valide 😕",
+						ephemeral: true,
+					})
+				break
+
+			case 'NO_ENTRAIDE_ROLE_ID':
+				const matches_NO_ENTRAIDE_ROLE_ID = contenu.match(regexId)
+				if (!matches_NO_ENTRAIDE_ROLE_ID || matches_NO_ENTRAIDE_ROLE_ID.length > 1)
+					return modal.reply({
+						content: "Tu n'as pas donné un ID valide 😕",
+						ephemeral: true,
+					})
+				break
+
+			case 'MUTED_ROLE_ID':
+				const matches_MUTED_ROLE_ID = contenu.match(regexId)
+				if (!matches_MUTED_ROLE_ID || matches_MUTED_ROLE_ID.length > 1)
 					return modal.reply({
 						content: "Tu n'as pas donné un ID valide 😕",
 						ephemeral: true,
@@ -169,82 +171,147 @@ export default {
 				break
 		}
 
-		if (contenu === 'NULL') contenu = null
+		if (contenu === '') contenu = null
 
-		// Acquisition de la base de données
-		const bdd = client.config.db.pools.userbot
-		if (!bdd)
-			return modal.reply({
-				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
-				ephemeral: true,
-			})
+		switch (nom) {
+			// Guild
+			case 'TIMEZONE':
+				client.config.timezone = contenu
+				break
 
-		try {
-			const sqlEdit = `UPDATE config SET ${nom} = ? WHERE GUILD_ID = ?`
-			const dataEdit = [contenu, modal.guild.id]
+			case 'RICH_PRESENCE_TEXT':
+				client.config.bot.richPresenceText = contenu
+				if (contenu && contenu !== '')
+					await client.user.setPresence({
+						activities: [
+							{
+								name: contenu,
+								type: 0,
+							},
+						],
+						status: 'online',
+					})
+				else await client.user.setPresence({ activities: [], status: 'online' })
+				break
 
-			await bdd.execute(sqlEdit, dataEdit)
-		} catch (error) {
-			return modal.reply({
-				content: `Une erreur est survenue lors de la modification de la configuration de **${nom}** en base de données 😕`,
-				ephemeral: true,
-			})
+			case 'TIMEOUT_JOIN':
+				client.config.guild.TIMEOUT_JOIN = contenu
+				break
+
+			case 'COMMANDS_PREFIX':
+				client.config.guild.COMMANDS_PREFIX = contenu
+				break
+
+			// Salons
+			case 'lLEAVE_JOIN_CHANNEL_ID':
+				client.config.guild.channels.LEAVE_JOIN_CHANNEL_ID = contenu
+				break
+
+			case 'REPORT_CHANNEL_ID':
+				client.config.guild.channels.REPORT_CHANNEL_ID = contenu
+				break
+
+			case 'LOGS_MESSAGES_CHANNEL_ID':
+				client.config.guild.channels.LOGS_MESSAGES_CHANNEL_ID = contenu
+				break
+
+			case 'LOGS_BANS_CHANNEL_ID':
+				client.config.guild.channels.LOGS_BANS_CHANNEL_ID = contenu
+				break
+
+			case 'TRIBUNAL_CHANNEL_ID':
+				client.config.guild.channels.TRIBUNAL_CHANNEL_ID = contenu
+				break
+
+			case 'CONFIG_CHANNEL_ID':
+				client.config.guild.channels.CONFIG_CHANNEL_ID = contenu
+				break
+
+			case 'UPGRADE_CHANNEL_ID':
+				client.config.guild.channels.UPGRADE_CHANNEL_ID = contenu
+				break
+
+			case 'BLABLA_CHANNEL_ID':
+				client.config.guild.channels.BLABLA_CHANNEL_ID = contenu
+				break
+
+			case 'ACCESS_CHANNEL_ID':
+				client.config.guild.channels.ACCESS_CHANNEL_ID = contenu
+				break
+
+			// Rôles
+			case 'JOIN_ROLE_ID':
+				client.config.guild.roles.JOIN_ROLE_ID = contenu
+				break
+
+			case 'NO_ENTRAIDE_ROLE_ID':
+				client.config.guild.roles.NO_ENTRAIDE_ROLE_ID = contenu
+				break
+
+			case 'MUTED_ROLE_ID':
+				client.config.guild.roles.MUTED_ROLE_ID = contenu
+				break
+
+			// Managers
+			case 'VOICE_MANAGER_CHANNELS_IDS':
+				client.config.guild.managers.VOICE_MANAGER_CHANNELS_IDS = contenu
+				break
+
+			case 'NOLOGS_MANAGER_CHANNELS_IDS':
+				client.config.guild.managers.NOLOGS_MANAGER_CHANNELS_IDS = contenu
+				break
+
+			case 'NOTEXT_MANAGER_CHANNELS_IDS':
+				client.config.guild.managers.NOTEXT_MANAGER_CHANNELS_IDS = contenu
+				break
+
+			case 'THREADS_MANAGER_CHANNELS_IDS':
+				client.config.guild.managers.THREADS_MANAGER_CHANNELS_IDS = contenu
+				break
+
+			case 'STAFF_ROLES_MANAGER_IDS':
+				client.config.guild.managers.STAFF_ROLES_MANAGER_IDS = contenu
+				break
 		}
 
-		// Vérification si tout est configuré
-		let config = {}
-		try {
-			const sql = `SELECT * FROM config WHERE
-						LEAVE_JOIN_CHANNEL_ID IS NULL OR
-						REPORT_CHANNEL_ID IS NULL OR
-						LOGS_MESSAGES_CHANNEL_ID IS NULL OR
-						LOGS_BANS_CHANNEL_ID IS NULL OR
-						JOIN_ROLE_ID IS NULL OR
-						NO_ENTRAIDE_ROLE_ID IS NULL OR
-						MUTED_ROLE_ID IS NULL OR
-						TRIBUNAL_CHANNEL_ID IS NULL OR
-						CONFIG_CHANNEL_ID IS NULL OR
-						UPGRADE_CHANNEL_ID IS NULL OR
-						BLABLA_CHANNEL_ID IS NULL OR
-						ACCESS_CHANNEL_ID IS NULL OR
-						STAFF_ROLES_MANAGER_IDS IS NULL`
-			const data = [modal.guild.id]
-			const [result] = await bdd.execute(sql, data)
-			config = result[0]
-		} catch (error) {
-			return modal.reply({
-				content:
-					'Une erreur est survenue lors de la vérification de la configuration en base de données 😕',
-				ephemeral: true,
-			})
+		const config = {
+			timezone: client.config.timezone,
+			richPresenceText: client.config.bot.richPresenceText,
+			guild: {
+				GUILD_ID: client.config.guild.GUILD_ID,
+				TIMEOUT_JOIN: client.config.guild.TIMEOUT_JOIN,
+				COMMANDS_PREFIX: client.config.guild.COMMANDS_PREFIX,
+				channels: {
+					LEAVE_JOIN_CHANNEL_ID: client.config.guild.channels.LEAVE_JOIN_CHANNEL_ID,
+					REPORT_CHANNEL_ID: client.config.guild.channels.REPORT_CHANNEL_ID,
+					LOGS_MESSAGES_CHANNEL_ID: client.config.guild.channels.LOGS_MESSAGES_CHANNEL_ID,
+					LOGS_BANS_CHANNEL_ID: client.config.guild.channels.LOGS_BANS_CHANNEL_ID,
+					TRIBUNAL_CHANNEL_ID: client.config.guild.channels.TRIBUNAL_CHANNEL_ID,
+					CONFIG_CHANNEL_ID: client.config.guild.channels.CONFIG_CHANNEL_ID,
+					UPGRADE_CHANNEL_ID: client.config.guild.channels.UPGRADE_CHANNEL_ID,
+					BLABLA_CHANNEL_ID: client.config.guild.channels.BLABLA_CHANNEL_ID,
+					ACCESS_CHANNEL_ID: client.config.guild.channels.ACCESS_CHANNEL_ID,
+				},
+				roles: {
+					JOIN_ROLE_ID: client.config.guild.roles.JOIN_ROLE_ID,
+					NO_ENTRAIDE_ROLE_ID: client.config.guild.roles.NO_ENTRAIDE_ROLE_ID,
+					MUTED_ROLE_ID: client.config.guild.roles.MUTED_ROLE_ID,
+				},
+				managers: {
+					VOICE_MANAGER_CHANNELS_IDS:
+						client.config.guild.managers.VOICE_MANAGER_CHANNELS_IDS,
+					NOLOGS_MANAGER_CHANNELS_IDS:
+						client.config.guild.managers.NOLOGS_MANAGER_CHANNELS_IDS,
+					NOTEXT_MANAGER_CHANNELS_IDS:
+						client.config.guild.managers.NOTEXT_MANAGER_CHANNELS_IDS,
+					THREADS_MANAGER_CHANNELS_IDS:
+						client.config.guild.managers.THREADS_MANAGER_CHANNELS_IDS,
+					STAFF_ROLES_MANAGER_IDS: client.config.guild.managers.STAFF_ROLES_MANAGER_IDS,
+				},
+			},
 		}
 
-		if (config)
-			try {
-				const sql = 'UPDATE config SET isSetup = ? WHERE GUILD_ID = ?'
-				const data = [0, modal.guild.id]
-				const [result] = await bdd.execute(sql, data)
-				config = result[0]
-			} catch (error) {
-				return modal.reply({
-					content:
-						'Une erreur est survenue lors de la vérification de la configuration en base de données 😕',
-					ephemeral: true,
-				})
-			}
-		else
-			try {
-				const sql = 'UPDATE config SET isSetup = ? WHERE GUILD_ID = ?'
-				const data = [1, modal.guild.id]
-				const [result] = await bdd.execute(sql, data)
-				config = result[0]
-			} catch (error) {
-				return modal.reply({
-					content:
-						'Une erreur est survenue lors de la vérification de la configuration en base de données 😕',
-					ephemeral: true,
-				})
-			}
+		await writeFile('./config/env/config.json', JSON.stringify(config, null, 2))
 
 		return modal.reply({
 			content: `La configuration de **${nom}** a bien été modifiée 👌`,
