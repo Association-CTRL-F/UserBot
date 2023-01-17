@@ -9,6 +9,7 @@ services:
         env_file:
             - ../config/env/bot.env
         volumes:
+            - ../config/env/config.json:/usr/src/app/config/env/config.json
             - ../config/env/reactionRoleConfig.json:/usr/src/app/config/env/reactionRoleConfig.json
             - ../config/env/banEmotesAtJoin.json:/usr/src/app/config/env/banEmotesAtJoin.json
             - ../config/commands:/usr/src/app/config/commands
