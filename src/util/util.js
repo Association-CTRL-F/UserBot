@@ -277,6 +277,66 @@ export const convertDateForDiscord = (date, relative = false) => {
 }
 
 /**
+ * Cherche et retourne le nom de domaine du lien ainsi que le lien dans une map
+ * @param {String} string
+ */
+export const findLinks = string => {
+	const matchLinksRegex =
+		/https?:\/\/(?:www\.)?([-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6})\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/g
+
+	const matches = [...string.matchAll(matchLinksRegex)]
+	if (!matches.length) return new Map()
+
+	return new Map(
+		matches.reduce((acc, [link, domainName]) => {
+			acc.push([domainName, link])
+			return acc
+		}, []),
+	)
+}
+
+/**
+ * Retourne si le lien est un lien connu pour faire une redirection (raccourcisseur de lien)
+ * @param {Object} bdd
+ * @param {String} link
+ * @param {String} domainName
+ * @returns le lien long
+ */
+export const getFinalLink = async (bdd, link, domainName) => {
+	// Récupération des domaines blacklistés en base de données
+	try {
+		const sql = 'SELECT * FROM automod_domains'
+		const [blackListedDomains] = await bdd.execute(sql)
+
+		if (blackListedDomains.includes(domainName)) return (await fetch(link)).url
+
+		return link
+	} catch (error) {
+		return console.error(error)
+	}
+}
+
+/**
+ * Retournee si le lien est frauduleux
+ * @param {Object} bdd
+ * @param {String} link
+ * @returns true si c'est un lien frauduleux, sinon false
+ */
+export const isLinkMalicious = async (bdd, link) => {
+	// Récupération de la regex en base de données
+	try {
+		const sql = 'SELECT regex FROM automod_regex WHERE id = ?'
+		const data = [1]
+		const [regex] = await bdd.execute(sql, data)
+
+		if (link.match(regex[0].regex)) return true
+		return false
+	} catch (error) {
+		return console.error(error)
+	}
+}
+
+/**
  * Vérifie si l'utilisateur est staff ou non
  * @param {GuildMember} guildMember
  * @param staffRoles Rôles Staff

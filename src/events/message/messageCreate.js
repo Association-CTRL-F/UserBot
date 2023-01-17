@@ -8,6 +8,9 @@ import {
 	isStaffMember,
 	convertDateForDiscord,
 	diffDate,
+	findLinks,
+	getFinalLink,
+	isLinkMalicious,
 } from '../../util/util.js'
 
 export default async (message, client) => {
@@ -53,39 +56,26 @@ export default async (message, client) => {
 		: []
 
 	if (!isStaffMember(message.member, staffRoles)) {
-		let domains = []
-		try {
-			const sql = 'SELECT * FROM automod_domains'
-			const [result] = await bdd.execute(sql)
-			domains = result
-		} catch (error) {
-			return console.error(error)
-		}
+		const sentMessage = await message.fetch().catch(() => false)
 
-		if (domains.length > 0) {
-			let isBlacklisted = 0
+		let guildMember = {}
+		if (message.guild)
+			guildMember = await message.guild.members.fetch(sentMessage.author).catch(() => false)
 
-			const sentMessage = await message.fetch().catch(() => false)
+		if (!sentMessage || !guildMember) return
 
-			let guildMember = {}
-			if (message.guild)
-				guildMember = await message.guild.members
-					.fetch(sentMessage.author)
-					.catch(() => false)
+		const messageLinks = await findLinks(message.content)
+		if (!messageLinks) return
 
-			if (!sentMessage || !guildMember) return
+		await messageLinks.forEach(async (link, domainName) => {
+			const finalLink = await getFinalLink(bdd, link, domainName)
+			const malicious = await isLinkMalicious(bdd, finalLink)
 
-			domains.forEach(async domain => {
-				const regexDomain = String.raw`(http[s]?:\/\/)?(www\.)?((${domain.domain})[\w]*){1}\.([a-z]{2,})`
+			// Si lien frauduleux, alors ban
+			if (malicious) {
+				// Suppression du message
+				sentMessage.delete()
 
-				const matchesRegex = message.content.match(regexDomain)
-				if (!matchesRegex) return
-
-				isBlacklisted += 1
-				await sentMessage.delete()
-			})
-
-			if (isBlacklisted > 0) {
 				// Acquisition du message de bannissement
 				let banDM = ''
 				try {
@@ -191,7 +181,7 @@ export default async (message, client) => {
 						"L'envoi d'un message et / ou le bannissement d'un membre a échoué. Voir les logs précédents pour plus d'informations.",
 					)
 			}
-		}
+		})
 	}
 
 	// Fin Automod
