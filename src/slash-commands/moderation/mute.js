@@ -301,7 +301,7 @@ export default {
 					await tribunalChannel.send({
 						content: `Mute de \`${displayNameAndID(
 							member,
-						)})\nhttps://discord.com/channels/${interaction.guild.id}/${thread.id}`,
+						)}\`\nhttps://discord.com/channels/${interaction.guild.id}/${thread.id}`,
 					})
 
 					await thread.members.add(member.id)
