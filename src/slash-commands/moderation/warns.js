@@ -1,6 +1,6 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
+import { SlashCommandBuilder, EmbedBuilder, ButtonStyle } from 'discord.js'
 import { convertDateForDiscord, displayNameAndID } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
 
@@ -145,7 +145,7 @@ export default {
 					ephemeral: false,
 					prevDescription: '',
 					postDescription: '',
-					buttonStyle: 'Secondary',
+					buttonStyle: ButtonStyle.Secondary,
 					loop: false,
 				})
 

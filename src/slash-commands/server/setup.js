@@ -1,6 +1,13 @@
 /* eslint-disable default-case */
 /* eslint-disable no-unused-vars */
-import { SlashCommandBuilder, ModalBuilder, TextInputBuilder, ActionRowBuilder } from 'discord.js'
+import {
+	SlashCommandBuilder,
+	ModalBuilder,
+	TextInputBuilder,
+	ActionRowBuilder,
+	ButtonStyle,
+	TextInputStyle,
+} from 'discord.js'
 import { readFile } from 'fs/promises'
 import { Pagination } from 'pagination.djs'
 
@@ -144,7 +151,7 @@ export default {
 				ephemeral: false,
 				prevDescription: '',
 				postDescription: '',
-				buttonStyle: 'Secondary',
+				buttonStyle: ButtonStyle.Secondary,
 				loop: false,
 			})
 
@@ -283,7 +290,7 @@ export default {
 					new TextInputBuilder()
 						.setCustomId(customId)
 						.setLabel(customId)
-						.setStyle('Paragraph')
+						.setStyle(TextInputStyle.Paragraph)
 						.setValue(value ? value : '')
 						.setRequired(true),
 				),

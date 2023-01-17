@@ -1,6 +1,12 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-import { SlashCommandBuilder, ModalBuilder, TextInputBuilder, ActionRowBuilder } from 'discord.js'
+import {
+	SlashCommandBuilder,
+	ModalBuilder,
+	TextInputBuilder,
+	ActionRowBuilder,
+	TextInputStyle,
+} from 'discord.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -69,7 +75,7 @@ export default {
 							new TextInputBuilder()
 								.setCustomId('name-command-create')
 								.setLabel('Nom de la commande')
-								.setStyle('Short')
+								.setStyle(TextInputStyle.Short)
 								.setMinLength(1)
 								.setMaxLength(255)
 								.setRequired(true),
@@ -80,7 +86,7 @@ export default {
 							new TextInputBuilder()
 								.setCustomId('aliases-command-create')
 								.setLabel('Alias de la commande')
-								.setStyle('Paragraph')
+								.setStyle(TextInputStyle.Paragraph)
 								.setMinLength(1)
 								.setRequired(false),
 						),
@@ -90,7 +96,7 @@ export default {
 							new TextInputBuilder()
 								.setCustomId('active-command-create')
 								.setLabel('Activation de la commande')
-								.setStyle('Short')
+								.setStyle(TextInputStyle.Short)
 								.setValue('1')
 								.setMinLength(1)
 								.setMaxLength(1)
@@ -102,7 +108,7 @@ export default {
 							new TextInputBuilder()
 								.setCustomId('content-command-create')
 								.setLabel('Contenu de la commande')
-								.setStyle('Paragraph')
+								.setStyle(TextInputStyle.Paragraph)
 								.setMinLength(1)
 								.setRequired(true),
 						),
@@ -127,7 +133,7 @@ export default {
 							new TextInputBuilder()
 								.setCustomId('name-command-edit')
 								.setLabel('Nom de la commande')
-								.setStyle('Short')
+								.setStyle(TextInputStyle.Short)
 								.setValue(commandBdd.name)
 								.setMinLength(1)
 								.setMaxLength(255)
@@ -139,7 +145,7 @@ export default {
 							new TextInputBuilder()
 								.setCustomId('aliases-command-edit')
 								.setLabel('Alias de la commande')
-								.setStyle('Paragraph')
+								.setStyle(TextInputStyle.Paragraph)
 								.setValue(commandBdd.aliases ? commandBdd.aliases : '')
 								.setRequired(false),
 						),
@@ -149,7 +155,7 @@ export default {
 							new TextInputBuilder()
 								.setCustomId('active-command-edit')
 								.setLabel('Activation de la commande')
-								.setStyle('Short')
+								.setStyle(TextInputStyle.Short)
 								.setValue(commandBdd.active.toString())
 								.setMinLength(1)
 								.setMaxLength(1)
@@ -161,7 +167,7 @@ export default {
 							new TextInputBuilder()
 								.setCustomId('content-command-edit')
 								.setLabel('Nouveau contenu de la commande')
-								.setStyle('Paragraph')
+								.setStyle(TextInputStyle.Paragraph)
 								.setValue(commandBdd.content)
 								.setMinLength(1)
 								.setRequired(true),

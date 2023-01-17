@@ -1,5 +1,5 @@
 export default async (bdd, guild) => {
-	// / Acquisition des vocaux depuis la base de données
+	// Acquisition des vocaux depuis la base de données
 	let voiceChannels = []
 	try {
 		const sql = 'SELECT * FROM vocal'

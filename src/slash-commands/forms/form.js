@@ -6,6 +6,7 @@ import {
 	StringSelectMenuBuilder,
 	ModalBuilder,
 	TextInputBuilder,
+	TextInputStyle,
 } from 'discord.js'
 
 export default {
@@ -30,7 +31,7 @@ export default {
 							new TextInputBuilder()
 								.setCustomId('form-create-name')
 								.setLabel('Nom')
-								.setStyle('Short')
+								.setStyle(TextInputStyle.Short)
 								.setMinLength(1)
 								.setMaxLength(255)
 								.setRequired(true),
@@ -41,7 +42,7 @@ export default {
 							new TextInputBuilder()
 								.setCustomId('form-create-content')
 								.setLabel('Contenu')
-								.setStyle('Paragraph')
+								.setStyle(TextInputStyle.Paragraph)
 								.setMinLength(1)
 								.setRequired(true),
 						),

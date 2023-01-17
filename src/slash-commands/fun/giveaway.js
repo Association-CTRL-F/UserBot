@@ -2,7 +2,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
 /* eslint-disable no-mixed-operators */
-import { SlashCommandBuilder, EmbedBuilder, ChannelType } from 'discord.js'
+import { SlashCommandBuilder, EmbedBuilder, ChannelType, ButtonStyle } from 'discord.js'
 import { convertDateForDiscord, convertMsToString, pluralize } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
 import ms from 'ms'
@@ -189,7 +189,7 @@ export default {
 					ephemeral: false,
 					prevDescription: '',
 					postDescription: '',
-					buttonStyle: 'Secondary',
+					buttonStyle: ButtonStyle.Secondary,
 					loop: false,
 				})
 

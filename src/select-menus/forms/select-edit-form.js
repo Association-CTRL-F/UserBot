@@ -1,4 +1,4 @@
-import { ModalBuilder, TextInputBuilder, ActionRowBuilder } from 'discord.js'
+import { ModalBuilder, TextInputBuilder, ActionRowBuilder, TextInputStyle } from 'discord.js'
 
 export default {
 	data: {
@@ -43,7 +43,7 @@ export default {
 					new TextInputBuilder()
 						.setCustomId('form-edit-name')
 						.setLabel('Nom du formulaire')
-						.setStyle('Short')
+						.setStyle(TextInputStyle.Short)
 						.setMinLength(1)
 						.setMaxLength(255)
 						.setValue(form.name)
@@ -55,7 +55,7 @@ export default {
 					new TextInputBuilder()
 						.setCustomId('form-edit-content')
 						.setLabel('Nouveau contenu du formulaire')
-						.setStyle('Paragraph')
+						.setStyle(TextInputStyle.Paragraph)
 						.setMinLength(1)
 						.setValue(form.content)
 						.setRequired(true),
