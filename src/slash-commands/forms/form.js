@@ -94,7 +94,7 @@ export default {
 					new StringSelectMenuBuilder()
 						.setCustomId('select-edit-form')
 						.setPlaceholder('Sélectionnez le formulaire')
-						.addOptions(arrayForms),
+						.addOptions(arrayForms[0]),
 				)
 
 				return interaction.reply({
