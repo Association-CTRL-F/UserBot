@@ -76,6 +76,8 @@ export default async () => {
 		deleteMessagesID: new Set(),
 		// Anti-spam commandes /config et /upgrade
 		conseilsUsersID: new Set(),
+		// Domaines blacklistés
+		blacklistedDomains: new Set(),
 	}
 
 	// Maps

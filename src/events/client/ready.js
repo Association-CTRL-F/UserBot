@@ -4,6 +4,7 @@ import reminders from './remindersLoader.js'
 import giveaways from './giveawaysLoader.js'
 import voiceChannels from './voiceChannelsLoader.js'
 import noSpeak from './noSpeakLoader.js'
+import blacklistedDomainsLoader from './blacklistedDomainsLoader.js'
 import gpus from './gpusLoader.js'
 
 export default async client => {
@@ -17,13 +18,15 @@ export default async client => {
 	if (!guild) return console.log(`Une erreur est survenue lors de l'acquisition de la guild`)
 
 	// Mise en place du système de réaction / rôle
-	// et réactivation ou désactivation des mutes / rappels / giveaways / vocaux
+	// et réactivation ou désactivation des
+	// mutes, rappels, giveaways, vocaux, domaines blacklistés
 	await Promise.all([
 		reactionRole(client),
 		mutes(client, bdd, guild),
 		reminders(bdd, guild),
 		giveaways(bdd, guild),
 		voiceChannels(bdd, guild),
+		blacklistedDomainsLoader(client, bdd),
 	])
 
 	// Mise en place du @Pas de blabla

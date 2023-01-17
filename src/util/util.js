@@ -302,18 +302,10 @@ export const findLinks = string => {
  * @param {String} domainName
  * @returns le lien long
  */
-export const getFinalLink = async (bdd, link, domainName) => {
-	// Récupération des domaines blacklistés en base de données
-	try {
-		const sql = 'SELECT * FROM automod_domains'
-		const [blackListedDomains] = await bdd.execute(sql)
+export const getFinalLink = async (client, bdd, link, domainName) => {
+	if (client.cache.blacklistedDomains.has(domainName)) return (await fetch(link)).url
 
-		if (blackListedDomains.includes(domainName)) return (await fetch(link)).url
-
-		return link
-	} catch (error) {
-		return console.error(error)
-	}
+	return link
 }
 
 /**

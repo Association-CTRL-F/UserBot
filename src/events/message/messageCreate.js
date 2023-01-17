@@ -68,7 +68,7 @@ export default async (message, client) => {
 		if (!messageLinks) return
 
 		await messageLinks.forEach(async (link, domainName) => {
-			const finalLink = await getFinalLink(bdd, link, domainName)
+			const finalLink = await getFinalLink(client, bdd, link, domainName)
 			const malicious = await isLinkMalicious(bdd, finalLink)
 
 			// Si lien frauduleux, alors ban
