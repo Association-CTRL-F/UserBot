@@ -23,11 +23,11 @@ export default {
 		// Acquisition du message
 		let userdiagMessage = ''
 		try {
-			const sqlSelect = 'SELECT content FROM commands WHERE name = ? AND guildId = ?'
-			const dataSelect = ['userdiag', interaction.guild.id]
-			const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
+			const sql = 'SELECT content FROM commands WHERE name = ?'
+			const data = ['userdiag']
+			const [result] = await bdd.execute(sql, data)
 
-			userdiagMessage = resultSelect[0].content
+			userdiagMessage = result[0].content
 		} catch {
 			return interaction.editReply({
 				content: 'Une erreur est survenue lors de la récupération du message UserDiag 😬',

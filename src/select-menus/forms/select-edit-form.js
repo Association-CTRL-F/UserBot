@@ -16,10 +16,10 @@ export default {
 		// Vérification si le formulaire existe
 		let form = {}
 		try {
-			const sqlCheckName = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
-			const dataCheckName = [menu.values[0], menu.guild.id]
-			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
-			form = resultCheckName[0]
+			const sql = 'SELECT * FROM forms WHERE name = ?'
+			const data = [menu.values[0]]
+			const [result] = await bdd.execute(sql, data)
+			form = result[0]
 		} catch (error) {
 			return menu.reply({
 				content:
@@ -35,7 +35,7 @@ export default {
 				ephemeral: true,
 			})
 
-		const modalEdit = new ModalBuilder()
+		const modal = new ModalBuilder()
 			.setCustomId('form-edit')
 			.setTitle("Modification d'un formulaire")
 			.addComponents(
@@ -62,6 +62,6 @@ export default {
 				),
 			)
 
-		return menu.showModal(modalEdit)
+		return menu.showModal(modal)
 	},
 }

@@ -76,10 +76,10 @@ export default {
 			case 'view':
 				let reminders = []
 				try {
-					const sqlSelect = 'SELECT * FROM reminders WHERE discordID = ? AND guildId = ?'
-					const dataSelect = [interaction.user.id, interaction.guild.id]
-					const [resultReminders] = await bdd.execute(sqlSelect, dataSelect)
-					reminders = resultReminders
+					const sql = 'SELECT * FROM reminders WHERE discordID = ?'
+					const data = [interaction.user.id]
+					const [result] = await bdd.execute(sql, data)
+					reminders = result
 				} catch (error) {
 					return interaction.reply({
 						content: 'Une erreur est survenue lors de la récupération des rappels 😕',
@@ -155,10 +155,9 @@ export default {
 
 				const timeout = setTimeout(async () => {
 					try {
-						const sqlDelete =
-							'DELETE FROM reminders WHERE timestampEnd = ? AND guildId = ?'
-						const dataDelete = [timestampEnd, interaction.guild.id]
-						await bdd.execute(sqlDelete, dataDelete)
+						const sql = 'DELETE FROM reminders WHERE timestampEnd = ?'
+						const data = [timestampEnd]
+						await bdd.execute(sql, data)
 
 						const member = interaction.guild.members.cache.get(interaction.user.id)
 
@@ -182,9 +181,8 @@ export default {
 
 				try {
 					const sql =
-						'INSERT INTO reminders (guildId, discordID, reminder, timestampEnd, channel, private, timeoutId) VALUES (?, ?, ?, ?, ?, ?, ?)'
+						'INSERT INTO reminders (discordID, reminder, timestampEnd, channel, private, timeoutId) VALUES (?, ?, ?, ?, ?, ?)'
 					const data = [
-						interaction.guild.id,
 						interaction.user.id,
 						rappel,
 						timestampEnd,
@@ -219,10 +217,10 @@ export default {
 				// Fetch du rappel
 				let fetchReminderEdit = {}
 				try {
-					const sqlSelect = 'SELECT * FROM reminders WHERE id = ? AND guildId = ?'
-					const dataSelect = [idEdit, interaction.guild.id]
-					const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
-					fetchReminderEdit = resultSelect[0]
+					const sql = 'SELECT * FROM reminders WHERE id = ?'
+					const data = [idEdit]
+					const [result] = await bdd.execute(sql, data)
+					fetchReminderEdit = result[0]
 				} catch {
 					return interaction.reply({
 						content: 'Une erreur est survenue lors de la modification du rappel 😬',
@@ -264,9 +262,9 @@ export default {
 
 				const timeoutEdit = setTimeout(async () => {
 					try {
-						const sqlDelete = 'DELETE FROM reminders WHERE id = ? AND guildId = ?'
-						const dataDelete = [fetchReminderEdit.id, interaction.guild.id]
-						await bdd.execute(sqlDelete, dataDelete)
+						const sql = 'DELETE FROM reminders WHERE id = ?'
+						const data = [fetchReminderEdit.id]
+						await bdd.execute(sql, data)
 
 						const member = interaction.guild.members.cache.get(interaction.user.id)
 
@@ -290,7 +288,7 @@ export default {
 
 				try {
 					const sql =
-						'UPDATE reminders SET reminder = ?, timestampEnd = ?, channel = ?, private = ?, timeoutId = ? WHERE id = ? AND guildId = ?'
+						'UPDATE reminders SET reminder = ?, timestampEnd = ?, channel = ?, private = ?, timeoutId = ? WHERE id = ?'
 					const data = [
 						rappelEdit,
 						timestampEndEdit,
@@ -298,7 +296,6 @@ export default {
 						priveEdit ? 1 : 0,
 						Number(timeoutEdit),
 						fetchReminderEdit.id,
-						interaction.guild.id,
 					]
 					await bdd.execute(sql, data)
 				} catch (error) {
@@ -325,10 +322,10 @@ export default {
 				let fetchReminder = {}
 				try {
 					const id = interaction.options.getString('id')
-					const sqlSelect = 'SELECT * FROM reminders WHERE id = ? AND guildId = ?'
-					const dataSelect = [id, interaction.guild.id]
-					const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
-					fetchReminder = resultSelect[0]
+					const sql = 'SELECT * FROM reminders WHERE id = ?'
+					const data = [id]
+					const [result] = await bdd.execute(sql, data)
+					fetchReminder = result[0]
 				} catch {
 					return interaction.reply({
 						content: 'Une erreur est survenue lors de la suppression du rappel 😬',
@@ -354,10 +351,10 @@ export default {
 				let deletedReminder = {}
 				try {
 					const id = interaction.options.getString('id')
-					const sqlDelete = 'DELETE FROM reminders WHERE id = ? AND guildId = ?'
-					const dataDelete = [id, interaction.guild.id]
-					const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
-					deletedReminder = resultDelete
+					const sql = 'DELETE FROM reminders WHERE id = ?'
+					const data = [id]
+					const [result] = await bdd.execute(sql, data)
+					deletedReminder = result
 				} catch {
 					return interaction.reply({
 						content: 'Une erreur est survenue lors de la suppression du rappel 😬',

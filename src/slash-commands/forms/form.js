@@ -22,7 +22,7 @@ export default {
 		switch (interaction.options.getSubcommand()) {
 			// Nouveau formulaire
 			case 'create':
-				const modalConfig = new ModalBuilder()
+				const modal = new ModalBuilder()
 					.setCustomId('form-create')
 					.setTitle("Création d'un nouveau formulaire")
 					.addComponents(
@@ -47,7 +47,7 @@ export default {
 						),
 					)
 
-				return interaction.showModal(modalConfig)
+				return interaction.showModal(modal)
 
 			// Modification d'un formulaire
 			case 'edit':
@@ -63,11 +63,9 @@ export default {
 				// Récupération des formulaires
 				let forms = []
 				try {
-					const sqlSelect = 'SELECT * FROM forms WHERE guildId = ?'
-					const dataSelect = [interaction.guild.id]
-
-					const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
-					forms = resultSelect
+					const sql = 'SELECT * FROM forms'
+					const [result] = await bdd.execute(sql)
+					forms = result
 				} catch {
 					return interaction.reply({
 						content:

@@ -8,7 +8,7 @@ import {
 	RESTJSONErrorCodes,
 	ChannelType,
 } from 'discord.js'
-import { convertMinutesToString } from '../../util/util.js'
+import { convertMinutesToString, displayNameAndID } from '../../util/util.js'
 import ms from 'ms'
 
 export default {
@@ -58,22 +58,11 @@ export default {
 				ephemeral: true,
 			})
 
-		// Acquisition des paramètres de la guild
-		let configGuild = {}
-		try {
-			const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
-			const dataSelect = [interaction.guild.id]
-			const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
-			configGuild = resultSelect[0]
-		} catch (error) {
-			return console.log(error)
-		}
-
 		// On diffère la réponse pour avoir plus de 3 secondes
 		await interaction.deferReply()
 
 		// Acquisition du rôle muted
-		const mutedRole = configGuild.MUTED_ROLE_ID
+		const mutedRole = client.config.guild.roles.MUTED_ROLE_ID
 		if (!mutedRole)
 			return interaction.editReply({
 				content: "Il n'y a pas de rôle Muted 😕",
@@ -86,11 +75,11 @@ export default {
 		// Acquisition du message de mute
 		let muteDM = ''
 		try {
-			const sqlSelectMute = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
-			const dataSelectMute = ['mute', interaction.guild.id]
-			const [resultSelectMute] = await bdd.execute(sqlSelectMute, dataSelectMute)
+			const sql = 'SELECT * FROM forms WHERE name = ?'
+			const data = ['mute']
+			const [result] = await bdd.execute(sql, data)
 
-			muteDM = resultSelectMute[0].content
+			muteDM = result[0].content
 		} catch {
 			return interaction.editReply({
 				content:
@@ -101,11 +90,11 @@ export default {
 		// Acquisition du message d'unmute
 		let unmuteDM = ''
 		try {
-			const sqlSelectUnmute = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
-			const dataSelectUnmute = ['unmute', interaction.guild.id]
-			const [resultSelectUnmute] = await bdd.execute(sqlSelectUnmute, dataSelectUnmute)
+			const sql = 'SELECT * FROM forms WHERE name = ?'
+			const data = ['unmute']
+			const [result] = await bdd.execute(sql, data)
 
-			unmuteDM = resultSelectUnmute[0].content
+			unmuteDM = result[0].content
 		} catch {
 			return interaction.editReply({
 				content:
@@ -115,7 +104,7 @@ export default {
 
 		// Acquisition du salon tribunal
 		const tribunalChannel = interaction.guild.channels.cache.get(
-			configGuild.TRIBUNAL_CHANNEL_ID,
+			client.config.guild.channels.TRIBUNAL_CHANNEL_ID,
 		)
 
 		switch (interaction.options.getSubcommand()) {
@@ -183,10 +172,10 @@ export default {
 				// Vérification si déjà mute en base de données
 				let muted = {}
 				try {
-					const sqlCheck = 'SELECT * FROM mute WHERE discordID = ? AND guildId = ?'
-					const dataCheck = [member.id, interaction.guild.id]
-					const [resultCheck] = await bdd.execute(sqlCheck, dataCheck)
-					muted = resultCheck[0]
+					const sql = 'SELECT * FROM mute WHERE discordID = ?'
+					const data = [member.id]
+					const [result] = await bdd.execute(sql, data)
+					muted = result[0]
 				} catch {
 					if (DMMessage) DMMessage.delete()
 					return interaction.editReply({
@@ -198,9 +187,9 @@ export default {
 				// Si oui alors on lève le mute en base de données
 				if (muted)
 					try {
-						const sqlDelete = 'DELETE FROM mute WHERE discordID = ? AND guildId = ?'
-						const dataDelete = [member.id, interaction.guild.id]
-						await bdd.execute(sqlDelete, dataDelete)
+						const sql = 'DELETE FROM mute WHERE discordID = ?'
+						const data = [member.id]
+						await bdd.execute(sql, data)
 					} catch {
 						if (DMMessage) DMMessage.delete()
 						return interaction.editReply({
@@ -212,9 +201,8 @@ export default {
 				// Insertion du nouveau mute en base de données
 				try {
 					const sql =
-						'INSERT INTO mute (guildId, discordID, timestampStart, timestampEnd) VALUES (?, ?, ?, ?)'
+						'INSERT INTO mute (discordID, timestampStart, timestampEnd) VALUES (?, ?, ?)'
 					const data = [
-						interaction.guild.id,
 						member.id,
 						Math.round(Date.now() / 1000),
 						Math.round(Date.now() / 1000) + duration * 60,
@@ -233,10 +221,10 @@ export default {
 				const muteAction = await member.roles.add(mutedRole).catch(error => {
 					if (DMMessage) DMMessage.delete()
 					try {
-						const sqlDelete = 'DELETE FROM mute WHERE discordID = ? AND guildId = ?'
-						const dataDelete = [member.id, interaction.guild.id]
+						const sql = 'DELETE FROM mute WHERE discordID = ?'
+						const data = [member.id]
 
-						bdd.execute(sqlDelete, dataDelete)
+						bdd.execute(sql, data)
 					} catch {
 						console.error(error)
 						return interaction.editReply({
@@ -264,10 +252,10 @@ export default {
 					// Suppression du mute en base de données
 					let deletedMute = {}
 					try {
-						const sqlDelete = 'DELETE FROM mute WHERE discordID = ? AND guildId = ?'
-						const dataDelete = [member.id, interaction.guild.id]
-						const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
-						deletedMute = resultDelete
+						const sql = 'DELETE FROM mute WHERE discordID = ?'
+						const data = [member.id]
+						const [result] = await bdd.execute(sql, data)
+						deletedMute = result
 					} catch (error) {
 						console.error(error)
 						return interaction.editReply({
@@ -311,7 +299,9 @@ export default {
 					})
 
 					await tribunalChannel.send({
-						content: `Mute de \`${member.user.tag}\`\nhttps://discord.com/channels/${interaction.guild.id}/${thread.id}`,
+						content: `Mute de \`${displayNameAndID(
+							member,
+						)})\nhttps://discord.com/channels/${interaction.guild.id}/${thread.id}`,
 					})
 
 					await thread.members.add(member.id)
@@ -401,11 +391,10 @@ export default {
 						// Vérification si déjà mute en base de données
 						let mutedGroup = {}
 						try {
-							const sqlCheck =
-								'SELECT * FROM mute WHERE discordID = ? AND guildId = ?'
-							const dataCheck = [memberGroup.id, interaction.guild.id]
-							const [resultCheck] = await bdd.execute(sqlCheck, dataCheck)
-							mutedGroup = resultCheck[0]
+							const sql = 'SELECT * FROM mute WHERE discordID = ?'
+							const data = [memberGroup.id]
+							const [result] = await bdd.execute(sql, data)
+							mutedGroup = result[0]
 						} catch {
 							if (DMMessageGroup) DMMessageGroup.delete()
 							return interaction.editReply({
@@ -417,10 +406,9 @@ export default {
 						// Si oui alors on lève le mute en base de données
 						if (mutedGroup)
 							try {
-								const sqlDelete =
-									'DELETE FROM mute WHERE discordID = ? AND guildId = ?'
-								const dataDelete = [memberGroup.id, interaction.guild.id]
-								await bdd.execute(sqlDelete, dataDelete)
+								const sql = 'DELETE FROM mute WHERE discordID = ?'
+								const data = [memberGroup.id]
+								await bdd.execute(sql, data)
 							} catch {
 								if (DMMessageGroup) DMMessageGroup.delete()
 								return interaction.editReply({
@@ -432,9 +420,8 @@ export default {
 						// Insertion du nouveau mute en base de données
 						try {
 							const sql =
-								'INSERT INTO mute (guildId, discordID, timestampStart, timestampEnd) VALUES (?, ?, ?, ?)'
+								'INSERT INTO mute (discordID, timestampStart, timestampEnd) VALUES (?, ?, ?)'
 							const data = [
-								interaction.guild.id,
 								memberGroup.id,
 								Math.round(Date.now() / 1000),
 								Math.round(Date.now() / 1000) + duration * 60,
@@ -455,11 +442,10 @@ export default {
 							.catch(error => {
 								if (DMMessageGroup) DMMessageGroup.delete()
 								try {
-									const sqlDelete =
-										'DELETE FROM mute WHERE discordID = ? AND guildId = ?'
-									const dataDelete = [memberGroup.id, interaction.guild.id]
+									const sql = 'DELETE FROM mute WHERE discordID = ?'
+									const data = [memberGroup.id]
 
-									bdd.execute(sqlDelete, dataDelete)
+									bdd.execute(sql, data)
 								} catch {
 									console.error(error)
 									return interaction.editReply({
@@ -491,11 +477,10 @@ export default {
 							// Suppression du mute en base de données
 							let deletedMute = {}
 							try {
-								const sqlDelete =
-									'DELETE FROM mute WHERE discordID = ? AND guildId = ?'
-								const dataDelete = [memberGroup.id, interaction.guild.id]
-								const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
-								deletedMute = resultDelete
+								const sql = 'DELETE FROM mute WHERE discordID = ?'
+								const data = [memberGroup.id]
+								const [result] = await bdd.execute(sql, data)
+								deletedMute = result
 							} catch (error) {
 								console.error(error)
 								return interaction.editReply({

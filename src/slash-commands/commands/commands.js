@@ -15,17 +15,6 @@ export default {
 				.addStringOption(option =>
 					option.setName('nom').setDescription('Nom de la commande'),
 				),
-		)
-		.addSubcommand(subcommand =>
-			subcommand
-				.setName('search')
-				.setDescription('Cherche une commande')
-				.addStringOption(option =>
-					option
-						.setName('keyword')
-						.setDescription('Mot clé de la recherche')
-						.setRequired(true),
-				),
 		),
 	interaction: async (interaction, client) => {
 		// Acquisition de la base de données
@@ -36,17 +25,6 @@ export default {
 				ephemeral: true,
 			})
 
-		// Acquisition des paramètres de la guild
-		let configGuild = {}
-		try {
-			const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
-			const dataSelect = [interaction.guild.id]
-			const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
-			configGuild = resultSelect[0]
-		} catch (error) {
-			return console.log(error)
-		}
-
 		switch (interaction.options.getSubcommand()) {
 			// Visualisation des commandes
 			case 'view':
@@ -56,10 +34,10 @@ export default {
 				// Vérification si la commande existe
 				let commandBdd = {}
 				try {
-					const sqlCheckName = 'SELECT * FROM commands WHERE name = ? AND guildId = ?'
-					const dataCheckName = [nom, interaction.guild.id]
-					const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
-					commandBdd = resultCheckName[0]
+					const sql = 'SELECT * FROM commands WHERE name = ?'
+					const data = [nom]
+					const [result] = await bdd.execute(sql, data)
+					commandBdd = result[0]
 				} catch (error) {
 					return interaction.reply({
 						content:
@@ -135,11 +113,9 @@ export default {
 				// Récupération des commandes
 				let commands = []
 				try {
-					const sqlSelect = 'SELECT * FROM commands WHERE guildId = ?'
-					const dataSelect = [interaction.guild.id]
-
-					const [resultCommands] = await bdd.execute(sqlSelect, dataSelect)
-					commands = resultCommands
+					const sql = 'SELECT * FROM commands'
+					const [result] = await bdd.execute(sql)
+					commands = result
 				} catch (error) {
 					return interaction.reply({
 						content: 'Une erreur est survenue lors de la récupération des commandes 😕',
@@ -190,7 +166,7 @@ export default {
 
 				paginationView.setTitle('Commandes personnalisées')
 				paginationView.setDescription(
-					`**Total : ${commands.length}\nPréfixe : \`${configGuild.COMMANDS_PREFIX}\`**`,
+					`**Total : ${commands.length}\nPréfixe : \`${client.config.guild.COMMANDS_PREFIX}\`**`,
 				)
 				paginationView.setColor('#C27C0E')
 				paginationView.setFields(fieldsEmbedView)
@@ -199,74 +175,6 @@ export default {
 
 				// Envoi de l'embed
 				return paginationView.render()
-
-			// Chercher une commande
-			case 'search':
-				// Acquisition du mot clé de la recherche
-				const keyword = interaction.options.getString('keyword')
-				let commandsSearch = []
-				try {
-					const sqlSearch =
-						'SELECT * FROM commands WHERE guildId = ? AND (MATCH(name) AGAINST(? IN BOOLEAN MODE) OR MATCH(content) AGAINST(? IN BOOLEAN MODE));'
-					const dataSearch = [interaction.guild.id, keyword, keyword]
-					const [resultsSearch] = await bdd.execute(sqlSearch, dataSearch)
-					commandsSearch = resultsSearch
-				} catch (error) {
-					return interaction.reply({
-						content: 'Une erreur est survenue lors de la recherche des commandes 😕',
-						ephemeral: true,
-					})
-				}
-
-				if (commandsSearch.length === 0)
-					return interaction.reply({
-						content: 'Aucun résultat 😕',
-						ephemeral: true,
-					})
-
-				// Boucle d'ajout des champs
-				const fieldsEmbedSearch = []
-
-				commandsSearch.forEach(command => {
-					const commandContent = String.raw`${command.content}`
-					let commandContentCut = ''
-
-					if (commandContent.length < 100)
-						commandContentCut = `${command.content.substr(0, 100)}`
-					else commandContentCut = `${command.content.substr(0, 100)} [...]`
-
-					fieldsEmbedSearch.push({
-						name: command.name,
-						value: `${commandContentCut}`,
-					})
-				})
-
-				// Configuration de l'embed
-				const paginationSearch = new Pagination(interaction, {
-					firstEmoji: '⏮',
-					prevEmoji: '◀️',
-					nextEmoji: '▶️',
-					lastEmoji: '⏭',
-					limit: 5,
-					idle: 120000,
-					ephemeral: true,
-					prevDescription: '',
-					postDescription: '',
-					buttonStyle: 'Secondary',
-					loop: false,
-				})
-
-				paginationSearch.setTitle('Résultats de la recherche')
-				paginationSearch.setDescription(
-					`**Total : ${commandsSearch.length}\nPréfixe : \`${configGuild.COMMANDS_PREFIX}\`**`,
-				)
-				paginationSearch.setColor('#C27C0E')
-				paginationSearch.setFields(fieldsEmbedSearch)
-				paginationSearch.setFooter({ text: 'Page : {pageNumber} / {totalPages}' })
-				paginationSearch.paginateFields(true)
-
-				// Envoi de l'embed
-				return paginationSearch.render()
 		}
 	},
 }

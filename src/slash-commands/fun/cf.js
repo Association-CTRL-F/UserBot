@@ -16,10 +16,9 @@ export default {
 
 		let discordIds = []
 		try {
-			const sqlSelect = 'SELECT * FROM cf WHERE guildId = ?'
-			const dataSelect = [interaction.guild.id]
-			const [resultDiscordIds] = await bdd.execute(sqlSelect, dataSelect)
-			discordIds = resultDiscordIds
+			const sql = 'SELECT * FROM cf'
+			const [result] = await bdd.execute(sql)
+			discordIds = result
 		} catch (error) {
 			return interaction.editReply({
 				content: 'Une erreur est survenue lors de la récupération des commandes 😕',

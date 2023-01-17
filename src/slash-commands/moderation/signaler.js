@@ -16,32 +16,15 @@ export default {
 				content: "Tu ne peux pas signaler le message d'un bot 😕",
 			})
 
-		// Acquisition de la base de données
-		const bdd = client.config.db.pools.userbot
-		if (!bdd)
-			return interaction.editReply({
-				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
-				ephemeral: true,
-			})
-
-		// Acquisition des paramètres de la guild
-		let configGuild = {}
-		try {
-			const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
-			const dataSelect = [interaction.guild.id]
-			const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
-			configGuild = resultSelect[0]
-		} catch (error) {
-			return console.log(error)
-		}
-
 		// On ne peut pas signaler son propre message
 		if (message.author === interaction.user)
 			return interaction.editReply({
 				content: 'Tu ne peux pas signaler ton propre message 😕',
 			})
 
-		const reportChannel = message.guild.channels.cache.get(configGuild.REPORT_CHANNEL_ID)
+		const reportChannel = message.guild.channels.cache.get(
+			client.config.guild.channels.REPORT_CHANNEL_ID,
+		)
 		if (!reportChannel) return
 
 		const fetchedMessages = await reportChannel.messages.fetch()

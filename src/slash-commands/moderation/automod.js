@@ -46,10 +46,10 @@ export default {
 		// Vérification si le domaine existe
 		let domainBdd = {}
 		try {
-			const sqlCheckName = 'SELECT * FROM automod_domains WHERE domain = ? AND guildId = ?'
-			const dataCheckName = [domainString, interaction.guild.id]
-			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
-			domainBdd = resultCheckName[0]
+			const sql = 'SELECT * FROM automod_domains WHERE domain = ?'
+			const data = [domainString]
+			const [result] = await bdd.execute(sql, data)
+			domainBdd = result[0]
 		} catch (error) {
 			return interaction.reply({
 				content:
@@ -66,10 +66,9 @@ export default {
 					case 'view':
 						let domainsView = []
 						try {
-							const sqlCheckName = 'SELECT * FROM automod_domains WHERE guildId = ?'
-							const dataCheckName = [interaction.guild.id]
-							const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
-							domainsView = resultCheckName
+							const sql = 'SELECT * FROM automod_domains'
+							const [result] = await bdd.execute(sql)
+							domainsView = result
 						} catch (error) {
 							return interaction.reply({
 								content:
@@ -130,11 +129,10 @@ export default {
 
 						// Ajout du domaine en base de données
 						try {
-							const sqlInsert =
-								'INSERT INTO automod_domains (guildId, domain) VALUES (?, ?)'
-							const dataInsert = [interaction.guild.id, domainString]
+							const sql = 'INSERT INTO automod_domains (domain) VALUES (?)'
+							const data = [domainString]
 
-							await bdd.execute(sqlInsert, dataInsert)
+							await bdd.execute(sql, data)
 						} catch (error) {
 							return interaction.reply({
 								content:
@@ -159,11 +157,10 @@ export default {
 						// Si oui, alors suppression du domaine
 						// en base de données
 						try {
-							const sqlDelete =
-								'DELETE FROM automod_domains WHERE domain = ? AND guildId = ?'
-							const dataDelete = [domainString, interaction.guild.id]
+							const sql = 'DELETE FROM automod_domains WHERE domain = ?'
+							const data = [domainString]
 
-							await bdd.execute(sqlDelete, dataDelete)
+							await bdd.execute(sql, data)
 						} catch {
 							return interaction.reply({
 								content:

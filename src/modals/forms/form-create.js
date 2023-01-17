@@ -18,10 +18,10 @@ export default {
 		// Vérification si le formulaire existe
 		let form = {}
 		try {
-			const sqlCheckName = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
-			const dataCheckName = [nom, modal.guild.id]
-			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
-			form = resultCheckName[0]
+			const sql = 'SELECT * FROM forms WHERE name = ?'
+			const data = [nom]
+			const [result] = await bdd.execute(sql, data)
+			form = result[0]
 		} catch (error) {
 			return modal.reply({
 				content: 'Une erreur est survenue lors de la vérification du nom du formulaire 😕',
@@ -38,10 +38,10 @@ export default {
 
 		// Sinon, création du nouveau formulaire en base de données
 		try {
-			const sqlInsert = 'INSERT INTO forms (guildId, name, content) VALUES (?, ?, ?)'
-			const dataInsert = [modal.guild.id, nom, contenu]
+			const sql = 'INSERT INTO forms (name, content) VALUES (?, ?)'
+			const data = [nom, contenu]
 
-			await bdd.execute(sqlInsert, dataInsert)
+			await bdd.execute(sql, data)
 		} catch (error) {
 			return modal.reply({
 				content:

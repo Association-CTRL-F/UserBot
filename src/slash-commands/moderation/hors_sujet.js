@@ -15,25 +15,6 @@ export default {
 				content: "Tu ne peux pas déclarer hors-sujet le message d'un bot 😕",
 			})
 
-		// Acquisition de la base de données
-		const bdd = client.config.db.pools.userbot
-		if (!bdd)
-			return interaction.editReply({
-				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
-				ephemeral: true,
-			})
-
-		// Acquisition des paramètres de la guild
-		let configGuild = {}
-		try {
-			const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
-			const dataSelect = [interaction.guild.id]
-			const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
-			configGuild = resultSelect[0]
-		} catch (error) {
-			return console.log(error)
-		}
-
 		// On ne peut pas définir hors-sujet son propre message
 		if (message.author === interaction.user)
 			return interaction.editReply({
@@ -48,12 +29,12 @@ export default {
 				ephemeral: true,
 			})
 
-		let description = `Ton message est hors-sujet, merci de veiller à bien respecter les salons du serveur.\n\n• Il n'y a pas d'entraide dans le salon <#${configGuild.BLABLA_CHANNEL_ID}>.\n• Si tu ne trouves pas le bon salon, tu peux te référer au salon <#${configGuild.ACCESS_CHANNEL_ID}> afin de choisir tes différents accès.`
+		let description = `Ton message est hors-sujet, merci de veiller à bien respecter les salons du serveur.\n\n• Il n'y a pas d'entraide dans le salon <#${client.config.guild.channels.BLABLA_CHANNEL_ID}>.\n• Si tu ne trouves pas le bon salon, tu peux te référer au salon <#${client.config.guild.channels.ACCESS_CHANNEL_ID}> afin de choisir tes différents accès.`
 
-		if (member.roles.cache.has(configGuild.NO_ENTRAIDE_ROLE_ID))
+		if (member.roles.cache.has(client.config.guild.roles.NO_ENTRAIDE_ROLE_ID))
 			description = description.concat(
 				'\n',
-				`• Tu as coché la case du rôle "Pas d'entraide" en ayant mal lu ce que la description indiquait, tu peux te référer au bas du salon <#${configGuild.ACCESS_CHANNEL_ID}> afin de retirer la réaction.`,
+				`• Tu as coché la case du rôle "Pas d'entraide" en ayant mal lu ce que la description indiquait, tu peux te référer au bas du salon <#${client.config.guild.channels.ACCESS_CHANNEL_ID}> afin de retirer la réaction.`,
 			)
 
 		const embed = new EmbedBuilder()

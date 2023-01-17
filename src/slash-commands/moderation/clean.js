@@ -42,28 +42,9 @@ export default {
 		const chosenNumber = interaction.options.getInteger('nombre')
 		const ephemeral = interaction.options.getBoolean('silent')
 
-		// Acquisition de la base de données
-		const bdd = client.config.db.pools.userbot
-		if (!bdd)
-			return interaction.reply({
-				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
-				ephemeral: true,
-			})
-
-		// Acquisition des paramètres de la guild
-		let configGuild = {}
-		try {
-			const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
-			const dataSelect = [interaction.guild.id]
-			const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
-			configGuild = resultSelect[0]
-		} catch (error) {
-			return console.log(error)
-		}
-
 		// Acquisition du salon de logs
 		const logsChannel = interaction.guild.channels.cache.get(
-			configGuild.LOGS_MESSAGES_CHANNEL_ID,
+			client.config.guild.channels.LOGS_MESSAGES_CHANNEL_ID,
 		)
 		if (!logsChannel)
 			return interaction.ephemeral({

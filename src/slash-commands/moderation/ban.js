@@ -73,29 +73,20 @@ export default {
 				ephemeral: true,
 			})
 
-		// Acquisition des paramètres de la guild
-		let configGuild = {}
-		try {
-			const sqlSelect = 'SELECT * FROM config WHERE GUILD_ID = ?'
-			const dataSelect = [interaction.guild.id]
-			const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
-			configGuild = resultSelect[0]
-		} catch (error) {
-			return console.log(error)
-		}
-
 		// Acquisition du salon de logs
-		const logsChannel = interaction.guild.channels.cache.get(configGuild.LOGS_BANS_CHANNEL_ID)
+		const logsChannel = interaction.guild.channels.cache.get(
+			client.config.guild.channels.LOGS_BANS_CHANNEL_ID,
+		)
 		if (!logsChannel) return
 
 		// Acquisition du message de bannissement
 		let banDM = ''
 		try {
-			const sqlSelectBan = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
-			const dataSelectBan = ['ban', interaction.guild.id]
-			const [resultSelectBan] = await bdd.execute(sqlSelectBan, dataSelectBan)
+			const sql = 'SELECT * FROM forms WHERE name = ?'
+			const data = ['ban']
+			const [result] = await bdd.execute(sql, data)
 
-			banDM = resultSelectBan[0].content
+			banDM = result[0].content
 		} catch {
 			return interaction.editReply({
 				content:

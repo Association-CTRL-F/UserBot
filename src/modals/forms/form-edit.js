@@ -18,10 +18,10 @@ export default {
 		// Vérification si le formulaire existe
 		let form = {}
 		try {
-			const sqlCheckName = 'SELECT * FROM forms WHERE name = ? AND guildId = ?'
-			const dataCheckName = [nom, modal.guild.id]
-			const [resultCheckName] = await bdd.execute(sqlCheckName, dataCheckName)
-			form = resultCheckName[0]
+			const sql = 'SELECT * FROM forms WHERE name = ?'
+			const data = [nom]
+			const [result] = await bdd.execute(sql, data)
+			form = result[0]
 		} catch (error) {
 			return modal.reply({
 				content: 'Une erreur est survenue lors de la vérification du nom du formulaire 😕',
@@ -38,10 +38,10 @@ export default {
 
 		// Sinon, mise à jour du formulaire en base de données
 		try {
-			const sqlUpdate = 'UPDATE forms SET content = ? WHERE name = ? AND guildId = ?'
-			const dataUpdate = [contenu, nom, modal.guild.id]
+			const sql = 'UPDATE forms SET content = ? WHERE name = ?'
+			const data = [contenu, nom]
 
-			await bdd.execute(sqlUpdate, dataUpdate)
+			await bdd.execute(sql, data)
 		} catch (error) {
 			return modal.reply({
 				content:

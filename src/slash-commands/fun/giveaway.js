@@ -136,10 +136,10 @@ export default {
 			// Acquisition de l'id du giveaway
 			// Fetch du giveaway
 			try {
-				const sqlSelect = 'SELECT * FROM giveaways WHERE id = ? AND guildId = ?'
-				const dataSelect = [id, interaction.guild.id]
-				const [resultDelete] = await bdd.execute(sqlSelect, dataSelect)
-				fetchGiveaway = resultDelete[0]
+				const sql = 'SELECT * FROM giveaways WHERE id = ?'
+				const data = [id]
+				const [result] = await bdd.execute(sql, data)
+				fetchGiveaway = result[0]
 			} catch {
 				return interaction.reply({
 					content: "Une erreur est survenue lors de l'acquisition du giveaway 😬",
@@ -151,11 +151,9 @@ export default {
 			case 'view':
 				let giveaways = []
 				try {
-					const sqlSelect = 'SELECT * FROM giveaways WHERE started = 0 AND guildId = ?'
-					const dataSelect = [interaction.guild.id]
-
-					const [resultGiveaways] = await bdd.execute(sqlSelect, dataSelect)
-					giveaways = resultGiveaways
+					const sql = 'SELECT * FROM giveaways WHERE started = 0'
+					const [result] = await bdd.execute(sql)
+					giveaways = result
 				} catch (error) {
 					return interaction.reply({
 						content: 'Une erreur est survenue lors de la récupération des giveaways 😕',
@@ -233,9 +231,8 @@ export default {
 				// Insertion du giveaway en base de données
 				try {
 					const sql =
-						'INSERT INTO giveaways (guildId, prize, winnersCount, channel, timestampEnd, hostedBy, excludedIds, messageId, started, ended, timeoutId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+						'INSERT INTO giveaways (prize, winnersCount, channel, timestampEnd, hostedBy, excludedIds, messageId, started, ended, timeoutId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
 					const data = [
-						interaction.guild.id,
 						prize,
 						winners,
 						channel.id,
@@ -247,6 +244,7 @@ export default {
 						0,
 						null,
 					]
+
 					await bdd.execute(sql, data)
 				} catch (error) {
 					return interaction.reply({
@@ -319,8 +317,8 @@ export default {
 				// Modification du giveaway en base de données
 				try {
 					const sql =
-						'UPDATE giveaways SET prize = ?, winnersCount = ?, channel = ?, timestampEnd = ? WHERE id = ? AND guildId = ?'
-					const data = [prize, winners, channel.id, duree, id, interaction.guild.id]
+						'UPDATE giveaways SET prize = ?, winnersCount = ?, channel = ?, timestampEnd = ? WHERE id = ?'
+					const data = [prize, winners, channel.id, duree, id]
 					await bdd.execute(sql, data)
 				} catch (error) {
 					return interaction.reply({
@@ -361,10 +359,10 @@ export default {
 				// Suppresion en base de données
 				let deletedGiveaway = {}
 				try {
-					const sqlDelete = 'DELETE FROM giveaways WHERE id = ? AND guildId = ?'
-					const dataDelete = [id, interaction.guild.id]
-					const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
-					deletedGiveaway = resultDelete
+					const sql = 'DELETE FROM giveaways WHERE id = ?'
+					const data = [id]
+					const [result] = await bdd.execute(sql, data)
+					deletedGiveaway = result
 				} catch {
 					return interaction.reply({
 						content: 'Une erreur est survenue lors de la suppression du giveaway 😬',
@@ -477,9 +475,8 @@ export default {
 
 					if (!sentMessageFetch) {
 						try {
-							const sql =
-								'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
-							const data = [1, fetchGiveaway.id, interaction.guild.id]
+							const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
+							const data = [1, fetchGiveaway.id]
 							await bdd.execute(sql, data)
 						} catch (error) {
 							return console.log(error)
@@ -519,9 +516,8 @@ export default {
 							usersReactions.sweep(user => user.id === winnerTirage.id)
 
 							try {
-								const sql =
-									'UPDATE giveaways SET excludedIds = ? WHERE id = ? AND guildId = ?'
-								const data = [excludedIds, fetchGiveaway.id, interaction.guild.id]
+								const sql = 'UPDATE giveaways SET excludedIds = ? WHERE id = ?'
+								const data = [excludedIds, fetchGiveaway.id]
 								await bdd.execute(sql, data)
 							} catch (error) {
 								return console.log(error)
@@ -549,8 +545,8 @@ export default {
 						])
 
 					try {
-						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
-						const data = [1, fetchGiveaway.id, interaction.guild.id]
+						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
+						const data = [1, fetchGiveaway.id]
 						await bdd.execute(sql, data)
 					} catch (error) {
 						return console.log(error)
@@ -592,15 +588,8 @@ export default {
 				// Lancement du giveaway en base de données
 				try {
 					const sql =
-						'UPDATE giveaways SET timestampEnd = ?, messageId = ?, started = ?, timeoutId = ? WHERE id = ? AND guildId = ?'
-					const data = [
-						timestampEndStart,
-						sentMessage.id,
-						1,
-						Number(timeout),
-						id,
-						interaction.guild.id,
-					]
+						'UPDATE giveaways SET timestampEnd = ?, messageId = ?, started = ?, timeoutId = ? WHERE id = ?'
+					const data = [timestampEndStart, sentMessage.id, 1, Number(timeout), id]
 					await bdd.execute(sql, data)
 				} catch (error) {
 					await sentMessage.delete()
@@ -652,8 +641,8 @@ export default {
 
 				if (!sentMessageFetch) {
 					try {
-						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
-						const data = [1, fetchGiveaway.id, interaction.guild.id]
+						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
+						const data = [1, fetchGiveaway.id]
 						await bdd.execute(sql, data)
 					} catch (error) {
 						return console.log(error)
@@ -693,9 +682,8 @@ export default {
 						usersReactionsEnd.sweep(user => user.id === winnerTirage.id)
 
 						try {
-							const sql =
-								'UPDATE giveaways SET excludedIds = ? WHERE id = ? AND guildId = ?'
-							const data = [excludedIdsEnd, fetchGiveaway.id, interaction.guild.id]
+							const sql = 'UPDATE giveaways SET excludedIds = ? WHERE id = ?'
+							const data = [excludedIdsEnd, fetchGiveaway.id]
 							await bdd.execute(sql, data)
 						} catch (error) {
 							return console.log(error)
@@ -723,8 +711,8 @@ export default {
 					])
 
 				try {
-					const sql = 'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
-					const data = [1, fetchGiveaway.id, interaction.guild.id]
+					const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
+					const data = [1, fetchGiveaway.id]
 					await bdd.execute(sql, data)
 				} catch (error) {
 					return console.log(error)
@@ -807,8 +795,8 @@ export default {
 
 				if (!sentMessageReroll) {
 					try {
-						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
-						const data = [1, fetchGiveaway.id, interaction.guild.id]
+						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
+						const data = [1, fetchGiveaway.id]
 						await bdd.execute(sql, data)
 					} catch (error) {
 						return console.log(error)
@@ -845,9 +833,8 @@ export default {
 						usersReactions.sweep(user => user.id === winnerTirage.id)
 
 						try {
-							const sql =
-								'UPDATE giveaways SET excludedIds = ? WHERE id = ? AND guildId = ?'
-							const data = [excludedIds, fetchGiveaway.id, interaction.guild.id]
+							const sql = 'UPDATE giveaways SET excludedIds = ? WHERE id = ?'
+							const data = [excludedIds, fetchGiveaway.id]
 							await bdd.execute(sql, data)
 						} catch (error) {
 							return console.log(error)
@@ -875,8 +862,8 @@ export default {
 					])
 
 				try {
-					const sql = 'UPDATE giveaways SET ended = ? WHERE id = ? AND guildId = ?'
-					const data = [1, fetchGiveaway.id, interaction.guild.id]
+					const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
+					const data = [1, fetchGiveaway.id]
 					await bdd.execute(sql, data)
 				} catch (error) {
 					return console.log(error)
