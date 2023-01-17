@@ -141,6 +141,9 @@ export default {
 							})
 						}
 
+						if (!client.cache.blacklistedDomains.has(domainString))
+							client.cache.blacklistedDomains.add(domainString)
+
 						return interaction.reply({
 							content: `Le domaine **${domainString}** a bien été ajouté 👌`,
 						})
@@ -168,6 +171,9 @@ export default {
 								ephemeral: true,
 							})
 						}
+
+						if (client.cache.blacklistedDomains.has(domainString))
+							client.cache.blacklistedDomains.delete(domainString)
 
 						return interaction.reply({
 							content: `Le domaine **${domainString}** a bien été supprimé 👌`,
