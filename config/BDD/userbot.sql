@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: Jan 03, 2023 at 05:06 PM
+-- Generation Time: Jan 22, 2023 at 11:10 PM
 -- Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal
 -- PHP Version: 7.4.23
 
@@ -29,24 +29,18 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `automod_domains` (
   `id` int(11) NOT NULL,
-  `guildId` varchar(255) NOT NULL,
   `domain` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `automod_rules`
+-- Table structure for table `automod_regex`
 --
 
-CREATE TABLE `automod_rules` (
+CREATE TABLE `automod_regex` (
   `id` int(11) NOT NULL,
-  `guildId` varchar(255) NOT NULL,
-  `customId` varchar(255) NOT NULL,
-  `regex` text NOT NULL,
-  `type` varchar(255) NOT NULL,
-  `ignoredRoles` text NOT NULL,
-  `reason` text NOT NULL
+  `regex` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -57,7 +51,6 @@ CREATE TABLE `automod_rules` (
 
 CREATE TABLE `cf` (
   `id` int(11) NOT NULL,
-  `guildId` varchar(255) NOT NULL,
   `pseudo` varchar(255) NOT NULL,
   `discordId` varchar(255) NOT NULL,
   `active` tinyint(1) NOT NULL
@@ -71,7 +64,6 @@ CREATE TABLE `cf` (
 
 CREATE TABLE `commands` (
   `id` int(11) NOT NULL,
-  `guildId` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
   `aliases` text DEFAULT NULL,
   `active` tinyint(1) NOT NULL,
@@ -86,42 +78,11 @@ CREATE TABLE `commands` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `config`
---
-
-CREATE TABLE `config` (
-  `isSetup` tinyint(1) NOT NULL,
-  `COMMANDS_PREFIX` varchar(255) DEFAULT NULL,
-  `GUILD_ID` varchar(255) NOT NULL,
-  `LEAVE_JOIN_CHANNEL_ID` varchar(255) DEFAULT NULL,
-  `REPORT_CHANNEL_ID` varchar(255) DEFAULT NULL,
-  `LOGS_MESSAGES_CHANNEL_ID` varchar(255) DEFAULT NULL,
-  `LOGS_BANS_CHANNEL_ID` varchar(255) DEFAULT NULL,
-  `JOIN_ROLE_ID` varchar(255) DEFAULT NULL,
-  `NO_ENTRAIDE_ROLE_ID` varchar(255) DEFAULT NULL,
-  `TIMEOUT_JOIN` varchar(255) DEFAULT NULL,
-  `MUTED_ROLE_ID` varchar(255) DEFAULT NULL,
-  `TRIBUNAL_CHANNEL_ID` varchar(255) DEFAULT NULL,
-  `CONFIG_CHANNEL_ID` varchar(255) DEFAULT NULL,
-  `UPGRADE_CHANNEL_ID` varchar(255) DEFAULT NULL,
-  `BLABLA_CHANNEL_ID` varchar(255) DEFAULT NULL,
-  `ACCESS_CHANNEL_ID` varchar(255) DEFAULT NULL,
-  `VOICE_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
-  `NOLOGS_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
-  `NOTEXT_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
-  `THREADS_MANAGER_CHANNELS_IDS` varchar(255) DEFAULT NULL,
-  `STAFF_ROLES_MANAGER_IDS` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `forms`
 --
 
 CREATE TABLE `forms` (
   `id` int(11) NOT NULL,
-  `guildId` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
   `content` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -134,7 +95,6 @@ CREATE TABLE `forms` (
 
 CREATE TABLE `giveaways` (
   `id` int(11) NOT NULL,
-  `guildId` varchar(255) NOT NULL,
   `prize` varchar(255) NOT NULL,
   `winnersCount` int(11) NOT NULL,
   `channel` varchar(255) NOT NULL,
@@ -155,7 +115,6 @@ CREATE TABLE `giveaways` (
 
 CREATE TABLE `mute` (
   `id` int(11) NOT NULL,
-  `guildId` varchar(255) NOT NULL,
   `discordID` varchar(255) NOT NULL,
   `timestampStart` varchar(255) NOT NULL,
   `timestampEnd` varchar(255) NOT NULL
@@ -169,7 +128,6 @@ CREATE TABLE `mute` (
 
 CREATE TABLE `reminders` (
   `id` int(11) NOT NULL,
-  `guildId` varchar(255) NOT NULL,
   `discordID` varchar(255) NOT NULL,
   `reminder` text NOT NULL,
   `timestampEnd` varchar(255) NOT NULL,
@@ -186,7 +144,6 @@ CREATE TABLE `reminders` (
 
 CREATE TABLE `vocal` (
   `id` int(11) NOT NULL,
-  `guildId` varchar(255) NOT NULL,
   `channel` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -198,7 +155,6 @@ CREATE TABLE `vocal` (
 
 CREATE TABLE `warnings` (
   `id` int(11) NOT NULL,
-  `guildId` varchar(255) NOT NULL,
   `discordID` varchar(255) NOT NULL,
   `warnedBy` varchar(255) NOT NULL,
   `warnReason` text NOT NULL,
@@ -217,9 +173,9 @@ ALTER TABLE `automod_domains`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `automod_rules`
+-- Indexes for table `automod_regex`
 --
-ALTER TABLE `automod_rules`
+ALTER TABLE `automod_regex`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -235,12 +191,6 @@ ALTER TABLE `commands`
   ADD PRIMARY KEY (`id`);
 ALTER TABLE `commands` ADD FULLTEXT KEY `name` (`name`);
 ALTER TABLE `commands` ADD FULLTEXT KEY `content` (`content`);
-
---
--- Indexes for table `config`
---
-ALTER TABLE `config`
-  ADD PRIMARY KEY (`GUILD_ID`);
 
 --
 -- Indexes for table `forms`
@@ -289,9 +239,9 @@ ALTER TABLE `automod_domains`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `automod_rules`
+-- AUTO_INCREMENT for table `automod_regex`
 --
-ALTER TABLE `automod_rules`
+ALTER TABLE `automod_regex`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
