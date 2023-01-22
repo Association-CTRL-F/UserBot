@@ -164,9 +164,9 @@ export default {
 						embeds: [embed],
 					})
 					.catch(error => {
-						console.error(error)
-						errorDM =
-							"\n\nℹ️ Le message privé n'a pas été envoyé car le membre les a bloqué"
+						if (error.code === RESTJSONErrorCodes.CannotSendMessagesToThisUser)
+							errorDM =
+								"\n\nℹ️ Le message privé n'a pas été envoyé car le membre les a bloqué"
 					})
 
 				// Vérification si déjà mute en base de données
@@ -339,7 +339,7 @@ export default {
 				})
 
 				await tribunalChannel.send({
-					content: `Mute de groupé\nhttps://discord.com/channels/${interaction.guild.id}/${threadGroup.id}`,
+					content: `Mute groupé\nhttps://discord.com/channels/${interaction.guild.id}/${threadGroup.id}`,
 				})
 
 				await Promise.all(
@@ -383,9 +383,9 @@ export default {
 								embeds: [embedMuteGroup],
 							})
 							.catch(error => {
-								console.error(error)
-								errorDMGroup =
-									"\n\nℹ️ Le message privé n'a pas été envoyé à certains membres car ils les ont bloqué"
+								if (error.code === RESTJSONErrorCodes.CannotSendMessagesToThisUser)
+									errorDMGroup =
+										"\n\nℹ️ Le message privé n'a pas été envoyé à certains membres car ils les ont bloqué"
 							})
 
 						// Vérification si déjà mute en base de données
