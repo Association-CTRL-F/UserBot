@@ -1,6 +1,13 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-import { SlashCommandBuilder, ButtonStyle } from 'discord.js'
+import {
+	SlashCommandBuilder,
+	ModalBuilder,
+	ActionRowBuilder,
+	TextInputBuilder,
+	ButtonStyle,
+	TextInputStyle,
+} from 'discord.js'
 import { Pagination } from 'pagination.djs'
 
 export default {
@@ -29,6 +36,14 @@ export default {
 						.addStringOption(option =>
 							option.setName('domaine').setDescription('Domaine').setRequired(true),
 						),
+				),
+		)
+		.addSubcommandGroup(subcommandGroup =>
+			subcommandGroup
+				.setName('regex')
+				.setDescription('Gères la regex')
+				.addSubcommand(subcommand =>
+					subcommand.setName('edit').setDescription('Modifier la regex'),
 				),
 		),
 	interaction: async (interaction, client) => {
@@ -178,6 +193,45 @@ export default {
 						return interaction.reply({
 							content: `Le domaine **${domainString}** a bien été supprimé 👌`,
 						})
+				}
+
+				break
+
+			// Regex
+			case 'regex':
+				switch (interaction.options.getSubcommand()) {
+					// Modifier la regex
+					case 'edit':
+						let regex = ''
+						try {
+							const sql = 'SELECT regex FROM automod_regex WHERE id = ?'
+							const data = [1]
+							const [result] = await bdd.execute(sql, data)
+							regex = result[0]
+						} catch (error) {
+							return interaction.reply({
+								content:
+									'Une erreur est survenue lors de la récupération de la regex 😕',
+								ephemeral: true,
+							})
+						}
+
+						const modalEdit = new ModalBuilder()
+							.setCustomId('automod-regex-edit')
+							.setTitle('Modification da la regex')
+							.addComponents(
+								new ActionRowBuilder().addComponents(
+									new TextInputBuilder()
+										.setCustomId('content-regex-edit')
+										.setLabel('Nouveau contenu de la regex')
+										.setStyle(TextInputStyle.Paragraph)
+										.setValue(regex.regex)
+										.setMinLength(1)
+										.setRequired(true),
+								),
+							)
+
+						return interaction.showModal(modalEdit)
 				}
 		}
 	},
