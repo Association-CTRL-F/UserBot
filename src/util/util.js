@@ -346,7 +346,6 @@ export const isStaffMember = (guildMember, staffRoles) => {
 /**
  * Crée un pool de connexion à la base de données
  * @param {Client} client Discord.js
- * @param {string} dbName nom de la base de données à utiliser
  */
 export const pool = client => {
 	try {
