@@ -296,8 +296,23 @@ export default {
 				),
 			)
 
-		if (customId === 'RICH_PRESENCE_TEXT')
-			modal.components[0].components[0].data.required = false
+		switch (customId) {
+			case 'RICH_PRESENCE_TEXT':
+				modal.components[0].components[0].data.required = false
+				break
+
+			case 'NOLOGS_MANAGER_CHANNELS_IDS':
+				modal.components[0].components[0].data.required = false
+				break
+
+			case 'NOTEXT_MANAGER_CHANNELS_IDS':
+				modal.components[0].components[0].data.required = false
+				break
+
+			case 'THREADS_MANAGER_CHANNELS_IDS':
+				modal.components[0].components[0].data.required = false
+				break
+		}
 
 		return interaction.showModal(modal)
 	},

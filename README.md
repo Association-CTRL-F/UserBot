@@ -10,7 +10,7 @@ Bot du serveur Discord d'Entraide Informatique - Capetlevrai
 - [Mise en place du bot](#mise-en-place-du-bot)
 	- [Création du bot](#création-du-bot)
 	- [Invitation du bot](#invitation-du-bot)
-    - [Configuration (pour utiliser UserBot#5014)](#configuration-pour-utiliser-userbot5014)
+	- [Configuration du bot](#configuration-du-bot)
 - [Setup en production](#setup-en-production)
 	- [Setup avec Node.js](#setup-avec-nodejs)
 	- [Setup dans un container avec Docker et Docker Compose](#setup-dans-un-container-avec-docker-et-docker-compose)
@@ -33,37 +33,35 @@ Pour inviter le bot sur un serveur, il faut créer un lien d'invitation. Il est 
 
 > `permissions=8` correspond aux permissions d'invitation du bot. Vous pouvez modifier le code des permissions avec un [calculateur de permissions](https://discordapi.com/permissions.html). `8` accorde au bot la permission administrateur. Veuillez noter qu'il est nécessaire d'avoir [l'authentification à deux facteurs](https://support.discord.com/hc/fr/articles/219576828-Mise-en-place-de-l-authentification-%C3%A0-deux-facteurs) activée sur le compte du propriétaire du bot pour utiliser les permissions suivantes : Manage Channels, Manage Roles, Manage Messages.
 
-### Configuration (pour utiliser UserBot#5014)
+### Configuration du bot
 
-Vous devez tout d'abord inviter le bot sur votre serveur avec le lien suivant : https://lien.ctrl-f.io/InviteUserBot (le mot de passe n'est donné qu'aux modérateurs du serveur de Capet).
-
-La configuration du serveur doit être totalement effectuée afin que le bot puisse fonctionner, celui-ci affiche un message d'erreur vous invitant à la terminer le cas échéant. La timezone est définie sur `Europe/Paris` et n'est pas modifiable.
+La configuration du serveur doit être totalement effectuée afin que le bot puisse fonctionner correctement.
 
 Cela s'effectue de la façon suivante avec la commande `/setup` :
 * `/setup view` : voir la configuration du serveur
+* `/setup timezone` : timezone du serveur
+* `/setup rich-presence-text` : rich presence du bot (facultatif)
+* `/setup timeout-join` : timeout rôle Pas de blabla (`30m` par défaut)
 * `/setup commands-prefix` : préfixe des commandes personnalisées (`!` par défaut)
 * `/setup leave-join-channel` : salon départs-arrivées
 * `/setup report-channel` : salon signalements
 * `/setup logs-messages-channel` : salon logs messages
 * `/setup logs-bans-channel` : salon logs bans
-* `/setup join-role` : rôle Pas de blabla
-* `/setup no-entraide-role` : rôle Pas d'entraide'
-* `/setup timeout-join` : timeout rôle Pas de blabla (`30m` par défaut)
-* `/setup muted-role` : rôle Muted
 * `/setup tribunal-channel` : salon tribunal
 * `/setup config-channel` : salon config
 * `/setup upgrade-channel` : salon upgrade
 * `/setup blabla-channel` : salon blabla-hs
 * `/setup access-channel` : salon acces-aux-canaux
+* `/setup join-role` : rôle @Pas de blabla
+* `/setup no-entraide-role` : rôle @Pas d'entraide
+* `/setup muted-role` : rôle @Muted
 * `/setup voice-channels` : salons vocaux "créer-ton-vocal"
-* `/setup no-logs-channels` : salons no-logs messages
-* `/setup no-text-channels` : salons no-text messages
-* `/setup threads-channels` : salons threads auto
+* `/setup no-logs-channels` : salons no-logs messages (facultatif)
+* `/setup no-text-channels` : salons no-text messages (facultatif)
+* `/setup threads-channels` : salons threads auto (facultatif)
 * `/setup staff-roles` : rôles staff
 
 Lorsqu'il est possible d'y entrer plusieurs IDs, ceux-ci doivent être séparés par des virgules, comme suit : `123456789012345678,123456789012345678,123456789012345678`
-
-Les seules options facultatives sont `no-logs messages`, `no-text-channels` et `threads-channels` où il est possible d'y entrer `NULL` afin de supprimer la configuration existante.
 
 ## Setup en production
 
@@ -88,9 +86,11 @@ L'application est capable de tourner sous plusieurs environnements :
 
 4. Renommez le fichier `bot.example.env` en `bot.env`, puis modifiez les variables d'environnement pour que l'application fonctionne correctement. _cf. [Variables d'environnement](#environnement)_
 
-5. Renommez le fichier `reactionRoleConfig.example.json` en `reactionRoleConfig.json`, puis modifiez son contenu pour que le système fonctionne correctement. _cf. [Variables d'environnement](#environnement)_
+5. Renommez le fichier `config.example.json` en `config.json`, puis modifiez les variables d'environnement pour que l'application fonctionne correctement. _cf. [Variables d'environnement](#environnement)_
 
-6. Renommez le fichier `banEmotesAtJoin.example.json` en `banEmotesAtJoin.json`, puis modifiez son contenu pour que le système fonctionne correctement. _cf. [Variables d'environnement](#environnement)_
+6. Renommez le fichier `reactionRoleConfig.example.json` en `reactionRoleConfig.json`, puis modifiez son contenu pour que le système fonctionne correctement. _cf. [Variables d'environnement](#environnement)_
+
+7. Renommez le fichier `banEmotesAtJoin.example.json` en `banEmotesAtJoin.json`, puis modifiez son contenu pour que le système fonctionne correctement. _cf. [Variables d'environnement](#environnement)_
 
 #### Lancement et arrêt de l'application
 
@@ -108,11 +108,11 @@ L'application est capable de tourner sous plusieurs environnements :
 1. Il est nécessaire d'avoir [Docker](https://docs.docker.com/get-docker) ainsi que [Docker Compose](https://docs.docker.com/compose/install) d'installé.
 	> Utilisez les commandes `docker -v` et `docker-compose -v` pour vérifier que les deux applications soient bien installées.
 
-2. Créez les fichiers `bot.env`, `reactionRoleConfig.json` et `banEmotesAtJoin.json` dans le dossier `config` ainsi que le fichier `docker-compose.yml` dans le dossier `docker` :
+2. Créez les fichiers `bot.env`, `config.json`, `reactionRoleConfig.json` et `banEmotesAtJoin.json` dans le dossier `config` ainsi que le fichier `docker-compose.yml` dans le dossier `docker` :
 	```bash
 	mdkir config
 	cd config
-	touch bot.env reactionRoleConfig.json banEmotesAtJoin.json
+	touch bot.env config.json reactionRoleConfig.json banEmotesAtJoin.json
 	cd ..
 	mkdir docker
 	touch docker-compose.yml
@@ -120,9 +120,11 @@ L'application est capable de tourner sous plusieurs environnements :
 
    - Configurez le fichier `bot.env` en ajoutant les variables d'environnement pour que l'application fonctionne correctement. _cf. [Variables d'environnement](#environnement)_
 
-   - Configurez le fichier `reactionRoleConfig.json`, puis modifiez le fichier pour que le système fonctionne correctement. _cf. [Configuration du sytème de réaction/rôles](#reaction)_
+   - Configurez le fichier `config.json` en ajoutant les variables d'environnement pour que l'application fonctionne correctement. _cf. [Variables d'environnement](#environnement)_
 
-   - Configurez le fichier `banEmotesAtJoin.json`, puis modifiez le fichier pour que le système fonctionne correctement. _cf. [Configuration du sytème de réaction/rôles](#reaction)_
+   - Configurez le fichier `reactionRoleConfig.json`, puis modifiez le fichier pour que le système fonctionne correctement. _cf. [Configuration du sytème de réactions / rôles](#reaction)_
+
+   - Configurez le fichier `banEmotesAtJoin.json`, puis modifiez le fichier pour que le système fonctionne correctement. _cf. [Configuration du sytème de réactions / rôles](#reaction)_
 
    - Copiez le contenu du fichier [docker/docker-compose.yml](docker/docker-compose.yml) dans le fichier du même emplacement sur votre machine. Il correspond au fichier de configuration pour `docker-compose`.
 
@@ -131,6 +133,7 @@ L'application est capable de tourner sous plusieurs environnements :
 > .
 > ├── config
 > │   ├── bot.env
+> │   ├── config.json
 > │   ├── reactionRoleConfig.json
 > │   └── banEmotesAtJoin.json
 > └── docker
@@ -175,25 +178,21 @@ Le bot repose sur les variables d'environnement pour pouvoir fonctionner.
 > Exemple disponible [ici](config/env/bot.example.env) :
 > ```env
 > DISCORD_TOKEN=""
-> TIMEZONE=""
 > DB_HOST=""
 > DB_USER=""
 > DB_PASS=""
 > DB_NAME_URLS_API=""
 > DB_NAME_USERBOT=""
-> RICH_PRESENCE_TEXT=""
 > ```
 
 | Variable           | Description                                                                                                      |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------- |
 | DISCORD_TOKEN      | [Token secret du bot Discord](https://discordjs.guide/preparations/setting-up-a-bot-application.html#your-token) |
-| TIMEZONE           | Timezone ("Europe/Paris" par défaut)                                                                             |
 | DB_HOST            | Serveur MySQL                                                                                                    |
 | DB_USER            | Nom d'utilisateur MySQL                                                                                          |
 | DB_PASS            | Mot de passe MySQL                                                                                               |
 | DB_NAME_URLS_API   | Base de données des URLs courtes                                                                                 |
 | DB_NAME_USERBOT    | Base de données du bot                                                                                           |
-| RICH_PRESENCE_TEXT | Texte de présence du bot                                                                                         |
 
 > Pour pouvoir récupérer les identifiants (ID) sur Discord, il faut [activer le mode développeur](https://support.discord.com/hc/fr/articles/206346498-O%C3%B9-trouver-l-ID-de-mon-compte-utilisateur-serveur-message).
 
