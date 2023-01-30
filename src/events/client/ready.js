@@ -25,7 +25,7 @@ export default async client => {
 		mutes(client, bdd, guild),
 		reminders(bdd, guild),
 		giveaways(bdd, guild),
-		voiceChannels(bdd, guild),
+		voiceChannels(client, bdd, guild),
 		blacklistedDomainsLoader(client, bdd),
 	])
 

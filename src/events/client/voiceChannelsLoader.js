@@ -1,4 +1,4 @@
-export default async (bdd, guild) => {
+export default async (client, bdd, guild) => {
 	// Acquisition des vocaux depuis la base de données
 	let voiceChannels = []
 	try {
@@ -11,12 +11,16 @@ export default async (bdd, guild) => {
 
 	if (voiceChannels)
 		voiceChannels.forEach(async voiceChannel => {
-			const channel = await guild.channels.cache.get(voiceChannel.channel)
+			const channel = await guild.channels.cache.get(voiceChannel.channelId)
 
-			if (channel && channel.members.size === 0) await channel.delete()
+			if (channel && channel.members.size === 0) {
+				await channel.delete()
 
-			const sql = 'DELETE FROM vocal WHERE channelId = ?'
-			const data = [voiceChannel.channel]
-			bdd.execute(sql, data)
+				const sql = 'DELETE FROM vocal WHERE channelId = ?'
+				const data = [voiceChannel.channelId]
+				bdd.execute(sql, data)
+			} else {
+				client.voiceManager.set(voiceChannel.channelId, null)
+			}
 		})
 }
