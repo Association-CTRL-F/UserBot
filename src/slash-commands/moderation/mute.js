@@ -5,6 +5,9 @@ import {
 	SlashCommandBuilder,
 	GuildMember,
 	EmbedBuilder,
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
 	RESTJSONErrorCodes,
 	ChannelType,
 } from 'discord.js'
@@ -298,10 +301,30 @@ export default {
 						invitable: false,
 					})
 
+					// Création de l'embed
+					const embedTribunal = new EmbedBuilder()
+						.setColor('#C27C0E')
+						.setTitle('Mute simple')
+						.setDescription(`${displayNameAndID(member)} est muté`)
+						.addFields([
+							{
+								name: 'Raison',
+								value: reason,
+							},
+						])
+
+					const buttonTribunal = new ActionRowBuilder().addComponents(
+						new ButtonBuilder()
+							.setLabel('Thread de discussion')
+							.setStyle(ButtonStyle.Link)
+							.setURL(
+								`https://discord.com/channels/${interaction.guild.id}/${thread.id}`,
+							),
+					)
+
 					await tribunalChannel.send({
-						content: `Mute de \`${displayNameAndID(
-							member,
-						)}\`\nhttps://discord.com/channels/${interaction.guild.id}/${thread.id}`,
+						embeds: [embedTribunal],
+						components: [buttonTribunal],
 					})
 
 					await thread.members.add(member.id)
@@ -330,6 +353,12 @@ export default {
 				const usersArray = users.split(',')
 				let muteMessage = ''
 				let errorDMGroup = ''
+				let nbUsers = 0
+
+				if (usersArray.length < 2)
+					return interaction.editReply({
+						content: "Tu n'as pas mute plusieurs membres 😕",
+					})
 
 				const threadGroup = await tribunalChannel.threads.create({
 					name: `Mute groupé`,
@@ -338,18 +367,14 @@ export default {
 					invitable: false,
 				})
 
-				await tribunalChannel.send({
-					content: `Mute groupé\nhttps://discord.com/channels/${interaction.guild.id}/${threadGroup.id}`,
-				})
-
 				await Promise.all(
 					usersArray.map(async userGroup => {
 						// Acquisition du membre
-						const memberGroup = await interaction.guild.members.fetch(userGroup)
+						const memberGroup = await interaction.guild.members.cache.get(userGroup)
 						if (!memberGroup) return
 
 						// Vérification si le membre a déjà le rôle muted
-						if (memberGroup.roles.cache.has(mutedRole)) return
+						if (memberGroup.roles.cache.has(mutedRole)) nbUsers += 1
 
 						// On ne peut pas se mute soi-même
 						if (memberGroup.id === interaction.user.id)
@@ -524,22 +549,63 @@ export default {
 								"L'envoi d'un message et / ou le mute d'un membre a échoué. Voir les logs précédents pour plus d'informations.",
 							)
 					}),
-
-					await threadGroup.members.add(interaction.user.id),
 				)
 
-				// Si pas d'erreur, message de confirmation du mute
-				if (muteMessage !== '')
+				if (nbUsers === 0) {
+					await threadGroup.members.add(interaction.user.id)
+
+					// Création de l'embed
+					const embedTribunalGroup = new EmbedBuilder()
+						.setColor('#C27C0E')
+						.setTitle('Mute groupé')
+						.setDescription(`${muteMessage} sont mutés`)
+						.addFields([
+							{
+								name: 'Raison',
+								value: reason,
+							},
+						])
+
+					const buttonTribunalGroup = new ActionRowBuilder().addComponents(
+						new ButtonBuilder()
+							.setLabel('Thread de discussion')
+							.setStyle(ButtonStyle.Link)
+							.setURL(
+								`https://discord.com/channels/${interaction.guild.id}/${threadGroup.id}`,
+							),
+					)
+
+					await tribunalChannel.send({
+						embeds: [embedTribunalGroup],
+						components: [buttonTribunalGroup],
+					})
+
+					// Si pas d'erreur, message de confirmation du mute
+					if (muteMessage !== '') {
+						if (threadGroup.memberCount > 1)
+							return interaction.editReply({
+								content: `🔇 ${muteMessage} sont mutés pendant \`${convertMinutesToString(
+									duration,
+								)}\`\n\nRaison : ${reason}${errorDMGroup}`,
+							})
+
+						return interaction.editReply({
+							content: `🔇 ${muteMessage} est muté pendant \`${convertMinutesToString(
+								duration,
+							)}\`\n\nRaison : ${reason}${errorDMGroup}`,
+						})
+					}
+
 					return interaction.editReply({
-						content: `🔇 ${muteMessage} sont mutés pendant \`${convertMinutesToString(
+						content: `🔇 Les membres sont mutés pendant \`${convertMinutesToString(
 							duration,
 						)}\`\n\nRaison : ${reason}${errorDMGroup}`,
 					})
+				}
 
 				return interaction.editReply({
-					content: `🔇 Les membres sont mutés pendant \`${convertMinutesToString(
-						duration,
-					)}\`\n\nRaison : ${reason}${errorDMGroup}`,
+					content:
+						'Un ou plusieurs membres sont déjà mutés, merci de les retirer de la liste 😬',
 				})
 		}
 	},

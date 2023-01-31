@@ -215,6 +215,11 @@ export default {
 				const usersArray = users.split(',')
 				let unmuteMessage = ''
 
+				if (usersArray.length < 2)
+					return interaction.editReply({
+						content: "Tu n'as pas unmute plusieurs membres 😕",
+					})
+
 				await Promise.all(
 					usersArray.map(async userGroup => {
 						// Acquisition du membre
