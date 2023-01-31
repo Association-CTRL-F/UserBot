@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: Jan 22, 2023 at 11:10 PM
+-- Generation Time: Jan 31, 2023 at 12:52 AM
 -- Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal
 -- PHP Version: 7.4.23
 
@@ -144,7 +144,7 @@ CREATE TABLE `reminders` (
 
 CREATE TABLE `vocal` (
   `id` int(11) NOT NULL,
-  `channel` varchar(255) NOT NULL
+  `channelId` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
