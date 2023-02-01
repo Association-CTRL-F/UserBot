@@ -306,12 +306,6 @@ export default {
 						.setColor('#C27C0E')
 						.setTitle('Mute simple')
 						.setDescription(`${displayNameAndID(member)} est muté`)
-						.addFields([
-							{
-								name: 'Raison',
-								value: reason,
-							},
-						])
 
 					const buttonTribunal = new ActionRowBuilder().addComponents(
 						new ButtonBuilder()
@@ -559,12 +553,6 @@ export default {
 						.setColor('#C27C0E')
 						.setTitle('Mute groupé')
 						.setDescription(`${muteMessage} sont mutés`)
-						.addFields([
-							{
-								name: 'Raison',
-								value: reason,
-							},
-						])
 
 					const buttonTribunalGroup = new ActionRowBuilder().addComponents(
 						new ButtonBuilder()
