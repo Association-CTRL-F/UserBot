@@ -1,3 +1,5 @@
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+
 export default {
 	data: {
 		name: 'command-edit',
@@ -21,6 +23,21 @@ export default {
 			})
 
 		const contenu = modal.fields.getTextInputValue('content-command-edit').trim()
+		const buttonInfos = modal.fields
+			.getTextInputValue('button-command-edit')
+			.trim()
+			.split(/\|\|\|*/)
+
+		let textLinkButton = ''
+		let linkButton = ''
+
+		if (buttonInfos[0] === '') {
+			textLinkButton = null
+			linkButton = null
+		} else {
+			textLinkButton = buttonInfos[0]
+			linkButton = buttonInfos[1]
+		}
 
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
@@ -54,11 +71,13 @@ export default {
 		// Sinon, mise à jour de la commande en base de données
 		try {
 			const sql =
-				'UPDATE commands SET aliases = ?, active = ?, content = ?, lastModificationBy = ?, lastModificationAt = ? WHERE name = ?'
+				'UPDATE commands SET aliases = ?, active = ?, content = ?, textLinkButton = ?, linkButton = ?, lastModificationBy = ?, lastModificationAt = ? WHERE name = ?'
 			const data = [
 				aliases ? aliases : null,
 				active,
 				contenu,
+				textLinkButton,
+				linkButton,
 				modal.user.id,
 				Math.round(new Date() / 1000),
 				nom,
@@ -73,9 +92,35 @@ export default {
 			})
 		}
 
-		if (active === '0')
+		// On prépare un embed avec un bouton de redirection
+		let button = []
+		if (textLinkButton !== null && linkButton !== null)
+			button = new ActionRowBuilder().addComponents(
+				new ButtonBuilder()
+					.setLabel(textLinkButton)
+					.setURL(linkButton)
+					.setStyle(ButtonStyle.Link),
+			)
+
+		if (active === '0') {
+			if (button.length === 0)
+				return modal.reply({
+					content: `La commande **${nom}** a bien été modifiée et est **désactivée** 👌\n${
+						aliases ? `\n__Alias :__\n\`\`\`${aliases}\`\`\`` : ''
+					}\n__Prévisualisation :__\n\n${contenu}`,
+				})
+
 			return modal.reply({
 				content: `La commande **${nom}** a bien été modifiée et est **désactivée** 👌\n${
+					aliases ? `\n__Alias :__\n\`\`\`${aliases}\`\`\`` : ''
+				}\n__Prévisualisation :__\n\n${contenu}`,
+				components: [button],
+			})
+		}
+
+		if (button.length === 0)
+			return modal.reply({
+				content: `La commande **${nom}** a bien été modifiée et est **activée** 👌\n${
 					aliases ? `\n__Alias :__\n\`\`\`${aliases}\`\`\`` : ''
 				}\n__Prévisualisation :__\n\n${contenu}`,
 			})
@@ -84,6 +129,7 @@ export default {
 			content: `La commande **${nom}** a bien été modifiée et est **activée** 👌\n${
 				aliases ? `\n__Alias :__\n\`\`\`${aliases}\`\`\`` : ''
 			}\n__Prévisualisation :__\n\n${contenu}`,
+			components: [button],
 		})
 	},
 }

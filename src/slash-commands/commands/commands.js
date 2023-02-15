@@ -81,6 +81,7 @@ export default {
 						)}\n`
 
 					const escapedcontent = commandBdd.content.replace(/```/g, '\\`\\`\\`')
+
 					const embed = new EmbedBuilder()
 						.setColor('C27C0E')
 						.setTitle(`Commande personnalisée "${commandBdd.name}"`)
@@ -95,6 +96,12 @@ export default {
 						embed.data.fields.push({
 							name: 'Alias',
 							value: `\`\`\`${commandBdd.aliases}\`\`\``,
+						})
+
+					if (commandBdd.linkButton)
+						embed.data.fields.push({
+							name: 'Lien externe',
+							value: `\`\`\`${commandBdd.linkButton}\`\`\``,
 						})
 
 					embed.data.fields.push({

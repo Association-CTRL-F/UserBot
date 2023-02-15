@@ -1,4 +1,12 @@
-import { Collection, GuildMember, EmbedBuilder, RESTJSONErrorCodes } from 'discord.js'
+import {
+	Collection,
+	GuildMember,
+	EmbedBuilder,
+	ButtonBuilder,
+	ActionRowBuilder,
+	ButtonStyle,
+	RESTJSONErrorCodes,
+} from 'discord.js'
 import {
 	modifyWrongUsernames,
 	convertDate,
@@ -274,13 +282,31 @@ export default async (message, client) => {
 		timestamps.set(message.author.id, now)
 		setTimeout(() => timestamps.delete(message.author.id), cooldownAmount)
 
+		// Si configuré, on prépare un embed avec un bouton de redirection
+		let button = []
+		if (command.textLinkButton !== null && command.linkButton !== null)
+			button = new ActionRowBuilder().addComponents(
+				new ButtonBuilder()
+					.setLabel(command.textLinkButton)
+					.setURL(command.linkButton)
+					.setStyle(ButtonStyle.Link),
+			)
+
 		// Exécution de la commande
 		try {
 			const sql = 'UPDATE commands SET numberOfUses = numberOfUses + 1 WHERE name = ?'
 			const data = [commandName]
 			await bdd.execute(sql, data)
 
-			return message.channel.send(command.content)
+			if (button.length === 0)
+				return message.channel.send({
+					content: command.content,
+				})
+
+			return message.channel.send({
+				content: command.content,
+				components: [button],
+			})
 		} catch (error) {
 			message.reply({ content: 'Il y a eu une erreur en exécutant la commande 😬' })
 		}

@@ -113,6 +113,15 @@ export default {
 								.setRequired(true),
 						),
 					)
+					.addComponents(
+						new ActionRowBuilder().addComponents(
+							new TextInputBuilder()
+								.setCustomId('button-command-create')
+								.setLabel('Infos du bouton de la commande')
+								.setStyle(TextInputStyle.Short)
+								.setRequired(false),
+						),
+					)
 
 				return interaction.showModal(modalCreate)
 
@@ -171,6 +180,24 @@ export default {
 								.setValue(commandBdd.content)
 								.setMinLength(1)
 								.setRequired(true),
+						),
+					)
+					.addComponents(
+						new ActionRowBuilder().addComponents(
+							new TextInputBuilder()
+								.setCustomId('button-command-edit')
+								.setLabel('Infos du nouveau bouton de la commande')
+								.setStyle(TextInputStyle.Short)
+								.setValue(
+									`${
+										commandBdd.textLinkButton === null
+											? ''
+											: `${commandBdd.textLinkButton}|||`
+									}${
+										commandBdd.linkButton === null ? '' : commandBdd.linkButton
+									}`,
+								)
+								.setRequired(false),
 						),
 					)
 

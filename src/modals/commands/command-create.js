@@ -1,3 +1,5 @@
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+
 export default {
 	data: {
 		name: 'command-create',
@@ -17,8 +19,22 @@ export default {
 			.replace(/\s+/g, ',')
 
 		const active = modal.fields.getTextInputValue('active-command-create').trim().toLowerCase()
-
 		const contenu = modal.fields.getTextInputValue('content-command-create').trim()
+		const buttonInfos = modal.fields
+			.getTextInputValue('button-command-create')
+			.trim()
+			.split(/\|\|\|*/)
+
+		let textLinkButton = ''
+		let linkButton = ''
+
+		if (buttonInfos[0] === '') {
+			textLinkButton = null
+			linkButton = null
+		} else {
+			textLinkButton = buttonInfos[0]
+			linkButton = buttonInfos[1]
+		}
 
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
@@ -66,13 +82,15 @@ export default {
 		// Sinon, création de la nouvelle commande en base de données
 		try {
 			const sql =
-				'INSERT INTO commands (name, aliases, active, content, author, createdAt, lastModificationBy, lastModificationAt, numberOfUses) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+				'INSERT INTO commands (name, aliases, active, content, textLinkButton, linkButton, author, createdAt, lastModificationBy, lastModificationAt, numberOfUses) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
 
 			const data = [
 				nom,
 				aliases ? aliases : null,
 				active,
 				contenu,
+				textLinkButton,
+				linkButton,
 				modal.user.id,
 				Math.round(new Date() / 1000),
 				null,
@@ -89,17 +107,45 @@ export default {
 			})
 		}
 
-		if (active === '0')
+		// On prépare un embed avec un bouton de redirection
+		let button = []
+		if (textLinkButton !== null && linkButton !== null)
+			button = new ActionRowBuilder().addComponents(
+				new ButtonBuilder()
+					.setLabel(textLinkButton)
+					.setURL(linkButton)
+					.setStyle(ButtonStyle.Link),
+			)
+
+		if (active === '0') {
+			if (button.length === 0)
+				return modal.reply({
+					content: `La commande **${nom}** a bien été créée et est **désactivée** 👌\n${
+						aliases ? `\n__Alias :__\n\`\`\`${aliases}\`\`\`` : ''
+					}\n__Prévisualisation :__\n\n${contenu}`,
+				})
+
 			return modal.reply({
 				content: `La commande **${nom}** a bien été créée et est **désactivée** 👌\n${
 					aliases ? `\n__Alias :__\n\`\`\`${aliases}\`\`\`` : ''
 				}\n__Prévisualisation :__\n\n${contenu}`,
+				components: [button],
+			})
+		}
+
+		if (button.length === 0)
+			return modal.reply({
+				content: `La commande **${nom}** a bien été créée et est **activée** 👌\n${
+					aliases ? `\n__Alias :__\n\`\`\`${aliases}\`\`\`` : ''
+				}\n__Prévisualisation :__\n\n${contenu}`,
 			})
 
+		console.log(button)
 		return modal.reply({
 			content: `La commande **${nom}** a bien été créée et est **activée** 👌\n${
 				aliases ? `\n__Alias :__\n\`\`\`${aliases}\`\`\`` : ''
 			}\n__Prévisualisation :__\n\n${contenu}`,
+			components: [button],
 		})
 	},
 }
