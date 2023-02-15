@@ -83,7 +83,7 @@ export default guild => {
 						await channel.send({ embeds: [exampleEmbed] })
 					}
 				})
-				.catch(error => console.error(error))
+				.catch(() => null)
 		})
 
 		// On écrit dans le fichier gpu.json les nouvelles valeurs
