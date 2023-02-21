@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.1
+-- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
--- Host: mariadb
--- Generation Time: Jan 31, 2023 at 12:52 AM
--- Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal
--- PHP Version: 7.4.23
+-- Host: 172.32.32.1:3306
+-- Generation Time: Feb 21, 2023 at 11:13 PM
+-- Server version: 10.10.2-MariaDB-1:10.10.2+maria~ubu2204
+-- PHP Version: 8.0.27
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -30,7 +30,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `automod_domains` (
   `id` int(11) NOT NULL,
   `domain` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -41,7 +41,7 @@ CREATE TABLE `automod_domains` (
 CREATE TABLE `automod_regex` (
   `id` int(11) NOT NULL,
   `regex` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -54,7 +54,7 @@ CREATE TABLE `cf` (
   `pseudo` varchar(255) NOT NULL,
   `discordId` varchar(255) NOT NULL,
   `active` tinyint(1) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -68,12 +68,14 @@ CREATE TABLE `commands` (
   `aliases` text DEFAULT NULL,
   `active` tinyint(1) NOT NULL,
   `content` text NOT NULL,
+  `textLinkButton` text DEFAULT NULL,
+  `linkButton` text DEFAULT NULL,
   `author` varchar(255) NOT NULL,
   `createdAt` varchar(255) NOT NULL,
   `lastModificationBy` varchar(255) DEFAULT NULL,
   `lastModificationAt` varchar(255) DEFAULT NULL,
   `numberOfUses` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -85,7 +87,7 @@ CREATE TABLE `forms` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
   `content` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -105,7 +107,7 @@ CREATE TABLE `giveaways` (
   `started` tinyint(1) NOT NULL,
   `ended` tinyint(1) NOT NULL,
   `timeoutId` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -118,7 +120,7 @@ CREATE TABLE `mute` (
   `discordID` varchar(255) NOT NULL,
   `timestampStart` varchar(255) NOT NULL,
   `timestampEnd` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -134,7 +136,7 @@ CREATE TABLE `reminders` (
   `channel` varchar(255) NOT NULL,
   `private` tinyint(1) NOT NULL,
   `timeoutId` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -145,7 +147,7 @@ CREATE TABLE `reminders` (
 CREATE TABLE `vocal` (
   `id` int(11) NOT NULL,
   `channelId` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -160,7 +162,7 @@ CREATE TABLE `warnings` (
   `warnReason` text NOT NULL,
   `warnPreuve` text DEFAULT NULL,
   `warnedAt` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Indexes for dumped tables
