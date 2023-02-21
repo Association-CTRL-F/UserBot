@@ -229,35 +229,9 @@ export default async (message, client) => {
 	}
 
 	// Répondre emoji :feur:
-	const regexFeur = /quoi\b$/
+	const regexFeur = /.*[qQ][uU][oO][iI]([^a-zA-Z]*|(<:[a-zA-Z0-9]+:[0-9]+>)|(:[a-zA-Z0-9]+:))*$/
 	const feurEmoji = client.emojis.cache.find(emoji => emoji.name === 'feur')
 	if (message.content.match(regexFeur)) message.react(feurEmoji)
-
-	// Répondre aux messages avec mention en utilisant ChatGPT
-	// // Répondre émoji si @bot
-	if (message.mentions.users.has(client.user.id) && !message.mentions.repliedUser) {
-		// eslint-disable-next-line max-len
-		// const pingEmoji = client.emojis.cache.find(emoji => emoji.name === 'ping')
-		// if (pingEmoji) message.react(pingEmoji)
-
-		const chatgpt = new ChatGPTAPI({
-			apiKey: client.config.others.openAiKey,
-		})
-
-		try {
-			const chatgptResponse = await chatgpt.sendMessage(message.content)
-			if (chatgptResponse.text.includes('@everyone'))
-				return message.reply({
-					content: `Désolé, je ne peux pas mentionner ${message.guild.memberCount} personnes 😬`,
-				})
-
-			return message.reply({ content: chatgptResponse.text })
-		} catch (error) {
-                        console.error(error)
-			return message.reply({ content: 'Une erreur est survenue 😬' })
-		}
-	}
-
 	// Command handler
 	if (message.content.startsWith(client.config.guild.COMMANDS_PREFIX)) {
 		const regexCommands = `^${client.config.guild.COMMANDS_PREFIX}{${client.config.guild.COMMANDS_PREFIX.length}}([a-zA-Z0-9]+)(?: .*|$)`
@@ -460,6 +434,42 @@ export default async (message, client) => {
 		) {
 			client.cache.deleteMessagesID.add(message.id)
 			return message.delete()
+		}
+	}
+
+	// Répondre aux messages avec mention en utilisant ChatGPT
+	// // Répondre émoji si @bot
+	if (message.mentions.users.has(client.user.id) && !message.mentions.repliedUser) {
+		// eslint-disable-next-line max-len
+		// const pingEmoji = client.emojis.cache.find(emoji => emoji.name === 'ping')
+		// if (pingEmoji) message.react(pingEmoji)
+
+		const chatgpt = new ChatGPTAPI({
+			apiKey: client.config.others.openAiKey,
+		})
+
+		try {
+			const chatgptResponse = await chatgpt.sendMessage(message.content)
+			if (
+				chatgptResponse.text.includes('@everyone') ||
+				chatgptResponse.text.includes('@here')
+			)
+				return message.reply({
+					content: `Désolé, je ne peux pas mentionner ${message.guild.memberCount} personnes 😬`,
+				})
+
+			if (chatgptResponse.text.length > 1999)
+				return message.reply({
+					content: `**[Réponse partielle]**\n\n${chatgptResponse.text.substr(
+						0,
+						1999,
+					)} [...]`,
+				})
+
+			return message.reply({ content: chatgptResponse.text })
+		} catch (error) {
+			console.error(error)
+			return message.reply({ content: 'Une erreur est survenue 😬' })
 		}
 	}
 }
