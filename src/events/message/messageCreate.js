@@ -20,6 +20,7 @@ import {
 	getFinalLink,
 	isLinkMalicious,
 } from '../../util/util.js'
+import { ChatGPTAPI } from 'chatgpt'
 
 export default async (message, client) => {
 	if (message.author.bot || !message.guild || !message.guild.available) return
@@ -231,6 +232,13 @@ export default async (message, client) => {
 	if (message.mentions.users.has(client.user.id)) {
 		const pingEmoji = client.emojis.cache.find(emoji => emoji.name === 'ping')
 		if (pingEmoji) message.react(pingEmoji)
+
+		const chatgpt = new ChatGPTAPI({
+			apiKey: client.config.others.openAiKey,
+		})
+
+		const chatgptResponse = await chatgpt.sendMessage(message.content)
+		return message.reply({ content: chatgptResponse.text })
 	}
 
 	// Command handler
