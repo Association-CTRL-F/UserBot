@@ -313,6 +313,42 @@ export default async (message, client) => {
 
 	// Partie citation
 	if (message.guild) {
+		// Répondre aux messages avec mention en utilisant ChatGPT
+		// // Répondre émoji si @bot
+		if (message.mentions.users.has(client.user.id) && !message.mentions.repliedUser) {
+			// eslint-disable-next-line max-len
+			// const pingEmoji = client.emojis.cache.find(emoji => emoji.name === 'ping')
+			// if (pingEmoji) message.react(pingEmoji)
+
+			const chatgpt = new ChatGPTAPI({
+				apiKey: client.config.others.openAiKey,
+			})
+
+			try {
+				const chatgptResponse = await chatgpt.sendMessage(message.content)
+				if (
+					chatgptResponse.text.includes('@everyone') ||
+					chatgptResponse.text.includes('@here')
+				)
+					return message.reply({
+						content: `Désolé, je ne peux pas mentionner ${message.guild.memberCount} personnes 😬`,
+					})
+
+				if (chatgptResponse.text.length > 1960)
+					return message.reply({
+						content: `**[Réponse partielle]**\n\n${chatgptResponse.text.substr(
+							0,
+							1960,
+						)} [...]`,
+					})
+
+				return message.reply({ content: chatgptResponse.text })
+			} catch (error) {
+				console.error(error)
+				return message.reply({ content: 'Une erreur est survenue 😬' })
+			}
+		}
+
 		// Regex pour match les liens Discord
 		const regexGlobal =
 			/<?https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})>?/g
@@ -434,42 +470,6 @@ export default async (message, client) => {
 		) {
 			client.cache.deleteMessagesID.add(message.id)
 			return message.delete()
-		}
-	}
-
-	// Répondre aux messages avec mention en utilisant ChatGPT
-	// // Répondre émoji si @bot
-	if (message.mentions.users.has(client.user.id) && !message.mentions.repliedUser) {
-		// eslint-disable-next-line max-len
-		// const pingEmoji = client.emojis.cache.find(emoji => emoji.name === 'ping')
-		// if (pingEmoji) message.react(pingEmoji)
-
-		const chatgpt = new ChatGPTAPI({
-			apiKey: client.config.others.openAiKey,
-		})
-
-		try {
-			const chatgptResponse = await chatgpt.sendMessage(message.content)
-			if (
-				chatgptResponse.text.includes('@everyone') ||
-				chatgptResponse.text.includes('@here')
-			)
-				return message.reply({
-					content: `Désolé, je ne peux pas mentionner ${message.guild.memberCount} personnes 😬`,
-				})
-
-			if (chatgptResponse.text.length > 1999)
-				return message.reply({
-					content: `**[Réponse partielle]**\n\n${chatgptResponse.text.substr(
-						0,
-						1999,
-					)} [...]`,
-				})
-
-			return message.reply({ content: chatgptResponse.text })
-		} catch (error) {
-			console.error(error)
-			return message.reply({ content: 'Une erreur est survenue 😬' })
 		}
 	}
 }
