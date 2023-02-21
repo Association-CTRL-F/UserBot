@@ -228,17 +228,33 @@ export default async (message, client) => {
 		await message.react('💬')
 	}
 
-	// Répondre émoji si @bot
-	if (message.mentions.users.has(client.user.id)) {
-		const pingEmoji = client.emojis.cache.find(emoji => emoji.name === 'ping')
-		if (pingEmoji) message.react(pingEmoji)
+	// Répondre emoji :feur:
+	const regexFeur = /quoi\b/
+	const feurEmoji = client.emojis.cache.find(emoji => emoji.name === 'feur')
+	if (message.content.match(regexFeur)) message.react(feurEmoji)
+
+	// Répondre aux messages avec mention en utilisant ChatGPT
+	// // Répondre émoji si @bot
+	if (message.mentions.users.has(client.user.id) && !message.mentions.repliedUser) {
+		// eslint-disable-next-line max-len
+		// const pingEmoji = client.emojis.cache.find(emoji => emoji.name === 'ping')
+		// if (pingEmoji) message.react(pingEmoji)
 
 		const chatgpt = new ChatGPTAPI({
 			apiKey: client.config.others.openAiKey,
 		})
 
-		const chatgptResponse = await chatgpt.sendMessage(message.content)
-		return message.reply({ content: chatgptResponse.text })
+		try {
+			const chatgptResponse = await chatgpt.sendMessage(message.content)
+			if (chatgptResponse.text.includes('@everyone'))
+				return message.reply({
+					content: `Désolé, je ne peux pas mentionner ${message.guild.memberCount} personnes 😬`,
+				})
+
+			return message.reply({ content: chatgptResponse.text })
+		} catch {
+			return message.reply({ content: 'Une erreur est survenue 😬' })
+		}
 	}
 
 	// Command handler
