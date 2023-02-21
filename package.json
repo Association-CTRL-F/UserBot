@@ -16,7 +16,7 @@
 		"axios": "^1.3.3",
 		"bent": "^7.3.12",
 		"blagues-api": "^2.1.0",
-		"chatgpt": "^4.7.1",
+		"chatgpt": "^4.7.2",
 		"discord-api-types": "^0.37.35",
 		"discord.js": "^14.7.1",
 		"mathjs": "^11.5.1",
