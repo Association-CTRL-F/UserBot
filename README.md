@@ -59,6 +59,7 @@ Cela s'effectue de la façon suivante avec la commande `/setup` :
 * `/setup no-logs-channels` : salons no-logs messages (facultatif)
 * `/setup no-text-channels` : salons no-text messages (facultatif)
 * `/setup threads-channels` : salons threads auto (facultatif)
+* `/setup feur-channels` : Salons avec réaction :feur: autorisée
 * `/setup staff-roles` : rôles staff
 
 Lorsqu'il est possible d'y entrer plusieurs IDs, ceux-ci doivent être séparés par des virgules, comme suit : `123456789012345678,123456789012345678,123456789012345678`
@@ -183,6 +184,8 @@ Le bot repose sur les variables d'environnement pour pouvoir fonctionner.
 > DB_PASS=""
 > DB_NAME_URLS_API=""
 > DB_NAME_USERBOT=""
+> JOKE_TOKEN=""
+> OPEN_AI_KEY=""
 > ```
 
 | Variable           | Description                                                                                                      |
@@ -193,6 +196,8 @@ Le bot repose sur les variables d'environnement pour pouvoir fonctionner.
 | DB_PASS            | Mot de passe MySQL                                                                                               |
 | DB_NAME_URLS_API   | Base de données des URLs courtes                                                                                 |
 | DB_NAME_USERBOT    | Base de données du bot                                                                                           |
+| JOKE_TOKEN         | Token de l'API blagues-api                                                                                       |
+| OPEN_AI_KEY        | Clé API de l'API ChatGPT                                                                                         |
 
 > Pour pouvoir récupérer les identifiants (ID) sur Discord, il faut [activer le mode développeur](https://support.discord.com/hc/fr/articles/206346498-O%C3%B9-trouver-l-ID-de-mon-compte-utilisateur-serveur-message).
 
