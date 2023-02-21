@@ -72,6 +72,9 @@ const subCommands = {
 	'threads-channels': {
 		THREADS_MANAGER_CHANNELS_IDS: 'Salons threads',
 	},
+	'feur-channels': {
+		FEUR_MANAGER_CHANNELS_IDS: 'Salons avec réaction :feur: autorisée',
+	},
 	'staff-roles': {
 		STAFF_ROLES_MANAGER_IDS: 'Rôles staff',
 	},
@@ -276,6 +279,11 @@ export default {
 				value = client.config.guild.managers.THREADS_MANAGER_CHANNELS_IDS
 				break
 
+			case 'feur-channels':
+				customId = 'FEUR_MANAGER_CHANNELS_IDS'
+				value = client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS
+				break
+
 			case 'staff-roles':
 				customId = 'STAFF_ROLES_MANAGER_IDS'
 				value = client.config.guild.managers.STAFF_ROLES_MANAGER_IDS
@@ -310,6 +318,10 @@ export default {
 				break
 
 			case 'THREADS_MANAGER_CHANNELS_IDS':
+				modal.components[0].components[0].data.required = false
+				break
+
+			case 'FEUR_MANAGER_CHANNELS_IDS':
 				modal.components[0].components[0].data.required = false
 				break
 		}

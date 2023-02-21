@@ -229,9 +229,22 @@ export default async (message, client) => {
 	}
 
 	// Répondre emoji :feur:
-	const regexFeur = /.*[qQ][uU][oO][iI]([^a-zA-Z]*|(<:[a-zA-Z0-9]+:[0-9]+>)|(:[a-zA-Z0-9]+:))*$/
-	const feurEmoji = client.emojis.cache.find(emoji => emoji.name === 'feur')
-	if (message.content.match(regexFeur)) message.react(feurEmoji)
+	const feurChannels = client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS
+		? client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS.split(/, */)
+		: []
+
+	if (feurChannels.includes(message.channel.id)) {
+		const random = Math.round(Math.random() * 100)
+
+		// 10% de chances
+		if (random >= 45 && random <= 55) {
+			const regexFeur =
+				/.*[qQ][uU][oO][iI]([^a-zA-Z]*|(<:[a-zA-Z0-9]+:[0-9]+>)|(:[a-zA-Z0-9]+:))*$/
+			const feurEmoji = client.emojis.cache.find(emoji => emoji.name === 'feur')
+			if (message.content.match(regexFeur)) message.react(feurEmoji)
+		}
+	}
+
 	// Command handler
 	if (message.content.startsWith(client.config.guild.COMMANDS_PREFIX)) {
 		const regexCommands = `^${client.config.guild.COMMANDS_PREFIX}{${client.config.guild.COMMANDS_PREFIX.length}}([a-zA-Z0-9]+)(?: .*|$)`
