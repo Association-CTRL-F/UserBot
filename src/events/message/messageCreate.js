@@ -252,7 +252,8 @@ export default async (message, client) => {
 				})
 
 			return message.reply({ content: chatgptResponse.text })
-		} catch {
+		} catch (error) {
+                        console.error(error)
 			return message.reply({ content: 'Une erreur est survenue 😬' })
 		}
 	}
