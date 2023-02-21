@@ -229,7 +229,7 @@ export default async (message, client) => {
 	}
 
 	// Répondre emoji :feur:
-	const regexFeur = /quoi\b/
+	const regexFeur = /quoi\b$/
 	const feurEmoji = client.emojis.cache.find(emoji => emoji.name === 'feur')
 	if (message.content.match(regexFeur)) message.react(feurEmoji)
 
