@@ -347,14 +347,14 @@ export default {
 						ephemeral: true,
 					})
 
-				// Suppresion en base de données
-				let deletedReminder = {}
+				// Suppression en base de données
+				let deleteReminder = {}
 				try {
 					const id = interaction.options.getString('id')
 					const sql = 'DELETE FROM reminders WHERE id = ?'
 					const data = [id]
 					const [result] = await bdd.execute(sql, data)
-					deletedReminder = result
+					deleteReminder = result
 				} catch {
 					return interaction.reply({
 						content: 'Une erreur est survenue lors de la suppression du rappel 😬',
@@ -364,7 +364,7 @@ export default {
 
 				clearTimeout(fetchReminder.timeoutId)
 
-				if (deletedReminder.affectedRows === 1)
+				if (deleteReminder.affectedRows === 1)
 					return interaction.reply({
 						content: 'Le rappel a bien été supprimé 👌',
 						ephemeral: true,

@@ -39,7 +39,7 @@ export default {
 		let cf = 0
 		// eslint-disable-next-line require-await
 		discordIds.forEach(async discordId => {
-			if (interaction.user.id === discordId.discordId && discordId.active === 1) cf += 1
+			if (interaction.user.id === discordId.discordID && discordId.active === 1) cf += 1
 		})
 
 		if (cf > 0)
