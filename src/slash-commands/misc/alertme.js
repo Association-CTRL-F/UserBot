@@ -129,7 +129,7 @@ export default {
 				let fetchAlert = {}
 				try {
 					const id = interaction.options.getString('id')
-					const sql = 'SELECT * FROM reminders WHERE id = ?'
+					const sql = 'SELECT * FROM alerts WHERE id = ?'
 					const data = [id]
 					const [result] = await bdd.execute(sql, data)
 					fetchAlert = result[0]
