@@ -6,6 +6,7 @@ import {
 	ActionRowBuilder,
 	ButtonStyle,
 	RESTJSONErrorCodes,
+	PermissionsBitField,
 } from 'discord.js'
 import {
 	modifyWrongUsernames,
@@ -260,12 +261,17 @@ export default async (message, client) => {
 			// Acquisition du membre
 			const member = message.guild.members.cache.get(alert.discordID)
 
+			// Vérification si le membre à accès au salon
+			// dans lequel le message a été envoyé
+			const permissionsMember = member.permissionsIn(message.channel)
+			if (!permissionsMember.has(PermissionsBitField.Flags.ViewChannel)) return
+
 			// Cut + escape message content
 			let textCut = ''
 			let alertTextCut = ''
 
-			if (message.content.length < 200) textCut = `${alert.text.substr(0, 200)}`
-			else textCut = `${alert.text.substr(0, 200)} [...]`
+			if (message.content.length < 200) textCut = `${message.content.substr(0, 200)}`
+			else textCut = `${message.content.substr(0, 200)} [...]`
 
 			if (alert.text.length < 200) alertTextCut = `${alert.text.substr(0, 200)}`
 			else alertTextCut = `${alert.text.substr(0, 200)} [...]`
