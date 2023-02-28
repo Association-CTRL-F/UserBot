@@ -308,7 +308,7 @@ export default async (message, client) => {
 					},
 					{
 						name: 'Auteur',
-						value: `${member.toString()} (ID : ${message.author.id})`,
+						value: `${message.author.toString()} (ID : ${message.author.id})`,
 						inline: true,
 					},
 				])
