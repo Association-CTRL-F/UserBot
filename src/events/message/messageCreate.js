@@ -267,7 +267,7 @@ export default async (message, client) => {
 			if (message.content.length < 200) textCut = `${alert.text.substr(0, 200)}`
 			else textCut = `${alert.text.substr(0, 200)} [...]`
 
-			if (alert.text.length < 200) textCut = `${alert.text.substr(0, 200)}`
+			if (alert.text.length < 200) alertTextCut = `${alert.text.substr(0, 200)}`
 			else alertTextCut = `${alert.text.substr(0, 200)} [...]`
 
 			const escapedcontentText = textCut.replace(/```/g, '\\`\\`\\`')
