@@ -257,7 +257,7 @@ export default async (message, client) => {
 	}
 
 	alerts.forEach(alert => {
-		if (message.content.includes(alert.text)) {
+		if (message.content.toLowerCase().includes(alert.text)) {
 			// Acquisition du membre
 			const member = message.guild.members.cache.get(alert.discordID)
 
@@ -286,7 +286,7 @@ export default async (message, client) => {
 			const embedAlert = new EmbedBuilder()
 				.setColor('#C27C0E')
 				.setTitle('Alerte message')
-				.setDescription('Un message envoyé correspond à votre alerte')
+				.setDescription('Un message envoyé correspond à votre alerte.')
 				.setAuthor({
 					name: message.guild.name,
 					iconURL: message.guild.iconURL({ dynamic: true }),

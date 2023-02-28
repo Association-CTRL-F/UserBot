@@ -101,7 +101,7 @@ export default {
 
 			// Création d'une alerte
 			case 'create':
-				const text = interaction.options.getString('texte').trim()
+				const text = interaction.options.getString('texte').trim().toLowerCase()
 
 				// Insertion de l'alerte en base de données
 				try {
