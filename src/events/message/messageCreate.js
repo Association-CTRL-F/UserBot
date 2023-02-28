@@ -245,6 +245,87 @@ export default async (message, client) => {
 		}
 	}
 
+	// Alertes personnalisées
+	let alerts = []
+	try {
+		const sql = 'SELECT * FROM alerts'
+		const [result] = await bdd.execute(sql)
+		alerts = result
+	} catch (error) {
+		return console.error(error)
+	}
+
+	alerts.forEach(alert => {
+		if (message.content.includes(alert.text)) {
+			// Acquisition du membre
+			const member = message.guild.members.cache.get(alert.discordID)
+
+			// Cut + escape message content
+			let textCut = ''
+			let alertTextCut = ''
+
+			if (message.content.length < 200) textCut = `${alert.text.substr(0, 200)}`
+			else textCut = `${alert.text.substr(0, 200)} [...]`
+
+			if (alert.text.length < 200) textCut = `${alert.text.substr(0, 200)}`
+			else alertTextCut = `${alert.text.substr(0, 200)} [...]`
+
+			const escapedcontentText = textCut.replace(/```/g, '\\`\\`\\`')
+			const escapedcontentAlertText = alertTextCut.replace(/```/g, '\\`\\`\\`')
+
+			// Envoi du message d'alerte en message privé
+			const embedAlert = new EmbedBuilder()
+				.setColor('#C27C0E')
+				.setTitle('Alerte message')
+				.setDescription('Un message envoyé correspond à votre alerte')
+				.setAuthor({
+					name: message.guild.name,
+					iconURL: message.guild.iconURL({ dynamic: true }),
+					url: message.guild.vanityURL,
+				})
+				.addFields([
+					{
+						name: 'Alerte définie',
+						value: `\`\`\`\n${escapedcontentAlertText}\`\`\``,
+					},
+					{
+						name: 'Message envoyé',
+						value: `\`\`\`\n${escapedcontentText}\`\`\``,
+					},
+					{
+						name: 'Salon',
+						value: message.channel.toString(),
+						inline: true,
+					},
+					{
+						name: 'Auteur',
+						value: `${member.toString()} (ID : ${message.author.id})`,
+						inline: true,
+					},
+				])
+
+			const buttonMessage = new ActionRowBuilder().addComponents(
+				new ButtonBuilder()
+					.setLabel('Aller au message')
+					.setStyle(ButtonStyle.Link)
+					.setURL(
+						`https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id}`,
+					),
+			)
+
+			const DMMessage = member.send({
+				embeds: [embedAlert],
+				components: [buttonMessage],
+			})
+
+			// Si au moins une erreur, throw
+			if (DMMessage instanceof Error)
+				throw new Error(
+					"L'envoi d'un message a échoué. Voir les logs précédents pour plus d'informations.",
+				)
+		}
+	})
+
 	// Command handler
 	if (message.content.startsWith(client.config.guild.COMMANDS_PREFIX)) {
 		const regexCommands = `^${client.config.guild.COMMANDS_PREFIX}{${client.config.guild.COMMANDS_PREFIX.length}}([a-zA-Z0-9]+)(?: .*|$)`
