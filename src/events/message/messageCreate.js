@@ -261,6 +261,9 @@ export default async (message, client) => {
 			// Acquisition du membre
 			const member = message.guild.members.cache.get(alert.discordID)
 
+			// Si c'est son propre message on envoi pas d'alerte
+			if (message.author.id === alert.discordID) return
+
 			// Vérification si le membre à accès au salon
 			// dans lequel le message a été envoyé
 			const permissionsMember = member.permissionsIn(message.channel)
