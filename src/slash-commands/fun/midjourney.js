@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from 'discord.js'
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
 import midjourney from 'midjourney-client'
 
 export default {
@@ -17,10 +17,18 @@ export default {
 
 		// Acquisition du texte
 		const texte = interaction.options.getString('texte')
+
+		// Création de l'image
 		const image = await midjourney(`mdjrny-v4 ${texte}`)
 
+		// Création de l'embed
+		const embed = new EmbedBuilder()
+			.setColor('#C27C0E')
+			.setDescription(texte)
+			.setImage(image[0])
+
 		return interaction.editReply({
-			content: image[0],
+			embeds: [embed],
 		})
 	},
 }
