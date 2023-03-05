@@ -322,10 +322,15 @@ export default async (message, client) => {
 					),
 			)
 
-			const DMMessage = member.send({
-				embeds: [embedAlert],
-				components: [buttonMessage],
-			})
+			const DMMessage = member
+				.send({
+					embeds: [embedAlert],
+					components: [buttonMessage],
+				})
+				.catch(error => {
+					if (error.code !== RESTJSONErrorCodes.CannotSendMessagesToThisUser) throw error
+					return console.error(error)
+				})
 
 			// Si au moins une erreur, throw
 			if (DMMessage instanceof Error)
