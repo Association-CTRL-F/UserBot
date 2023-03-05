@@ -50,42 +50,46 @@ export default async (oldMessage, newMessage, client) => {
 
 	if (NOLOGS.includes(newMessage.channel.id)) return
 
-	// Création de l'embed
-	const logEmbedMessage = new EmbedBuilder()
-		.setColor('#C27C0E')
-		.setAuthor({
-			name: displayNameAndID(newMessage.member, newMessage.author),
-			iconURL: newMessage.author.displayAvatarURL({ dynamic: true }),
-		})
-		.addFields([
-			{
-				name: 'Ancien message',
-				value: `\`\`\`\n${oldMessage.content.replace(/```/g, '\\`\\`\\`')}\`\`\``,
-				inline: false,
-			},
-			{
-				name: 'Nouveau message',
-				value: `\`\`\`\n${newMessage.content.replace(/```/g, '\\`\\`\\`')}\`\`\``,
-				inline: false,
-			},
-			{
-				name: 'Auteur',
-				value: newMessage.author.toString(),
-				inline: true,
-			},
-			{
-				name: 'Salon',
-				value: `[Aller au message](${newMessage.url}) - ${newMessage.channel.toString()}`,
-				inline: true,
-			},
-		])
-		.setFooter({
-			text: `Posté le ${convertDate(oldMessage.createdAt)}\nModifié le ${convertDate(
-				newMessage.editedAt,
-			)}`,
-		})
+	if (oldMessage.content !== newMessage.content) {
+		// Création de l'embed
+		const logEmbedMessage = new EmbedBuilder()
+			.setColor('#C27C0E')
+			.setAuthor({
+				name: displayNameAndID(newMessage.member, newMessage.author),
+				iconURL: newMessage.author.displayAvatarURL({ dynamic: true }),
+			})
+			.addFields([
+				{
+					name: 'Ancien message',
+					value: `\`\`\`\n${oldMessage.content.replace(/```/g, '\\`\\`\\`')}\`\`\``,
+					inline: false,
+				},
+				{
+					name: 'Nouveau message',
+					value: `\`\`\`\n${newMessage.content.replace(/```/g, '\\`\\`\\`')}\`\`\``,
+					inline: false,
+				},
+				{
+					name: 'Auteur',
+					value: newMessage.author.toString(),
+					inline: true,
+				},
+				{
+					name: 'Salon',
+					value: `[Aller au message](${
+						newMessage.url
+					}) - ${newMessage.channel.toString()}`,
+					inline: true,
+				},
+			])
+			.setFooter({
+				text: `Posté le ${convertDate(oldMessage.createdAt)}\nModifié le ${convertDate(
+					newMessage.editedAt,
+				)}`,
+			})
 
-	await logsChannelMessages.send({ embeds: [logEmbedMessage] })
+		await logsChannelMessages.send({ embeds: [logEmbedMessage] })
+	}
 
 	// Acquisition de la base de données
 	const bdd = client.config.db.pools.userbot
