@@ -2,6 +2,7 @@
 /* eslint-disable no-case-declarations */
 import { convertDateForDiscord, diffDate, displayNameAndID } from '../../util/util.js'
 import discordjs, { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
+import { ChatGPTAPI } from 'chatgpt'
 
 // import nodePackage from '../../../package.json'
 import { readFileSync } from 'fs'
@@ -16,6 +17,10 @@ export default {
 			subcommand.setName('server').setDescription('Infos du serveur'),
 		),
 	interaction: (interaction, client) => {
+		const chatgpt = new ChatGPTAPI({
+			apiKey: client.config.others.openAiKey,
+		})
+
 		switch (interaction.options.getSubcommand()) {
 			case 'bot':
 				const embedBot = new EmbedBuilder()
@@ -44,6 +49,11 @@ export default {
 						{
 							name: 'Version Discord.js',
 							value: discordjs.version,
+						},
+						{
+							name: 'Modèle OpenAI ChatGPT',
+							// eslint-disable-next-line no-underscore-dangle
+							value: chatgpt._completionParams.model,
 						},
 					])
 
