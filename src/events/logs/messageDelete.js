@@ -53,6 +53,7 @@ export default async (message, client) => {
 			else thread.delete()
 	}
 
+	// Création de l'embed
 	const logEmbed = new EmbedBuilder()
 		.setColor('57C92A')
 		.setAuthor({

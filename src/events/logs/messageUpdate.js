@@ -9,7 +9,6 @@ import {
 	PermissionsBitField,
 } from 'discord.js'
 import {
-	modifyWrongUsernames,
 	convertDate,
 	isImage,
 	getFileInfos,
@@ -23,58 +22,101 @@ import {
 } from '../../util/util.js'
 import { ChatGPTAPI } from 'chatgpt'
 
-export default async (message, client) => {
-	if (message.author.bot || !message.guild || !message.guild.available) return
+export default async (oldMessage, newMessage, client) => {
+	if (
+		oldMessage.author.bot ||
+		!oldMessage.guild ||
+		!oldMessage.guild.available ||
+		newMessage.author.bot ||
+		!newMessage.guild ||
+		!newMessage.guild.available
+	)
+		return
 
-	if (message.partial) await message.fetch()
+	if (oldMessage.partial) await oldMessage.fetch()
+	if (newMessage.partial) await newMessage.fetch()
+
+	// Acquisition du salon de logs
+	const logsChannelMessages = newMessage.guild.channels.cache.get(
+		client.config.guild.channels.LOGS_MESSAGES_CHANNEL_ID,
+	)
+	if (!logsChannelMessages) return
+
+	// Vérification si le salon du message
+	// est dans la liste des salons à ne pas logger
+	const NOLOGS = client.config.guild.managers.NOLOGS_MANAGER_CHANNELS_IDS
+		? client.config.guild.managers.NOLOGS_MANAGER_CHANNELS_IDS.split(/, */)
+		: []
+
+	if (NOLOGS.includes(newMessage.channel.id)) return
+
+	// Création de l'embed
+	const logEmbedMessage = new EmbedBuilder()
+		.setColor('#C27C0E')
+		.setAuthor({
+			name: displayNameAndID(newMessage.member, newMessage.author),
+			iconURL: newMessage.author.displayAvatarURL({ dynamic: true }),
+		})
+		.addFields([
+			{
+				name: 'Ancien message',
+				value: `\`\`\`\n${oldMessage.content.replace(/```/g, '\\`\\`\\`')}\`\`\``,
+				inline: false,
+			},
+			{
+				name: 'Nouveau message',
+				value: `\`\`\`\n${newMessage.content.replace(/```/g, '\\`\\`\\`')}\`\`\``,
+				inline: false,
+			},
+			{
+				name: 'Auteur',
+				value: newMessage.author.toString(),
+				inline: true,
+			},
+			{
+				name: 'Salon',
+				value: `[Aller au message](${newMessage.url}) - ${newMessage.channel.toString()}`,
+				inline: true,
+			},
+		])
+		.setFooter({
+			text: `Posté le ${convertDate(oldMessage.createdAt)}\nModifié le ${convertDate(
+				newMessage.editedAt,
+			)}`,
+		})
+
+	await logsChannelMessages.send({ embeds: [logEmbedMessage] })
 
 	// Acquisition de la base de données
 	const bdd = client.config.db.pools.userbot
 	if (!bdd)
 		return console.log('Une erreur est survenue lors de la connexion à la base de données')
 
-	// Si le message vient d'une guild, on vérifie
-	if (message.member) {
-		// Si le pseudo respecte bien les règles
-		modifyWrongUsernames(message.member).catch(() => null)
-
-		if (
-			client.config.guild.channels.BLABLA_CHANNEL_ID &&
-			client.config.guild.roles.JOIN_ROLE_ID
-		)
-			if (
-				message.channel.id !== client.config.guild.channels.BLABLA_CHANNEL_ID &&
-				message.member.roles.cache.has(client.config.guild.roles.JOIN_ROLE_ID)
-			)
-				// Si c'est un salon autre que blabla
-				message.member.roles.remove(client.config.guild.roles.JOIN_ROLE_ID).catch(error => {
-					if (error.code !== RESTJSONErrorCodes.UnknownMember) throw error
-				})
-	}
-
 	// Automod //
 
 	// Acquisition du salon de logs liste-ban
-	const logsChannel = message.guild.channels.cache.get(
+	const logsChannelBans = newMessage.guild.channels.cache.get(
 		client.config.guild.channels.LOGS_BANS_CHANNEL_ID,
 	)
-	if (!logsChannel) return
+	if (!logsChannelBans) return
 
 	// Partie domaines
 	const staffRoles = client.config.guild.managers.STAFF_ROLES_MANAGER_IDS
 		? client.config.guild.managers.STAFF_ROLES_MANAGER_IDS.split(/, */)
 		: []
 
-	if (!isStaffMember(message.member, staffRoles)) {
-		const sentMessage = await message.fetch().catch(() => false)
+	if (!isStaffMember(newMessage.member, staffRoles)) {
+		const sentMessage = await newMessage.fetch().catch(() => false)
 
 		let guildMember = {}
-		if (message.guild)
-			guildMember = await message.guild.members.fetch(sentMessage.author).catch(() => false)
+		if (newMessage.guild)
+			guildMember = await newMessage.guild.members
+				.fetch(sentMessage.author)
+				.catch(() => false)
 
 		if (!sentMessage || !guildMember) return
 
-		const messageLinks = await findLinks(message.content)
+		const messageLinks = await findLinks(newMessage.content)
 		if (!messageLinks) return
 
 		await messageLinks.forEach(async (link, domainName) => {
@@ -150,7 +192,7 @@ export default async (message, client) => {
 				// Si pas d'erreur, envoi du message log dans le salon
 				if (banAction instanceof GuildMember) {
 					// Création de l'embed
-					const logEmbed = new EmbedBuilder()
+					const logEmbedBan = new EmbedBuilder()
 						.setColor('C9572A')
 						.setAuthor({
 							name: displayNameAndID(banAction, banAction),
@@ -182,7 +224,7 @@ export default async (message, client) => {
 						})
 						.setTimestamp(new Date())
 
-					return logsChannel.send({ embeds: [logEmbed] })
+					return logsChannelBans.send({ embeds: [logEmbedBan] })
 				}
 
 				if (banAction instanceof Error || DMMessageBan instanceof Error)
@@ -201,12 +243,12 @@ export default async (message, client) => {
 		? client.config.guild.managers.NOTEXT_MANAGER_CHANNELS_IDS.split(/, */)
 		: []
 
-	if (NOTEXT.includes(message.channel.id) && message.attachments.size < 1) {
-		const sentMessage = await message.channel.send(
-			`<@${message.author.id}>, tu dois mettre une image / vidéo 😕`,
+	if (NOTEXT.includes(newMessage.channel.id) && newMessage.attachments.size < 1) {
+		const sentMessage = await newMessage.channel.send(
+			`<@${newMessage.author.id}>, tu dois mettre une image / vidéo 😕`,
 		)
 		return Promise.all([
-			await message.delete().catch(() => false),
+			await newMessage.delete().catch(() => false),
 			setTimeout(
 				() =>
 					sentMessage.delete().catch(error => {
@@ -223,10 +265,10 @@ export default async (message, client) => {
 		? client.config.guild.managers.THREADS_MANAGER_CHANNELS_IDS.split(/, */)
 		: []
 
-	if (THREADS.includes(message.channel.id)) {
-		await message.react('⬆️')
-		await message.react('⬇️')
-		await message.react('💬')
+	if (THREADS.includes(newMessage.channel.id)) {
+		await newMessage.react('⬆️')
+		await newMessage.react('⬇️')
+		await newMessage.react('💬')
 	}
 
 	// Répondre emoji :feur:
@@ -234,7 +276,7 @@ export default async (message, client) => {
 		? client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS.split(/, */)
 		: []
 
-	if (feurChannels.includes(message.channel.id)) {
+	if (feurChannels.includes(newMessage.channel.id)) {
 		const random = Math.round(Math.random() * 100)
 
 		// 10% de chances
@@ -242,7 +284,7 @@ export default async (message, client) => {
 			const regexFeur =
 				/.*[qQ][uU][oO][iI]([^a-zA-Z]*|(<:[a-zA-Z0-9]+:[0-9]+>)|(:[a-zA-Z0-9]+:))*$/
 			const feurEmoji = client.emojis.cache.find(emoji => emoji.name === 'feur')
-			if (message.content.match(regexFeur)) message.react(feurEmoji)
+			if (newMessage.content.match(regexFeur)) newMessage.react(feurEmoji)
 		}
 	}
 
@@ -257,24 +299,24 @@ export default async (message, client) => {
 	}
 
 	alerts.forEach(alert => {
-		if (message.content.toLowerCase().includes(alert.text)) {
+		if (newMessage.content.toLowerCase().includes(alert.text)) {
 			// Acquisition du membre
-			const member = message.guild.members.cache.get(alert.discordID)
+			const member = newMessage.guild.members.cache.get(alert.discordID)
 
 			// Si c'est son propre message on envoi pas d'alerte
-			if (message.author.id === alert.discordID) return
+			if (newMessage.author.id === alert.discordID) return
 
 			// Vérification si le membre à accès au salon
 			// dans lequel le message a été envoyé
-			const permissionsMember = member.permissionsIn(message.channel)
+			const permissionsMember = member.permissionsIn(newMessage.channel)
 			if (!permissionsMember.has(PermissionsBitField.Flags.ViewChannel)) return
 
 			// Cut + escape message content
 			let textCut = ''
 			let alertTextCut = ''
 
-			if (message.content.length < 200) textCut = `${message.content.substr(0, 200)}`
-			else textCut = `${message.content.substr(0, 200)} [...]`
+			if (newMessage.content.length < 200) textCut = `${newMessage.content.substr(0, 200)}`
+			else textCut = `${newMessage.content.substr(0, 200)} [...]`
 
 			if (alert.text.length < 200) alertTextCut = `${alert.text.substr(0, 200)}`
 			else alertTextCut = `${alert.text.substr(0, 200)} [...]`
@@ -288,9 +330,9 @@ export default async (message, client) => {
 				.setTitle('Alerte message')
 				.setDescription('Un message envoyé correspond à votre alerte.')
 				.setAuthor({
-					name: message.guild.name,
-					iconURL: message.guild.iconURL({ dynamic: true }),
-					url: message.guild.vanityURL,
+					name: newMessage.guild.name,
+					iconURL: newMessage.guild.iconURL({ dynamic: true }),
+					url: newMessage.guild.vanityURL,
 				})
 				.addFields([
 					{
@@ -303,12 +345,12 @@ export default async (message, client) => {
 					},
 					{
 						name: 'Salon',
-						value: message.channel.toString(),
+						value: newMessage.channel.toString(),
 						inline: true,
 					},
 					{
 						name: 'Auteur',
-						value: `${message.author.toString()} (ID : ${message.author.id})`,
+						value: `${newMessage.author.toString()} (ID : ${newMessage.author.id})`,
 						inline: true,
 					},
 				])
@@ -318,7 +360,7 @@ export default async (message, client) => {
 					.setLabel('Aller au message')
 					.setStyle(ButtonStyle.Link)
 					.setURL(
-						`https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id}`,
+						`https://discord.com/channels/${newMessage.guild.id}/${newMessage.channel.id}/${newMessage.id}`,
 					),
 			)
 
@@ -336,10 +378,10 @@ export default async (message, client) => {
 	})
 
 	// Command handler
-	if (message.content.startsWith(client.config.guild.COMMANDS_PREFIX)) {
+	if (newMessage.content.startsWith(client.config.guild.COMMANDS_PREFIX)) {
 		const regexCommands = `^${client.config.guild.COMMANDS_PREFIX}{${client.config.guild.COMMANDS_PREFIX.length}}([a-zA-Z0-9]+)(?: .*|$)`
 
-		const args = message.content.match(regexCommands)
+		const args = newMessage.content.match(regexCommands)
 		if (!args) return
 
 		const commandName = args[1].toLowerCase()
@@ -355,7 +397,7 @@ export default async (message, client) => {
 			command = result[0]
 		} catch (error) {
 			console.error(error)
-			message.reply({ content: 'Il y a eu une erreur en exécutant la commande 😬' })
+			newMessage.reply({ content: 'Il y a eu une erreur en exécutant la commande 😬' })
 		}
 
 		if (!command) return
@@ -367,11 +409,11 @@ export default async (message, client) => {
 		const now = Date.now()
 		const timestamps = client.cooldowns.get(command.name)
 		const cooldownAmount = (command.cooldown || 4) * 1000
-		if (timestamps.has(message.author.id)) {
-			const expirationTime = timestamps.get(message.author.id) + cooldownAmount
+		if (timestamps.has(newMessage.author.id)) {
+			const expirationTime = timestamps.get(newMessage.author.id) + cooldownAmount
 			if (now < expirationTime) {
 				const timeLeft = expirationTime - now
-				const sentMessage = await message.reply({
+				const sentMessage = await newMessage.reply({
 					content: `Merci d'attendre ${(timeLeft / 1000).toFixed(
 						1,
 					)} seconde(s) de plus avant de réutiliser la commande **${command.name}** 😬`,
@@ -381,8 +423,8 @@ export default async (message, client) => {
 				return client.cache.deleteMessagesID.add(sentMessage.id)
 			}
 		}
-		timestamps.set(message.author.id, now)
-		setTimeout(() => timestamps.delete(message.author.id), cooldownAmount)
+		timestamps.set(newMessage.author.id, now)
+		setTimeout(() => timestamps.delete(newMessage.author.id), cooldownAmount)
 
 		// Si configuré, on prépare un embed avec un bouton de redirection
 		let button = []
@@ -401,24 +443,24 @@ export default async (message, client) => {
 			await bdd.execute(sql, data)
 
 			if (button.length === 0)
-				return message.channel.send({
+				return newMessage.channel.send({
 					content: command.content,
 				})
 
-			return message.channel.send({
+			return newMessage.channel.send({
 				content: command.content,
 				components: [button],
 			})
 		} catch (error) {
-			message.reply({ content: 'Il y a eu une erreur en exécutant la commande 😬' })
+			newMessage.reply({ content: 'Il y a eu une erreur en exécutant la commande 😬' })
 		}
 	}
 
 	// Partie citation
-	if (message.guild) {
+	if (newMessage.guild) {
 		// Répondre aux messages avec mention en utilisant ChatGPT
 		// // Répondre émoji si @bot
-		if (message.mentions.users.has(client.user.id) && !message.mentions.repliedUser) {
+		if (newMessage.mentions.users.has(client.user.id) && !newMessage.mentions.repliedUser) {
 			// eslint-disable-next-line max-len
 			// const pingEmoji = client.emojis.cache.find(emoji => emoji.name === 'ping')
 			// if (pingEmoji) message.react(pingEmoji)
@@ -428,27 +470,27 @@ export default async (message, client) => {
 			})
 
 			try {
-				const chatgptResponse = await chatgpt.sendMessage(message.content)
+				const chatgptResponse = await chatgpt.sendMessage(newMessage.content)
 				if (
 					chatgptResponse.text.includes('@everyone') ||
 					chatgptResponse.text.includes('@here')
 				)
-					return message.reply({
-						content: `Désolé, je ne peux pas mentionner ${message.guild.memberCount} personnes 😬`,
+					return newMessage.reply({
+						content: `Désolé, je ne peux pas mentionner ${newMessage.guild.memberCount} personnes 😬`,
 					})
 
 				if (chatgptResponse.text.length > 1960)
-					return message.reply({
+					return newMessage.reply({
 						content: `**[Réponse partielle]**\n\n${chatgptResponse.text.substr(
 							0,
 							1960,
 						)} [...]`,
 					})
 
-				return message.reply({ content: chatgptResponse.text })
+				return newMessage.reply({ content: chatgptResponse.text })
 			} catch (error) {
 				console.error(error)
-				return message.reply({ content: 'Une erreur est survenue 😬' })
+				return newMessage.reply({ content: 'Une erreur est survenue 😬' })
 			}
 		}
 
@@ -459,7 +501,7 @@ export default async (message, client) => {
 			/<?https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})>?/
 
 		// Suppression des lignes en citations, pour ne pas afficher la citation
-		const matches = message.content.match(regexGlobal)
+		const matches = newMessage.content.match(regexGlobal)
 		if (!matches) return
 
 		const validMessages = (
@@ -469,9 +511,9 @@ export default async (message, client) => {
 				matches
 					.reduce((acc, match) => {
 						const [, guildId, channelId, messageId] = regex.exec(match)
-						if (guildId !== message.guild.id) return acc
+						if (guildId !== newMessage.guild.id) return acc
 
-						const foundChannel = message.guild.channels.cache.get(channelId)
+						const foundChannel = newMessage.guild.channels.cache.get(channelId)
 						if (!foundChannel) return acc
 
 						// Ignore la citation si le lien est entouré de <>
@@ -537,12 +579,12 @@ export default async (message, client) => {
 			if (validMessage.editedAt)
 				embed.data.footer.text += `\nModifié le ${convertDate(validMessage.editedAt)}`
 
-			if (message.author !== validMessage.author) {
-				embed.data.footer.icon_url = message.author.displayAvatarURL({ dynamic: true })
+			if (newMessage.author !== validMessage.author) {
+				embed.data.footer.icon_url = newMessage.author.displayAvatarURL({ dynamic: true })
 				embed.data.footer.text += `\nCité par ${displayNameAndID(
-					message.member,
-					message.author,
-				)} le ${convertDate(message.createdAt)}`
+					newMessage.member,
+					newMessage.author,
+				)} le ${convertDate(newMessage.createdAt)}`
 			}
 
 			// Partie pour gérer les attachments
@@ -561,18 +603,18 @@ export default async (message, client) => {
 					])
 				})
 
-			return message.channel.send({ embeds: [embed] })
+			return newMessage.channel.send({ embeds: [embed] })
 		})
 
 		// Si le message ne contient que un(des) lien(s),
 		// on supprime le message, ne laissant que les embeds
 		if (
-			!message.content.replace(regexGlobal, '').trim() &&
+			!newMessage.content.replace(regexGlobal, '').trim() &&
 			sentMessages.length === matches.length &&
-			!message.mentions.repliedUser
+			!newMessage.mentions.repliedUser
 		) {
-			client.cache.deleteMessagesID.add(message.id)
-			return message.delete()
+			client.cache.deleteMessagesID.add(newMessage.id)
+			return newMessage.delete()
 		}
 	}
 }
