@@ -1,5 +1,4 @@
 import {
-	Collection,
 	GuildMember,
 	EmbedBuilder,
 	ButtonBuilder,
@@ -385,85 +384,6 @@ export default async (oldMessage, newMessage, client) => {
 				)
 		}
 	})
-
-	// Command handler
-	if (newMessage.content.startsWith(client.config.guild.COMMANDS_PREFIX)) {
-		const regexCommands = `^${client.config.guild.COMMANDS_PREFIX}{${client.config.guild.COMMANDS_PREFIX.length}}([a-zA-Z0-9]+)(?: .*|$)`
-
-		const args = newMessage.content.match(regexCommands)
-		if (!args) return
-
-		const commandName = args[1].toLowerCase()
-		if (!commandName) return
-
-		// Vérification si la commande existe et est activée
-		let command = ''
-		try {
-			const sql = 'SELECT * FROM commands WHERE name = ? OR aliases REGEXP ?'
-			const data = [commandName, `(?:^|,)(${commandName})(?:,|$)`]
-			const [result] = await bdd.execute(sql, data)
-
-			command = result[0]
-		} catch (error) {
-			console.error(error)
-			newMessage.reply({ content: 'Il y a eu une erreur en exécutant la commande 😬' })
-		}
-
-		if (!command) return
-
-		if (!command.active) return
-
-		// Partie cooldown
-		if (!client.cooldowns.has(commandName)) client.cooldowns.set(command.name, new Collection())
-		const now = Date.now()
-		const timestamps = client.cooldowns.get(command.name)
-		const cooldownAmount = (command.cooldown || 4) * 1000
-		if (timestamps.has(newMessage.author.id)) {
-			const expirationTime = timestamps.get(newMessage.author.id) + cooldownAmount
-			if (now < expirationTime) {
-				const timeLeft = expirationTime - now
-				const sentMessage = await newMessage.reply({
-					content: `Merci d'attendre ${(timeLeft / 1000).toFixed(
-						1,
-					)} seconde(s) de plus avant de réutiliser la commande **${command.name}** 😬`,
-				})
-
-				// Suppression du message
-				return client.cache.deleteMessagesID.add(sentMessage.id)
-			}
-		}
-		timestamps.set(newMessage.author.id, now)
-		setTimeout(() => timestamps.delete(newMessage.author.id), cooldownAmount)
-
-		// Si configuré, on prépare un embed avec un bouton de redirection
-		let button = []
-		if (command.textLinkButton !== null && command.linkButton !== null)
-			button = new ActionRowBuilder().addComponents(
-				new ButtonBuilder()
-					.setLabel(command.textLinkButton)
-					.setURL(command.linkButton)
-					.setStyle(ButtonStyle.Link),
-			)
-
-		// Exécution de la commande
-		try {
-			const sql = 'UPDATE commands SET numberOfUses = numberOfUses + 1 WHERE name = ?'
-			const data = [commandName]
-			await bdd.execute(sql, data)
-
-			if (button.length === 0)
-				return newMessage.channel.send({
-					content: command.content,
-				})
-
-			return newMessage.channel.send({
-				content: command.content,
-				components: [button],
-			})
-		} catch (error) {
-			newMessage.reply({ content: 'Il y a eu une erreur en exécutant la commande 😬' })
-		}
-	}
 
 	// Partie citation
 	if (newMessage.guild) {
