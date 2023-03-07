@@ -9,8 +9,6 @@ import {
 } from 'discord.js'
 import {
 	convertDate,
-	isImage,
-	getFileInfos,
 	displayNameAndID,
 	isStaffMember,
 	convertDateForDiscord,
@@ -385,11 +383,10 @@ export default async (oldMessage, newMessage, client) => {
 		}
 	})
 
-	// Partie citation
-	if (newMessage.guild) {
-		// Répondre aux messages avec mention en utilisant ChatGPT
-		// // Répondre émoji si @bot
+	if (newMessage.guild)
 		if (newMessage.mentions.users.has(client.user.id) && !newMessage.mentions.repliedUser) {
+			// Répondre aux messages avec mention en utilisant ChatGPT
+			// // Répondre émoji si @bot
 			// eslint-disable-next-line max-len
 			// const pingEmoji = client.emojis.cache.find(emoji => emoji.name === 'ping')
 			// if (pingEmoji) message.react(pingEmoji)
@@ -422,128 +419,4 @@ export default async (oldMessage, newMessage, client) => {
 				return newMessage.reply({ content: 'Une erreur est survenue 😬' })
 			}
 		}
-
-		// Regex pour match les liens Discord
-		const regexGlobal =
-			/<?https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})>?/g
-		const regex =
-			/<?https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})>?/
-
-		// Suppression des lignes en citations, pour ne pas afficher la citation
-		const matches = newMessage.content.match(regexGlobal)
-		if (!matches) return
-
-		const validMessages = (
-			await Promise.all(
-				// Filtre les liens mennant vers une autre guild
-				// ou sur un salon n'existant pas sur la guild
-				matches
-					.reduce((acc, match) => {
-						const [, guildId, channelId, messageId] = regex.exec(match)
-						if (guildId !== newMessage.guild.id) return acc
-
-						const foundChannel = newMessage.guild.channels.cache.get(channelId)
-						if (!foundChannel) return acc
-
-						// Ignore la citation si le lien est entouré de <>
-						if (match.startsWith('<') && match.endsWith('>')) return acc
-
-						acc.push({ messageId, foundChannel })
-
-						return acc
-					}, [])
-					// Fetch du message et retourne de celui-ci s'il existe
-					.map(async ({ messageId, foundChannel }) => {
-						const foundMessage = await foundChannel.messages
-							.fetch(messageId)
-							.catch(() => null)
-						// On ne fait pas la citation si le
-						// message n'a ni contenu écrit ni attachments
-						if (
-							!foundMessage ||
-							(!foundMessage.content && !foundMessage.attachments.size)
-						)
-							return
-
-						return foundMessage
-					}),
-			)
-		)
-			// Suppression des messages invalides
-			.filter(Boolean)
-
-		const sentMessages = validMessages.map(validMessage => {
-			const embed = new EmbedBuilder()
-				.setColor('2F3136')
-				.setAuthor({
-					name: `${displayNameAndID(validMessage.member, validMessage.author)}`,
-					iconURL: validMessage.author.displayAvatarURL({ dynamic: true }),
-				})
-				.setFooter({
-					text: `Message posté le ${convertDate(validMessage.createdAt)}`,
-				})
-
-			const description = `${validMessage.content}\n[Aller au message](${validMessage.url}) - ${validMessage.channel}`
-
-			// Si la description dépasse la limite
-			// autorisée, les liens sont contenus dans des fields
-			if (description.length > 4096) {
-				embed.data.description = validMessage.content
-				embed.addFields([
-					{
-						name: 'Message',
-						value: `[Aller au message](${validMessage.url})`,
-						inline: true,
-					},
-					{
-						name: 'Salon',
-						value: validMessage.channel.toString(),
-						inline: true,
-					},
-				])
-			} else {
-				embed.data.description = description
-			}
-
-			if (validMessage.editedAt)
-				embed.data.footer.text += `\nModifié le ${convertDate(validMessage.editedAt)}`
-
-			if (newMessage.author !== validMessage.author) {
-				embed.data.footer.icon_url = newMessage.author.displayAvatarURL({ dynamic: true })
-				embed.data.footer.text += `\nCité par ${displayNameAndID(
-					newMessage.member,
-					newMessage.author,
-				)} le ${convertDate(newMessage.createdAt)}`
-			}
-
-			// Partie pour gérer les attachments
-			const attachments = validMessage.attachments
-			if (attachments.size === 1 && isImage(attachments.first().name))
-				embed.data.image = { url: attachments.first().url }
-			else
-				attachments.forEach(attachment => {
-					const { name, type } = getFileInfos(attachment.name)
-					embed.addFields([
-						{
-							name: `Fichier ${type}`,
-							value: `[${name}](${attachment.url})`,
-							inline: true,
-						},
-					])
-				})
-
-			return newMessage.channel.send({ embeds: [embed] })
-		})
-
-		// Si le message ne contient que un(des) lien(s),
-		// on supprime le message, ne laissant que les embeds
-		if (
-			!newMessage.content.replace(regexGlobal, '').trim() &&
-			sentMessages.length === matches.length &&
-			!newMessage.mentions.repliedUser
-		) {
-			client.cache.deleteMessagesID.add(newMessage.id)
-			return newMessage.delete()
-		}
-	}
 }
