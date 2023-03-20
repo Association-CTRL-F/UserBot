@@ -20,7 +20,7 @@
 		"discord-api-types": "^0.37.36",
 		"discord.js": "^14.8.0",
 		"mathjs": "^11.7.0",
-		"midjourney-client": "^1.0.2",
+		"midjourney-client": "^1.0.4",
 		"ms": "^2.1.3",
 		"mysql2": "^3.2.0",
 		"node-fetch": "^2.6.7",
