@@ -17,7 +17,7 @@
 		"bent": "^7.3.12",
 		"blagues-api": "^2.1.0",
 		"chatgpt": "^5.1.2",
-		"discord-api-types": "^0.37.36",
+		"discord-api-types": "^0.37.37",
 		"discord.js": "^14.8.0",
 		"mathjs": "^11.7.0",
 		"midjourney-client": "^1.0.4",
