@@ -48,4 +48,7 @@ jobs:
          host: ${{ secrets.SSH_HOST }}
          username: ${{ secrets.SSH_USERNAME }}
          key: ${{ secrets.SSH_KEY }}
-         script: podman auto-update
+         script: |
+          systemctl --user stop container-userbot.service
+          podman pull --authfile /etc/containers/auth.json docker.io/ctrlfdocker/userbot:latest
+          systemctl --user start container-userbot.service
