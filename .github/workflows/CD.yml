@@ -50,6 +50,5 @@ jobs:
          key: ${{ secrets.SSH_KEY }}
          script: |
           systemctl --user stop container-userbot.service
-          podman rm userbot
           podman pull --authfile /etc/containers/auth.json docker.io/ctrlfdocker/userbot:latest
           systemctl --user start container-userbot.service
