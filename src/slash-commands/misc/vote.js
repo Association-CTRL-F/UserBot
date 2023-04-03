@@ -1,6 +1,13 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-import { SlashCommandBuilder, EmbedBuilder, RESTJSONErrorCodes } from 'discord.js'
+import {
+	SlashCommandBuilder,
+	EmbedBuilder,
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	RESTJSONErrorCodes,
+} from 'discord.js'
 import { convertDate, displayNameAndID } from '../../util/util.js'
 
 export default {
@@ -15,6 +22,12 @@ export default {
 					option
 						.setName('proposition')
 						.setDescription('Proposition de vote')
+						.setRequired(true),
+				)
+				.addBooleanOption(option =>
+					option
+						.setName('anonyme')
+						.setDescription('Veux-tu que le vote soit anonyme ?')
 						.setRequired(true),
 				)
 				.addBooleanOption(option =>
@@ -43,6 +56,7 @@ export default {
 		),
 	interaction: async interaction => {
 		const proposition = interaction.options.getString('proposition')
+		const anonyme = interaction.options.getBoolean('anonyme')
 		const thread = interaction.options.getBoolean('thread')
 
 		switch (interaction.options.getSubcommand()) {
@@ -52,7 +66,18 @@ export default {
 				const embed = new EmbedBuilder()
 					.setColor('00FF00')
 					.setTitle('Nouveau vote')
-					.setDescription(`\`\`\`${proposition}\`\`\``)
+					.setDescription(
+						`✅ : 0
+						🤷 : 0
+						⌛ : 0
+						❌ : 0`,
+					)
+					.addFields([
+						{
+							name: 'Proposition',
+							value: `\`\`\`${proposition}\`\`\``,
+						},
+					])
 					.setAuthor({
 						name: displayNameAndID(interaction.member),
 						iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
@@ -60,6 +85,54 @@ export default {
 					.setFooter({
 						text: `Vote posté le ${convertDate(new Date())}`,
 					})
+
+				if (anonyme) {
+					const buttons = new ActionRowBuilder()
+						.addComponents(
+							new ButtonBuilder()
+								.setEmoji('✅')
+								.setCustomId('yes')
+								.setStyle(ButtonStyle.Secondary),
+						)
+						.addComponents(
+							new ButtonBuilder()
+								.setEmoji('🤷')
+								.setCustomId('maybe')
+								.setStyle(ButtonStyle.Secondary),
+						)
+						.addComponents(
+							new ButtonBuilder()
+								.setEmoji('⌛')
+								.setCustomId('wait')
+								.setStyle(ButtonStyle.Secondary),
+						)
+						.addComponents(
+							new ButtonBuilder()
+								.setEmoji('❌')
+								.setCustomId('no')
+								.setStyle(ButtonStyle.Secondary),
+						)
+
+					const sentMessage = await interaction.reply({
+						embeds: [embed],
+						components: [buttons],
+						fetchReply: true,
+					})
+
+					// Création automatique du thread associé
+					if (thread) {
+						const threadCreate = await sentMessage.startThread({
+							name: `Vote de ${interaction.member.displayName}`,
+							// Archivage après 24H
+							autoArchiveDuration: 24 * 60,
+							reason: proposition,
+						})
+
+						return threadCreate.members.add(interaction.user.id)
+					}
+
+					return
+				}
 
 				const sentMessage = await interaction.reply({
 					embeds: [embed],
@@ -78,7 +151,7 @@ export default {
 					await threadCreate.members.add(interaction.user.id)
 				}
 
-				// Ajout des réactions pour voter
+				// Ajout des réactions pour voter si vote non anonyme
 				await sentMessage.react('✅')
 				await sentMessage.react('🤷')
 				await sentMessage.react('⌛')
