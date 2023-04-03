@@ -67,21 +67,6 @@ export default {
 				})
 			}
 
-			// maybe
-			let nbMaybe = ''
-			try {
-				const sql = 'SELECT COUNT(*) AS nbMaybe FROM votes WHERE messageId = ? AND vote = ?'
-				const data = [interaction.message.id, 'maybe']
-
-				const [result] = await bdd.execute(sql, data)
-				nbMaybe = [result][0][0].nbMaybe
-			} catch (error) {
-				return interaction.editReply({
-					content:
-						"Une erreur est survenue lors du comptage des voix 'maybe' de ton vote en base de données 😕",
-				})
-			}
-
 			// wait
 			let nbWait = ''
 			try {
@@ -115,10 +100,9 @@ export default {
 			// Modification du message
 			const embed = new EmbedBuilder()
 				.setColor('00FF00')
-				.setTitle('Nouveau vote')
+				.setTitle(interaction.message.embeds[0].data.title)
 				.setDescription(
 					`✅ : ${nbYes}
-					🤷 : ${nbMaybe}
 					⌛ : ${nbWait}
 					❌ : ${nbNo}`,
 				)
@@ -189,21 +173,6 @@ export default {
 			})
 		}
 
-		// maybe
-		let nbMaybe = ''
-		try {
-			const sql = 'SELECT COUNT(*) AS nbMaybe FROM votes WHERE messageId = ? AND vote = ?'
-			const data = [interaction.message.id, 'maybe']
-
-			const [result] = await bdd.execute(sql, data)
-			nbMaybe = [result][0][0].nbMaybe
-		} catch (error) {
-			return interaction.editReply({
-				content:
-					"Une erreur est survenue lors du comptage des voix 'maybe' de ton vote en base de données 😕",
-			})
-		}
-
 		// wait
 		let nbWait = ''
 		try {
@@ -237,10 +206,9 @@ export default {
 		// Modification du message
 		const embed = new EmbedBuilder()
 			.setColor('00FF00')
-			.setTitle('Nouveau vote')
+			.setTitle(interaction.message.embeds[0].data.title)
 			.setDescription(
 				`✅ : ${nbYes}
-				🤷 : ${nbMaybe}
 				⌛ : ${nbWait}
 				❌ : ${nbNo}`,
 			)

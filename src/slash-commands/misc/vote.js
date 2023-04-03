@@ -66,12 +66,6 @@ export default {
 				const embed = new EmbedBuilder()
 					.setColor('00FF00')
 					.setTitle('Nouveau vote')
-					.setDescription(
-						`✅ : 0
-						🤷 : 0
-						⌛ : 0
-						❌ : 0`,
-					)
 					.addFields([
 						{
 							name: 'Proposition',
@@ -96,12 +90,6 @@ export default {
 						)
 						.addComponents(
 							new ButtonBuilder()
-								.setEmoji('🤷')
-								.setCustomId('maybe')
-								.setStyle(ButtonStyle.Secondary),
-						)
-						.addComponents(
-							new ButtonBuilder()
 								.setEmoji('⌛')
 								.setCustomId('wait')
 								.setStyle(ButtonStyle.Secondary),
@@ -112,6 +100,8 @@ export default {
 								.setCustomId('no')
 								.setStyle(ButtonStyle.Secondary),
 						)
+
+					embed.data.description = `✅ : 0\r⌛ : 0\r❌ : 0`
 
 					const sentMessage = await interaction.reply({
 						embeds: [embed],
@@ -153,7 +143,6 @@ export default {
 
 				// Ajout des réactions pour voter si vote non anonyme
 				await sentMessage.react('✅')
-				await sentMessage.react('🤷')
 				await sentMessage.react('⌛')
 				return sentMessage.react('❌')
 
@@ -201,7 +190,12 @@ export default {
 				const embedEdit = new EmbedBuilder()
 					.setColor('00FF00')
 					.setTitle('Nouveau vote (modifié)')
-					.setDescription(`\`\`\`${proposition}\`\`\``)
+					.addFields([
+						{
+							name: 'Proposition',
+							value: `\`\`\`${proposition}\`\`\``,
+						},
+					])
 					.setAuthor({
 						name: displayNameAndID(interaction.member),
 						iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
@@ -211,6 +205,10 @@ export default {
 							message.createdAt,
 						)}\nModifié le ${convertDate(new Date())}`,
 					})
+
+				// eslint-disable-next-line no-prototype-builtins
+				if (message.embeds[0].data.hasOwnProperty('description'))
+					embedEdit.data.description = message.embeds[0].data.description
 
 				await message.edit({
 					embeds: [embedEdit],
