@@ -11,6 +11,7 @@
 	        "LOGS_MESSAGES_CHANNEL_ID": "",
 	        "LOGS_BANS_CHANNEL_ID": "",
             "TRIBUNAL_CHANNEL_ID": "",
+            "TICKETS_CHANNEL_ID": "",
             "CONFIG_CHANNEL_ID": "",
             "UPGRADE_CHANNEL_ID": "",
             "BLABLA_CHANNEL_ID": "",

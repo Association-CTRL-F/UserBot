@@ -344,6 +344,25 @@ export const isStaffMember = (guildMember, staffRoles) => {
 }
 
 /**
+ * Crée une chaine alpanumérique aléatoire
+ * @param length Longueur de chaine souhaitée
+ * @returns Chaine alpanumérique de longueur $length
+ */
+export const randomString = length => {
+	let string = ''
+	const characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+	const charactersLength = characters.length
+
+	let counter = 0
+	while (counter < length) {
+		string += characters.charAt(Math.floor(Math.random() * charactersLength))
+		counter += 1
+	}
+
+	return string
+}
+
+/**
  * Crée un pool de connexion à la base de données
  * @param {Client} client Discord.js
  */

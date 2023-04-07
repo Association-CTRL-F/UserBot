@@ -7,6 +7,7 @@ import {
 	ButtonStyle,
 	RESTJSONErrorCodes,
 	PermissionsBitField,
+	ChannelType,
 } from 'discord.js'
 import {
 	modifyWrongUsernames,
@@ -20,11 +21,12 @@ import {
 	findLinks,
 	getFinalLink,
 	isLinkMalicious,
+	randomString,
 } from '../../util/util.js'
 import { ChatGPTAPI } from 'chatgpt'
 
 export default async (message, client) => {
-	if (message.author.bot || !message.guild || !message.guild.available) return
+	if (message.author.bot) return
 
 	if (message.partial) await message.fetch()
 
@@ -32,6 +34,124 @@ export default async (message, client) => {
 	const bdd = client.config.db.pools.userbot
 	if (!bdd)
 		return console.log('Une erreur est survenue lors de la connexion à la base de données')
+
+	// Si le message est un DM
+	if (message.channel.type === 1) {
+		// Fetch de l'user et de la guild
+		const user = await client.users.fetch(message.author)
+		const guild = await client.guilds.fetch(client.config.guild.GUILD_ID)
+
+		// Récupération du ticket
+		let ticket = ''
+		try {
+			const sql = 'SELECT * FROM tickets WHERE userId = ? AND active = ?'
+			const data = [user.id, 1]
+			const [result] = await bdd.execute(sql, data)
+
+			ticket = result[0]
+		} catch {
+			return console.log(
+				'Une erreur est survenue lors de la récupération du message de bannissement en base de données (Automod)',
+			)
+		}
+
+		// Si ticket actif, on continue l'actuel
+		if (ticket) {
+			// Acquisition du thread du ticket
+			const threadTicket = guild.channels.cache.get(ticket.threadId)
+
+			await threadTicket.send({
+				content: `**${user.username} : **${message.content}`,
+			})
+		} else {
+			// Génération du numéro de ticket
+			let ticketId = ''
+			let ticketIdVerif = ''
+
+			do {
+				ticketId = randomString(6)
+
+				try {
+					const sql = 'SELECT * FROM tickets WHERE ticketId = ?'
+					const data = [ticketId]
+					// eslint-disable-next-line no-await-in-loop
+					const [result] = await bdd.execute(sql, data)
+
+					ticketIdVerif = result[0]
+				} catch {
+					return console.log(
+						'Une erreur est survenue lors de la récupération du message de bannissement en base de données (Automod)',
+					)
+				}
+			} while (ticketId === ticketIdVerif)
+
+			// Acquisition du salon tickets
+			const ticketsChannel = guild.channels.cache.get(
+				client.config.guild.channels.TICKETS_CHANNEL_ID,
+			)
+
+			// Création du thread de discussion
+			const thread = await ticketsChannel.threads.create({
+				name: `Ticket ${ticketId} de ${user.username}`,
+				autoArchiveDuration: 24 * 60,
+				type: ChannelType.PrivateThread,
+				invitable: false,
+			})
+
+			// Création de l'embed ticket
+			const embedTicket = new EmbedBuilder()
+				.setColor('#C27C0E')
+				.setTitle(`Ticket #${ticketId}`)
+				.setDescription(`Ticket de ${displayNameAndID(user, user)}`)
+
+			const buttonTicket = new ActionRowBuilder().addComponents(
+				new ButtonBuilder()
+					.setLabel('Thread de discussion')
+					.setStyle(ButtonStyle.Link)
+					.setURL(`https://discord.com/channels/${guild.id}/${thread.id}`),
+			)
+
+			const buttonCloseTicket = new ActionRowBuilder().addComponents(
+				new ButtonBuilder()
+					.setLabel('Clôturer le ticket')
+					.setStyle(ButtonStyle.Danger)
+					.setCustomId(`ticket-${ticketId}`),
+			)
+
+			// Création de l'embed message ticket
+			const embedMessageTicket = new EmbedBuilder()
+				.setColor('#C27C0E')
+				.setAuthor({
+					name: displayNameAndID(user, user),
+					iconURL: user.displayAvatarURL({ dynamic: true }),
+				})
+				.setTitle(`Nouveau ticket`)
+				.setDescription(message.content)
+
+			await ticketsChannel.send({
+				embeds: [embedTicket],
+				components: [buttonTicket, buttonCloseTicket],
+			})
+
+			await thread.send({
+				embeds: [embedMessageTicket],
+			})
+
+			// Création en base de données
+			try {
+				const sql =
+					'INSERT INTO tickets (ticketId, userId, threadId, createdAt, active) VALUES (?, ?, ?, ?, ?)'
+
+				const data = [ticketId, user.id, thread.id, Math.round(new Date() / 1000), 1]
+
+				await bdd.execute(sql, data)
+			} catch (error) {
+				return console.error(error)
+			}
+		}
+
+		return
+	}
 
 	// Si le message vient d'une guild, on vérifie
 	if (message.member) {
