@@ -19,18 +19,11 @@ export default {
 
 		// Parcourir les cartes graphiques contenue dans le gpu.json
 		Object.values(Object.values(gpusJSON)).forEach(gpu => {
-			if (member.roles.cache.has(gpu.roleId))
-				gpuArray.push({
-					label: gpu.name,
-					value: `${gpu.roleId}`,
-					default: true,
-				})
-			else
-				gpuArray.push({
-					label: gpu.name,
-					value: `${gpu.roleId}`,
-					default: false,
-				})
+			gpuArray.push({
+				label: gpu.name,
+				value: gpu.roleId.toString(),
+				default: member.roles.cache.has(gpu.roleId),
+			})
 		})
 
 		const gpuAlertes = new ActionRowBuilder().addComponents(
