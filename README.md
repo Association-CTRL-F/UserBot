@@ -39,7 +39,6 @@ La configuration du serveur doit être totalement effectuée afin que le bot pui
 
 Cela s'effectue de la façon suivante avec la commande `/setup` :
 * `/setup view` : voir la configuration du serveur
-* `/setup timezone` : timezone du serveur
 * `/setup rich-presence-text` : rich presence du bot (facultatif)
 * `/setup timeout-join` : timeout rôle Pas de blabla (`30m` par défaut)
 * `/setup commands-prefix` : préfixe des commandes personnalisées (`!` par défaut)
@@ -48,6 +47,7 @@ Cela s'effectue de la façon suivante avec la commande `/setup` :
 * `/setup logs-messages-channel` : salon logs messages
 * `/setup logs-bans-channel` : salon logs bans
 * `/setup tribunal-channel` : salon tribunal
+* `/setup tickets-channel` : salon tickets
 * `/setup config-channel` : salon config
 * `/setup upgrade-channel` : salon upgrade
 * `/setup blabla-channel` : salon blabla-hs
