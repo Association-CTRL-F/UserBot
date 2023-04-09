@@ -151,7 +151,7 @@ export default async (interaction, client) => {
 							iconURL: interaction.guild.iconURL({ dynamic: true }),
 							url: interaction.guild.vanityURL,
 						})
-						.setTitle('Nouveau ticket')
+						.setTitle('Ticket clôturé')
 						.setDescription(
 							`Ton ticket numéro **#${ticketId}** vient d'être clôturé.\nSi tu souhaites en créer un nouveau, tu peux envoyer un message en dessous de celui-ci.`,
 						)
