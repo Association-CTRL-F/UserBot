@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.0
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: 172.32.32.1:3306
--- Generation Time: Feb 21, 2023 at 11:13 PM
--- Server version: 10.10.2-MariaDB-1:10.10.2+maria~ubu2204
--- PHP Version: 8.0.27
+-- Generation Time: Apr 09, 2023 at 01:04 AM
+-- Server version: 10.11.2-MariaDB-1:10.11.2+maria~ubu2204
+-- PHP Version: 8.1.17
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -20,6 +20,18 @@ SET time_zone = "+00:00";
 --
 -- Database: `userbot`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `alerts`
+--
+
+CREATE TABLE `alerts` (
+  `id` int(11) NOT NULL,
+  `discordID` varchar(255) NOT NULL,
+  `text` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -52,7 +64,7 @@ CREATE TABLE `automod_regex` (
 CREATE TABLE `cf` (
   `id` int(11) NOT NULL,
   `pseudo` varchar(255) NOT NULL,
-  `discordId` varchar(255) NOT NULL,
+  `discordID` varchar(255) NOT NULL,
   `active` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -141,12 +153,42 @@ CREATE TABLE `reminders` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `tickets`
+--
+
+CREATE TABLE `tickets` (
+  `id` int(11) NOT NULL,
+  `ticketId` varchar(255) NOT NULL,
+  `userId` varchar(255) NOT NULL,
+  `threadId` varchar(255) NOT NULL,
+  `createdAt` varchar(255) NOT NULL,
+  `active` tinyint(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `vocal`
 --
 
 CREATE TABLE `vocal` (
   `id` int(11) NOT NULL,
   `channelId` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `votes`
+--
+
+CREATE TABLE `votes` (
+  `id` int(11) NOT NULL,
+  `messageId` varchar(255) NOT NULL,
+  `memberId` varchar(255) NOT NULL,
+  `vote` varchar(255) NOT NULL,
+  `createdAt` varchar(255) NOT NULL,
+  `editedAt` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -167,6 +209,12 @@ CREATE TABLE `warnings` (
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `alerts`
+--
+ALTER TABLE `alerts`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `automod_domains`
@@ -219,9 +267,21 @@ ALTER TABLE `reminders`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `tickets`
+--
+ALTER TABLE `tickets`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `vocal`
 --
 ALTER TABLE `vocal`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `votes`
+--
+ALTER TABLE `votes`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -233,6 +293,12 @@ ALTER TABLE `warnings`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `alerts`
+--
+ALTER TABLE `alerts`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `automod_domains`
@@ -283,9 +349,21 @@ ALTER TABLE `reminders`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `tickets`
+--
+ALTER TABLE `tickets`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `vocal`
 --
 ALTER TABLE `vocal`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `votes`
+--
+ALTER TABLE `votes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
