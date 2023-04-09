@@ -62,6 +62,15 @@ export default {
 					})
 				break
 
+			case 'TICKETS_CHANNEL_ID':
+				const matches_TICKETS_CHANNEL_ID = contenu.match(regexId)
+				if (!matches_TICKETS_CHANNEL_ID || matches_TICKETS_CHANNEL_ID.length > 1)
+					return modal.reply({
+						content: "Tu n'as pas donné un ID valide 😕",
+						ephemeral: true,
+					})
+				break
+
 			case 'CONFIG_CHANNEL_ID':
 				const matches_CONFIG_CHANNEL_ID = contenu.match(regexId)
 				if (!matches_CONFIG_CHANNEL_ID || matches_CONFIG_CHANNEL_ID.length > 1)
@@ -161,6 +170,15 @@ export default {
 					})
 				break
 
+			case 'FEUR_MANAGER_CHANNELS_IDS':
+				const matches_FEUR_MANAGER_CHANNELS_IDS = contenu.match(regexIds)
+				if (!matches_FEUR_MANAGER_CHANNELS_IDS)
+					return modal.reply({
+						content: "Tu n'as pas donné un / des ID(s) valide(s) 😕",
+						ephemeral: true,
+					})
+				break
+
 			case 'STAFF_ROLES_MANAGER_IDS':
 				const matches_STAFF_ROLES_MANAGER_IDS = contenu.match(regexIds)
 				if (!matches_STAFF_ROLES_MANAGER_IDS)
@@ -175,10 +193,6 @@ export default {
 
 		switch (nom) {
 			// Guild
-			case 'TIMEZONE':
-				client.config.timezone = contenu
-				break
-
 			case 'RICH_PRESENCE_TEXT':
 				client.config.bot.richPresenceText = contenu
 				if (contenu && contenu !== '')
@@ -221,6 +235,10 @@ export default {
 
 			case 'TRIBUNAL_CHANNEL_ID':
 				client.config.guild.channels.TRIBUNAL_CHANNEL_ID = contenu
+				break
+
+			case 'TICKETS_CHANNEL_ID':
+				client.config.guild.channels.TICKETS_CHANNEL_ID = contenu
 				break
 
 			case 'CONFIG_CHANNEL_ID':
@@ -269,6 +287,10 @@ export default {
 				client.config.guild.managers.THREADS_MANAGER_CHANNELS_IDS = contenu
 				break
 
+			case 'FEUR_MANAGER_CHANNELS_IDS':
+				client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS = contenu
+				break
+
 			case 'STAFF_ROLES_MANAGER_IDS':
 				client.config.guild.managers.STAFF_ROLES_MANAGER_IDS = contenu
 				break
@@ -287,6 +309,7 @@ export default {
 					LOGS_MESSAGES_CHANNEL_ID: client.config.guild.channels.LOGS_MESSAGES_CHANNEL_ID,
 					LOGS_BANS_CHANNEL_ID: client.config.guild.channels.LOGS_BANS_CHANNEL_ID,
 					TRIBUNAL_CHANNEL_ID: client.config.guild.channels.TRIBUNAL_CHANNEL_ID,
+					TICKETS_CHANNEL_ID: client.config.guild.channels.TICKETS_CHANNEL_ID,
 					CONFIG_CHANNEL_ID: client.config.guild.channels.CONFIG_CHANNEL_ID,
 					UPGRADE_CHANNEL_ID: client.config.guild.channels.UPGRADE_CHANNEL_ID,
 					BLABLA_CHANNEL_ID: client.config.guild.channels.BLABLA_CHANNEL_ID,
@@ -306,6 +329,8 @@ export default {
 						client.config.guild.managers.NOTEXT_MANAGER_CHANNELS_IDS,
 					THREADS_MANAGER_CHANNELS_IDS:
 						client.config.guild.managers.THREADS_MANAGER_CHANNELS_IDS,
+					FEUR_MANAGER_CHANNELS_IDS:
+						client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS,
 					STAFF_ROLES_MANAGER_IDS: client.config.guild.managers.STAFF_ROLES_MANAGER_IDS,
 				},
 			},

@@ -8,13 +8,9 @@ import {
 	ButtonStyle,
 	TextInputStyle,
 } from 'discord.js'
-import { readFile } from 'fs/promises'
 import { Pagination } from 'pagination.djs'
 
 const subCommands = {
-	timezone: {
-		timezone: 'Timezone du serveur',
-	},
 	'rich-presence-text': {
 		richPresenceText: 'Texte de présence du bot',
 	},
@@ -38,6 +34,9 @@ const subCommands = {
 	},
 	'tribunal-channel': {
 		TRIBUNAL_CHANNEL_ID: 'Salon tribunal',
+	},
+	'tickets-channel': {
+		TICKETS_CHANNEL_ID: 'Salon tickets',
 	},
 	'config-channel': {
 		CONFIG_CHANNEL_ID: 'Salon config',
@@ -220,6 +219,11 @@ export default {
 			case 'tribunal-channel':
 				customId = 'TRIBUNAL_CHANNEL_ID'
 				value = client.config.guild.channels.TRIBUNAL_CHANNEL_ID
+				break
+
+			case 'tickets-channel':
+				customId = 'TICKETS_CHANNEL_ID'
+				value = client.config.guild.channels.TICKETS_CHANNEL_ID
 				break
 
 			case 'config-channel':
