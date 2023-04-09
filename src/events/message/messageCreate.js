@@ -61,7 +61,7 @@ export default async (message, client) => {
 			const threadTicket = guild.channels.cache.get(ticket.threadId)
 
 			await threadTicket.send({
-				content: `**${user.username} : **${message.content}`,
+				content: `**${user.username} :** ${message.content}`,
 			})
 		} else {
 			// Génération du numéro de ticket
@@ -80,7 +80,7 @@ export default async (message, client) => {
 					ticketIdVerif = result[0]
 				} catch {
 					return console.log(
-						'Une erreur est survenue lors de la récupération du message de bannissement en base de données (Automod)',
+						'Une erreur est survenue lors de la création du numéro de ticket en base de données',
 					)
 				}
 			} while (ticketId === ticketIdVerif)
@@ -92,7 +92,7 @@ export default async (message, client) => {
 
 			// Création du thread de discussion
 			const thread = await ticketsChannel.threads.create({
-				name: `Ticket ${ticketId} de ${user.username}`,
+				name: `Ticket #${ticketId} de ${user.username}`,
 				autoArchiveDuration: 24 * 60,
 				type: ChannelType.PrivateThread,
 				invitable: false,
@@ -125,8 +125,21 @@ export default async (message, client) => {
 					name: displayNameAndID(user, user),
 					iconURL: user.displayAvatarURL({ dynamic: true }),
 				})
-				.setTitle(`Nouveau ticket`)
+				.setTitle('Nouveau ticket')
 				.setDescription(message.content)
+
+			// Création de l'embed message ticket en DM
+			const embedMessageTicketDM = new EmbedBuilder()
+				.setColor('#C27C0E')
+				.setAuthor({
+					name: guild.name,
+					iconURL: guild.iconURL({ dynamic: true }),
+					url: guild.vanityURL,
+				})
+				.setTitle('Nouveau ticket')
+				.setDescription(
+					`Ton message nous a bien été transmis.\nTon numéro de ticket est : **#${ticketId}**.\nUne réponse te sera apportée dans les plus brefs délais.\nChaque message envoyé en dessous de celui-ci sera ajouté à la discussion en cours.`,
+				)
 
 			await ticketsChannel.send({
 				embeds: [embedTicket],
@@ -135,6 +148,10 @@ export default async (message, client) => {
 
 			await thread.send({
 				embeds: [embedMessageTicket],
+			})
+
+			await user.send({
+				embeds: [embedMessageTicketDM],
 			})
 
 			// Création en base de données
@@ -151,6 +168,31 @@ export default async (message, client) => {
 		}
 
 		return
+	}
+
+	// Si le message est un thread privé
+	if (message.channel.type === 12) {
+		// Récupération du ticket
+		let ticket = ''
+		try {
+			const sql = 'SELECT * FROM tickets WHERE threadId = ? AND active = ?'
+			const data = [message.channel.id, 1]
+			const [result] = await bdd.execute(sql, data)
+
+			ticket = result[0]
+		} catch {
+			return console.log(
+				'Une erreur est survenue lors de la récupération du message de bannissement en base de données (Automod)',
+			)
+		}
+
+		if (ticket) {
+			const member = message.guild.members.cache.get(ticket.userId)
+
+			await member.send({
+				content: `**Staff :** ${message.content}`,
+			})
+		}
 	}
 
 	// Si le message vient d'une guild, on vérifie

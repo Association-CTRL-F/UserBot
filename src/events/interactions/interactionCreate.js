@@ -66,9 +66,12 @@ export default async (interaction, client) => {
 						ticket = result[0]
 					} catch {
 						return console.log(
-							'Une erreur est survenue lors de la récupération du message de bannissement en base de données (Automod)',
+							'Une erreur est survenue lors de la récupération du ticket en base de données (Automod)',
 						)
 					}
+
+					// Fetch du membre
+					const member = await interaction.guild.members.cache.get(ticket.userId)
 
 					// Fetch du message
 					const message = await interaction.channel.messages
@@ -120,13 +123,41 @@ export default async (interaction, client) => {
 						components: [buttonCloseTicket],
 					})
 
-					// Clôture du thread
+					// Récupération du thread
 					const threadTicket = interaction.guild.channels.cache.get(ticket.threadId)
+
+					// Création de l'embed clôture ticket
+					const embedClosed = new EmbedBuilder()
+						.setColor('#C27C0E')
+						.setTitle('Ticket clôturé')
+
+					await threadTicket.send({
+						embeds: [embedClosed],
+					})
+
+					// Clôture du thread
 					await threadTicket.setArchived()
 
-					return interaction.reply({
+					await interaction.reply({
 						content: 'Ticket clôturé 👌',
 						ephemeral: true,
+					})
+
+					// Création de l'embed message ticket en DM
+					const embedMessageTicketDM = new EmbedBuilder()
+						.setColor('#C27C0E')
+						.setAuthor({
+							name: interaction.guild.name,
+							iconURL: interaction.guild.iconURL({ dynamic: true }),
+							url: interaction.guild.vanityURL,
+						})
+						.setTitle('Nouveau ticket')
+						.setDescription(
+							`Ton ticket numéro **#${ticketId}** vient d'être clôturé.\nSi tu souhaites en créer un nouveau, tu peux envoyer un message en dessous de celui-ci.`,
+						)
+
+					return member.send({
+						embeds: [embedMessageTicketDM],
 					})
 				}
 
