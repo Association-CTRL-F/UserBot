@@ -107,6 +107,15 @@ export default {
 					})
 				break
 
+			case 'MEMBER_ROLE_ID':
+				const matches_MEMBER_ROLE_ID = contenu.match(regexId)
+				if (!matches_MEMBER_ROLE_ID || matches_MEMBER_ROLE_ID.length > 1)
+					return modal.reply({
+						content: "Tu n'as pas donné un ID valide 😕",
+						ephemeral: true,
+					})
+				break
+
 			case 'JOIN_ROLE_ID':
 				const matches_JOIN_ROLE_ID = contenu.match(regexId)
 				if (!matches_JOIN_ROLE_ID || matches_JOIN_ROLE_ID.length > 1)
@@ -258,6 +267,10 @@ export default {
 				break
 
 			// Rôles
+			case 'MEMBER_ROLE_ID':
+				client.config.guild.roles.MEMBER_ROLE_ID = contenu
+				break
+
 			case 'JOIN_ROLE_ID':
 				client.config.guild.roles.JOIN_ROLE_ID = contenu
 				break
@@ -316,6 +329,7 @@ export default {
 					ACCESS_CHANNEL_ID: client.config.guild.channels.ACCESS_CHANNEL_ID,
 				},
 				roles: {
+					MEMBER_ROLE_ID: client.config.guild.roles.MEMBER_ROLE_ID,
 					JOIN_ROLE_ID: client.config.guild.roles.JOIN_ROLE_ID,
 					NO_ENTRAIDE_ROLE_ID: client.config.guild.roles.NO_ENTRAIDE_ROLE_ID,
 					MUTED_ROLE_ID: client.config.guild.roles.MUTED_ROLE_ID,

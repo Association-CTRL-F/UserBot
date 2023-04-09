@@ -50,6 +50,9 @@ const subCommands = {
 	'access-channel': {
 		ACCESS_CHANNEL_ID: 'Salon acces-aux-canaux',
 	},
+	'member-role': {
+		JOIN_ROLE_ID: 'Rôle @Membre',
+	},
 	'join-role': {
 		JOIN_ROLE_ID: 'Rôle @Pas de blabla',
 	},
@@ -247,6 +250,11 @@ export default {
 				break
 
 			// Rôles
+			case 'member-role':
+				customId = 'MEMBER_ROLE_ID'
+				value = client.config.guild.roles.MEMBER_ROLE_ID
+				break
+
 			case 'join-role':
 				customId = 'JOIN_ROLE_ID'
 				value = client.config.guild.roles.JOIN_ROLE_ID

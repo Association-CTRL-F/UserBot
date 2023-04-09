@@ -18,6 +18,7 @@
             "ACCESS_CHANNEL_ID": ""
         },
         "roles": {
+            "MEMBER_ROLE_ID": "",
             "JOIN_ROLE_ID": "",
             "NO_ENTRAIDE_ROLE_ID": "",
             "MUTED_ROLE_ID": ""
