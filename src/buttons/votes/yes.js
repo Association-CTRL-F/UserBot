@@ -101,11 +101,7 @@ export default {
 			const embed = new EmbedBuilder()
 				.setColor('00FF00')
 				.setTitle(interaction.message.embeds[0].data.title)
-				.setDescription(
-					`✅ : ${nbYes}
-					⌛ : ${nbWait}
-					❌ : ${nbNo}`,
-				)
+				.setDescription(`✅ : ${nbYes}\r⌛ : ${nbWait}\r❌ : ${nbNo}`)
 				.addFields([
 					{
 						name: 'Proposition',
@@ -207,11 +203,7 @@ export default {
 		const embed = new EmbedBuilder()
 			.setColor('00FF00')
 			.setTitle(interaction.message.embeds[0].data.title)
-			.setDescription(
-				`✅ : ${nbYes}
-				⌛ : ${nbWait}
-				❌ : ${nbNo}`,
-			)
+			.setDescription(`✅ : ${nbYes}\r⌛ : ${nbWait}\r❌ : ${nbNo}`)
 			.addFields([
 				{
 					name: 'Proposition',
