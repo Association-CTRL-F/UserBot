@@ -10,6 +10,7 @@
 	        "REPORT_CHANNEL_ID": "",
 	        "LOGS_MESSAGES_CHANNEL_ID": "",
 	        "LOGS_BANS_CHANNEL_ID": "",
+            "LOGS_ROLES_CHANNEL_ID": "",
             "TRIBUNAL_CHANNEL_ID": "",
             "CONFIG_CHANNEL_ID": "",
             "UPGRADE_CHANNEL_ID": "",
