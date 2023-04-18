@@ -29,13 +29,7 @@ export default {
 				ephemeral: true,
 			})
 
-		let description = `Ton message est hors-sujet, merci de veiller à bien respecter les salons du serveur.\n\n• Il n'y a pas d'entraide dans le salon <#${client.config.guild.channels.BLABLA_CHANNEL_ID}>.\n• Si tu ne trouves pas le bon salon, tu peux te référer au salon <#${client.config.guild.channels.ACCESS_CHANNEL_ID}> afin de choisir tes différents accès.`
-
-		if (member.roles.cache.has(client.config.guild.roles.NO_ENTRAIDE_ROLE_ID))
-			description = description.concat(
-				'\n',
-				`• Tu as coché la case du rôle "Pas d'entraide" en ayant mal lu ce que la description indiquait, tu peux te référer au bas du salon <#${client.config.guild.channels.ACCESS_CHANNEL_ID}> afin de retirer la réaction.`,
-			)
+		const description = `Ton message est hors-sujet, merci de veiller à bien respecter les salons du serveur.\n\n• Il n'y a pas d'entraide dans le salon <#${client.config.guild.channels.BLABLA_CHANNEL_ID}>.\n• Si tu ne trouves pas le bon salon, tu peux te référer au menu "Salons & Rôles" en haut de la liste des salons afin de choisir tes différents accès.`
 
 		const embed = new EmbedBuilder()
 			.setColor('#C27C0E')
