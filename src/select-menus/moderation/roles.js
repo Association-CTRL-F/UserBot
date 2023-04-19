@@ -26,7 +26,7 @@ export default {
 		// Vérification si double rôle
 		if (menu.values.includes(modo.id) && menu.values.includes(certifie.id))
 			return menu.reply({
-				content: 'Tu ne peux pas avoir les rôles Modo et Certifiés en même temps 😬',
+				content: 'Tu ne peux pas avoir les rôles Modos et Certifiés en même temps 😬',
 				ephemeral: true,
 			})
 
