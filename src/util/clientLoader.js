@@ -79,6 +79,8 @@ export default async () => {
 		conseilsUsersID: new Set(),
 		// Domaines blacklistés
 		blacklistedDomains: new Set(),
+		// Raison de mddification de rôles staff
+		staffRolesReason: new Set(),
 	}
 
 	// Maps

@@ -7,15 +7,30 @@ export default {
 		.setName('staff')
 		.setDescription('Commandes staff')
 		.addSubcommand(subcommand =>
-			subcommand.setName('roles').setDescription('Choisir ses rôles staff'),
+			subcommand
+				.setName('roles')
+				.setDescription('Choisir ses rôles staff')
+				.addStringOption(option =>
+					option
+						.setName('raison')
+						.setDescription('Raison de la modification des rôles')
+						.setRequired(true),
+				),
 		),
 	interaction: async (interaction, client) => {
 		// Acquisition du membre
 		const member = interaction.guild.members.cache.get(interaction.user.id)
 
 		switch (interaction.options.getSubcommand()) {
-			// Nouveau formulaire
 			case 'roles':
+				// Acquisition de la raison
+				const reason = interaction.options.getString('raison')
+
+				client.cache.staffRolesReason.add({
+					memberId: interaction.user.id,
+					reason: reason,
+				})
+
 				// Acquisition des rôles à proposer
 				const staffEditeurs = await interaction.guild.roles.fetch(
 					client.config.guild.roles.STAFF_EDITEURS_ROLE_ID,

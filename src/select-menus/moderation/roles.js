@@ -18,6 +18,13 @@ export default {
 		// Acquisition du membre
 		const member = menu.guild.members.cache.get(menu.user.id)
 
+		// Acquisition de la raison
+		let reason = ''
+		client.cache.staffRolesReason.forEach(entry => {
+			if (entry.memberId === menu.user.id) reason = entry.reason
+			client.cache.staffRolesReason.delete(entry)
+		})
+
 		// Acquisition du salon de logs
 		const rolesLogs = menu.guild.channels.cache.get(
 			client.config.guild.channels.LOGS_ROLES_CHANNEL_ID,
@@ -30,7 +37,7 @@ export default {
 				ephemeral: true,
 			})
 
-		await rolesArray.forEach(role => {
+		rolesArray.forEach(role => {
 			if (member.roles.cache.has(role)) member.roles.remove(role)
 		})
 
@@ -39,6 +46,8 @@ export default {
 			member.roles.add(role)
 			description = description.concat(`- <@&${role}>\n`)
 		})
+
+		description = description.concat(`\n**Raison :** ${reason}`)
 
 		// Envoi du message de logs
 		const embed = new EmbedBuilder()
