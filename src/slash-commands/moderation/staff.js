@@ -26,11 +26,6 @@ export default {
 				// Acquisition de la raison
 				const reason = interaction.options.getString('raison')
 
-				client.cache.staffRolesReason.add({
-					memberId: interaction.user.id,
-					reason: reason,
-				})
-
 				// Acquisition des rôles à proposer
 				const staffEditeurs = await interaction.guild.roles.fetch(
 					client.config.guild.roles.STAFF_EDITEURS_ROLE_ID,
@@ -64,9 +59,16 @@ export default {
 						.addOptions(rolesArrayDefault),
 				)
 
-				return interaction.reply({
+				const message = await interaction.reply({
 					components: [roles],
 					ephemeral: true,
+					fetch: true,
+				})
+
+				return client.cache.staffRolesReason.add({
+					memberId: interaction.user.id,
+					reason: reason,
+					message: message,
 				})
 		}
 	},

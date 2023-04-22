@@ -20,8 +20,10 @@ export default {
 
 		// Acquisition de la raison
 		let reason = ''
-		client.cache.staffRolesReason.forEach(entry => {
+		client.cache.staffRolesReason.forEach(async entry => {
 			if (entry.memberId === menu.user.id) reason = entry.reason
+			const message = entry.message
+			await message.delete()
 			client.cache.staffRolesReason.delete(entry)
 		})
 
