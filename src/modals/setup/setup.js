@@ -62,15 +62,6 @@ export default {
 					})
 				break
 
-			case 'TICKETS_CHANNEL_ID':
-				const matches_TICKETS_CHANNEL_ID = contenu.match(regexId)
-				if (!matches_TICKETS_CHANNEL_ID || matches_TICKETS_CHANNEL_ID.length > 1)
-					return modal.reply({
-						content: "Tu n'as pas donné un ID valide 😕",
-						ephemeral: true,
-					})
-				break
-
 			case 'CONFIG_CHANNEL_ID':
 				const matches_CONFIG_CHANNEL_ID = contenu.match(regexId)
 				if (!matches_CONFIG_CHANNEL_ID || matches_CONFIG_CHANNEL_ID.length > 1)
@@ -98,15 +89,6 @@ export default {
 					})
 				break
 
-			case 'ACCESS_CHANNEL_ID':
-				const matches_ACCESS_CHANNEL_ID = contenu.match(regexId)
-				if (!matches_ACCESS_CHANNEL_ID || matches_ACCESS_CHANNEL_ID.length > 1)
-					return modal.reply({
-						content: "Tu n'as pas donné un ID valide 😕",
-						ephemeral: true,
-					})
-				break
-
 			case 'MEMBER_ROLE_ID':
 				const matches_MEMBER_ROLE_ID = contenu.match(regexId)
 				if (!matches_MEMBER_ROLE_ID || matches_MEMBER_ROLE_ID.length > 1)
@@ -125,18 +107,36 @@ export default {
 					})
 				break
 
-			case 'NO_ENTRAIDE_ROLE_ID':
-				const matches_NO_ENTRAIDE_ROLE_ID = contenu.match(regexId)
-				if (!matches_NO_ENTRAIDE_ROLE_ID || matches_NO_ENTRAIDE_ROLE_ID.length > 1)
+			case 'MUTED_ROLE_ID':
+				const matches_MUTED_ROLE_ID = contenu.match(regexId)
+				if (!matches_MUTED_ROLE_ID || matches_MUTED_ROLE_ID.length > 1)
 					return modal.reply({
 						content: "Tu n'as pas donné un ID valide 😕",
 						ephemeral: true,
 					})
 				break
 
-			case 'MUTED_ROLE_ID':
-				const matches_MUTED_ROLE_ID = contenu.match(regexId)
-				if (!matches_MUTED_ROLE_ID || matches_MUTED_ROLE_ID.length > 1)
+			case 'STAFF_EDITEURS_ROLE_ID':
+				const matches_STAFF_EDITEURS_ROLE_ID = contenu.match(regexId)
+				if (!matches_STAFF_EDITEURS_ROLE_ID || matches_STAFF_EDITEURS_ROLE_ID.length > 1)
+					return modal.reply({
+						content: "Tu n'as pas donné un ID valide 😕",
+						ephemeral: true,
+					})
+				break
+
+			case 'MODO_ROLE_ID':
+				const matches_MODO_ROLE_ID = contenu.match(regexId)
+				if (!matches_MODO_ROLE_ID || matches_MODO_ROLE_ID.length > 1)
+					return modal.reply({
+						content: "Tu n'as pas donné un ID valide 😕",
+						ephemeral: true,
+					})
+				break
+
+			case 'CERTIF_ROLE_ID':
+				const matches_CERTIF_ROLE_ID = contenu.match(regexId)
+				if (!matches_CERTIF_ROLE_ID || matches_CERTIF_ROLE_ID.length > 1)
 					return modal.reply({
 						content: "Tu n'as pas donné un ID valide 😕",
 						ephemeral: true,
@@ -226,7 +226,7 @@ export default {
 				break
 
 			// Salons
-			case 'lLEAVE_JOIN_CHANNEL_ID':
+			case 'LEAVE_JOIN_CHANNEL_ID':
 				client.config.guild.channels.LEAVE_JOIN_CHANNEL_ID = contenu
 				break
 
@@ -242,12 +242,12 @@ export default {
 				client.config.guild.channels.LOGS_BANS_CHANNEL_ID = contenu
 				break
 
-			case 'TRIBUNAL_CHANNEL_ID':
-				client.config.guild.channels.TRIBUNAL_CHANNEL_ID = contenu
+			case 'LOGS_ROLES_CHANNEL_ID':
+				client.config.guild.channels.LOGS_ROLES_CHANNEL_ID = contenu
 				break
 
-			case 'TICKETS_CHANNEL_ID':
-				client.config.guild.channels.TICKETS_CHANNEL_ID = contenu
+			case 'TRIBUNAL_CHANNEL_ID':
+				client.config.guild.channels.TRIBUNAL_CHANNEL_ID = contenu
 				break
 
 			case 'CONFIG_CHANNEL_ID':
@@ -262,10 +262,6 @@ export default {
 				client.config.guild.channels.BLABLA_CHANNEL_ID = contenu
 				break
 
-			case 'ACCESS_CHANNEL_ID':
-				client.config.guild.channels.ACCESS_CHANNEL_ID = contenu
-				break
-
 			// Rôles
 			case 'MEMBER_ROLE_ID':
 				client.config.guild.roles.MEMBER_ROLE_ID = contenu
@@ -275,12 +271,20 @@ export default {
 				client.config.guild.roles.JOIN_ROLE_ID = contenu
 				break
 
-			case 'NO_ENTRAIDE_ROLE_ID':
-				client.config.guild.roles.NO_ENTRAIDE_ROLE_ID = contenu
-				break
-
 			case 'MUTED_ROLE_ID':
 				client.config.guild.roles.MUTED_ROLE_ID = contenu
+				break
+
+			case 'STAFF_EDITEURS_ROLE_ID':
+				client.config.guild.roles.STAFF_EDITEURS_ROLE_ID = contenu
+				break
+
+			case 'MODO_ROLE_ID':
+				client.config.guild.roles.MODO_ROLE_ID = contenu
+				break
+
+			case 'CERTIF_ROLE_ID':
+				client.config.guild.roles.CERTIF_ROLE_ID = contenu
 				break
 
 			// Managers
@@ -321,18 +325,19 @@ export default {
 					REPORT_CHANNEL_ID: client.config.guild.channels.REPORT_CHANNEL_ID,
 					LOGS_MESSAGES_CHANNEL_ID: client.config.guild.channels.LOGS_MESSAGES_CHANNEL_ID,
 					LOGS_BANS_CHANNEL_ID: client.config.guild.channels.LOGS_BANS_CHANNEL_ID,
+					LOGS_ROLES_CHANNEL_ID: client.config.guild.channels.LOGS_ROLES_CHANNEL_ID,
 					TRIBUNAL_CHANNEL_ID: client.config.guild.channels.TRIBUNAL_CHANNEL_ID,
-					TICKETS_CHANNEL_ID: client.config.guild.channels.TICKETS_CHANNEL_ID,
 					CONFIG_CHANNEL_ID: client.config.guild.channels.CONFIG_CHANNEL_ID,
 					UPGRADE_CHANNEL_ID: client.config.guild.channels.UPGRADE_CHANNEL_ID,
 					BLABLA_CHANNEL_ID: client.config.guild.channels.BLABLA_CHANNEL_ID,
-					ACCESS_CHANNEL_ID: client.config.guild.channels.ACCESS_CHANNEL_ID,
 				},
 				roles: {
 					MEMBER_ROLE_ID: client.config.guild.roles.MEMBER_ROLE_ID,
 					JOIN_ROLE_ID: client.config.guild.roles.JOIN_ROLE_ID,
-					NO_ENTRAIDE_ROLE_ID: client.config.guild.roles.NO_ENTRAIDE_ROLE_ID,
 					MUTED_ROLE_ID: client.config.guild.roles.MUTED_ROLE_ID,
+					STAFF_EDITEURS_ROLE_ID: client.config.guild.roles.STAFF_EDITEURS_ROLE_ID,
+					MODO_ROLE_ID: client.config.guild.roles.MODO_ROLE_ID,
+					CERTIF_ROLE_ID: client.config.guild.roles.CERTIF_ROLE_ID,
 				},
 				managers: {
 					VOICE_MANAGER_CHANNELS_IDS:

@@ -32,11 +32,11 @@ const subCommands = {
 	'logs-bans-channel': {
 		LOGS_BANS_CHANNEL_ID: 'Salon logs bans',
 	},
+	'logs-roles-channel': {
+		LOGS_ROLES_CHANNEL_ID: 'Salon logs rôles',
+	},
 	'tribunal-channel': {
 		TRIBUNAL_CHANNEL_ID: 'Salon tribunal',
-	},
-	'tickets-channel': {
-		TICKETS_CHANNEL_ID: 'Salon tickets',
 	},
 	'config-channel': {
 		CONFIG_CHANNEL_ID: 'Salon config',
@@ -47,20 +47,23 @@ const subCommands = {
 	'blabla-channel': {
 		BLABLA_CHANNEL_ID: 'Salon blabla-hs',
 	},
-	'access-channel': {
-		ACCESS_CHANNEL_ID: 'Salon acces-aux-canaux',
-	},
 	'member-role': {
 		JOIN_ROLE_ID: 'Rôle @Membre',
 	},
 	'join-role': {
 		JOIN_ROLE_ID: 'Rôle @Pas de blabla',
 	},
-	'no-entraide-role': {
-		NO_ENTRAIDE_ROLE_ID: "Rôle @Pas d'entraide",
-	},
 	'muted-role': {
 		MUTED_ROLE_ID: 'Rôle @Muted',
+	},
+	'staff-editeurs-role': {
+		STAFF_EDITEURS_ROLE_ID: 'Rôle @STAFF éditeurs',
+	},
+	'modo-role': {
+		MODO_ROLE_ID: 'Rôle @Modos',
+	},
+	'certif-role': {
+		CERTIF_ROLE_ID: 'Rôle @Certifiés',
 	},
 	'voice-channels': {
 		VOICE_MANAGER_CHANNELS_IDS: 'Salons vocaux',
@@ -219,14 +222,14 @@ export default {
 				value = client.config.guild.channels.LOGS_BANS_CHANNEL_ID
 				break
 
+			case 'logs-roles-channel':
+				customId = 'LOGS_ROLES_CHANNEL_ID'
+				value = client.config.guild.channels.LOGS_ROLES_CHANNEL_ID
+				break
+
 			case 'tribunal-channel':
 				customId = 'TRIBUNAL_CHANNEL_ID'
 				value = client.config.guild.channels.TRIBUNAL_CHANNEL_ID
-				break
-
-			case 'tickets-channel':
-				customId = 'TICKETS_CHANNEL_ID'
-				value = client.config.guild.channels.TICKETS_CHANNEL_ID
 				break
 
 			case 'config-channel':
@@ -244,11 +247,6 @@ export default {
 				value = client.config.guild.channels.BLABLA_CHANNEL_ID
 				break
 
-			case 'access-channel':
-				customId = 'ACCESS_CHANNEL_ID'
-				value = client.config.guild.channels.ACCESS_CHANNEL_ID
-				break
-
 			// Rôles
 			case 'member-role':
 				customId = 'MEMBER_ROLE_ID'
@@ -260,14 +258,24 @@ export default {
 				value = client.config.guild.roles.JOIN_ROLE_ID
 				break
 
-			case 'no-entraide-role':
-				customId = 'NO_ENTRAIDE_ROLE_ID'
-				value = client.config.guild.roles.NO_ENTRAIDE_ROLE_ID
-				break
-
 			case 'muted-role':
 				customId = 'MUTED_ROLE_ID'
 				value = client.config.guild.roles.MUTED_ROLE_ID
+				break
+
+			case 'staff-editeurs-role':
+				customId = 'STAFF_EDITEURS_ROLE_ID'
+				value = client.config.guild.roles.STAFF_EDITEURS_ROLE_ID
+				break
+
+			case 'modo-role':
+				customId = 'MODO_ROLE_ID'
+				value = client.config.guild.roles.MODO_ROLE_ID
+				break
+
+			case 'certif-role':
+				customId = 'CERTIF_ROLE_ID'
+				value = client.config.guild.roles.CERTIF_ROLE_ID
 				break
 
 			// Managers
