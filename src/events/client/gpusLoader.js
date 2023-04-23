@@ -11,7 +11,7 @@ export default guild => {
 
 		gpusJSON = JSON.parse(gpusJSON)
 
-		// Parcourir les cartes graphiques contenue dans le gpu.json
+		// Parcourir les cartes graphiques dans gpu.json
 		// eslint-disable-next-line require-await
 		Object.values(Object.values(gpusJSON)).forEach(async gpu => {
 			// Récupérer les données de l'API
@@ -26,7 +26,7 @@ export default guild => {
 					// Si la carte graphique est disponible
 					// et qu'annonce non envoyée
 					if (res.data.listMap[0].is_active === 'true' && gpu.active !== 'true') {
-						// On change la variable active à false
+						// On change la variable active à 'false'
 						gpu.active = 'true'
 
 						const role = `<@&${gpu.roleId}>` || ''
@@ -61,7 +61,7 @@ export default guild => {
 
 					if (res.data.listMap[0].is_active === 'false' && gpu.active === 'false') {
 						// Si la carte graphique n'est pas disponible
-						// et que la variable active est à false
+						// et que la variable active est à 'false'
 						// on ne fait rien
 						// Si besoin on peut écrire quelque chose ici
 					}
@@ -69,7 +69,7 @@ export default guild => {
 					// Si la carte graphique n'est pas disponible
 					// et que la variable est active
 					if (res.data.listMap[0].is_active === 'false' && gpu.active === 'true') {
-						// On change la variable active à false
+						// On change la variable active à 'false'
 						gpu.active = 'false'
 
 						const channel = guild.channels.cache.get(gpu.channelId)

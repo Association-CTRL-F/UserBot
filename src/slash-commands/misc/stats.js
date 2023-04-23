@@ -29,7 +29,8 @@ export default {
 					commands = result
 				} catch (error) {
 					return interaction.reply({
-						content: 'Une erreur est survenue lors de la récupération des commandes 😕',
+						content:
+							'Une erreur est survenue lors de la récupération des commandes en base de données 😕',
 						ephemeral: true,
 					})
 				}

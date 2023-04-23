@@ -1,7 +1,6 @@
 /* eslint-disable max-len */
 import {
 	Collection,
-	GuildMember,
 	EmbedBuilder,
 	ButtonBuilder,
 	ActionRowBuilder,
@@ -15,12 +14,6 @@ import {
 	isImage,
 	getFileInfos,
 	displayNameAndID,
-	isStaffMember,
-	convertDateForDiscord,
-	diffDate,
-	findLinks,
-	getFinalLink,
-	isLinkMalicious,
 } from '../../util/util.js'
 import { ChatGPTAPI } from 'chatgpt'
 
@@ -28,171 +21,6 @@ export default async (message, client) => {
 	if (message.author.bot) return
 
 	if (message.partial) await message.fetch()
-
-	// Acquisition de la base de données
-	const bdd = client.config.db.pools.userbot
-	if (!bdd)
-		return console.log('Une erreur est survenue lors de la connexion à la base de données')
-
-	// // Si le message est un DM
-	// if (message.channel.type === 1) {
-	// 	// Fetch de l'user et de la guild
-	// 	const user = await client.users.fetch(message.author)
-	// 	const guild = await client.guilds.fetch(client.config.guild.GUILD_ID)
-
-	// 	// Récupération du ticket
-	// 	let ticket = ''
-	// 	try {
-	// 		const sql = 'SELECT * FROM tickets WHERE userId = ? AND active = ?'
-	// 		const data = [user.id, 1]
-	// 		const [result] = await bdd.execute(sql, data)
-
-	// 		ticket = result[0]
-	// 	} catch {
-	// 		return console.log(
-	// 			'Une erreur est survenue lors de la récupération du message de bannissement en base de données (Automod)',
-	// 		)
-	// 	}
-
-	// 	// Si ticket actif, on continue l'actuel
-	// 	if (ticket) {
-	// 		// Acquisition du thread du ticket
-	// 		const threadTicket = guild.channels.cache.get(ticket.threadId)
-
-	// 		await threadTicket.send({
-	// 			content: `**${user.username} :** ${message.content}`,
-	// 		})
-	// 	} else {
-	// 		// Génération du numéro de ticket
-	// 		let ticketId = ''
-	// 		let ticketIdVerif = ''
-
-	// 		do {
-	// 			ticketId = randomString(6)
-
-	// 			try {
-	// 				const sql = 'SELECT * FROM tickets WHERE ticketId = ?'
-	// 				const data = [ticketId]
-	// 				// eslint-disable-next-line no-await-in-loop
-	// 				const [result] = await bdd.execute(sql, data)
-
-	// 				ticketIdVerif = result[0]
-	// 			} catch {
-	// 				return console.log(
-	// 					'Une erreur est survenue lors de la création du numéro de ticket en base de données',
-	// 				)
-	// 			}
-	// 		} while (ticketId === ticketIdVerif)
-
-	// 		// Acquisition du salon tickets
-	// 		const ticketsChannel = guild.channels.cache.get(
-	// 			client.config.guild.channels.TICKETS_CHANNEL_ID,
-	// 		)
-
-	// 		// Création du thread de discussion
-	// 		const thread = await ticketsChannel.threads.create({
-	// 			name: `Ticket #${ticketId} de ${user.username}`,
-	// 			autoArchiveDuration: 24 * 60,
-	// 			type: ChannelType.PrivateThread,
-	// 			invitable: false,
-	// 		})
-
-	// 		// Création de l'embed ticket
-	// 		const embedTicket = new EmbedBuilder()
-	// 			.setColor('#C27C0E')
-	// 			.setTitle(`Ticket #${ticketId}`)
-	// 			.setDescription(`Ticket de ${displayNameAndID(user, user)}`)
-
-	// 		const buttonTicket = new ActionRowBuilder().addComponents(
-	// 			new ButtonBuilder()
-	// 				.setLabel('Thread de discussion')
-	// 				.setStyle(ButtonStyle.Link)
-	// 				.setURL(`https://discord.com/channels/${guild.id}/${thread.id}`),
-	// 		)
-
-	// 		const buttonCloseTicket = new ActionRowBuilder().addComponents(
-	// 			new ButtonBuilder()
-	// 				.setLabel('Clôturer le ticket')
-	// 				.setStyle(ButtonStyle.Danger)
-	// 				.setCustomId(`ticket-${ticketId}`),
-	// 		)
-
-	// 		// Création de l'embed message ticket
-	// 		const embedMessageTicket = new EmbedBuilder()
-	// 			.setColor('#C27C0E')
-	// 			.setAuthor({
-	// 				name: displayNameAndID(user, user),
-	// 				iconURL: user.displayAvatarURL({ dynamic: true }),
-	// 			})
-	// 			.setTitle('Nouveau ticket')
-	// 			.setDescription(message.content)
-
-	// 		// Création de l'embed message ticket en DM
-	// 		const embedMessageTicketDM = new EmbedBuilder()
-	// 			.setColor('#C27C0E')
-	// 			.setAuthor({
-	// 				name: guild.name,
-	// 				iconURL: guild.iconURL({ dynamic: true }),
-	// 				url: guild.vanityURL,
-	// 			})
-	// 			.setTitle('Nouveau ticket')
-	// 			.setDescription(
-	// 				`Ton message nous a bien été transmis.\nTon numéro de ticket est : **#${ticketId}**.\nUne réponse te sera apportée dans les plus brefs délais.\nChaque message envoyé en dessous de celui-ci sera ajouté à la discussion en cours.`,
-	// 			)
-
-	// 		await ticketsChannel.send({
-	// 			embeds: [embedTicket],
-	// 			components: [buttonTicket, buttonCloseTicket],
-	// 		})
-
-	// 		await thread.send({
-	// 			embeds: [embedMessageTicket],
-	// 		})
-
-	// 		await user.send({
-	// 			embeds: [embedMessageTicketDM],
-	// 		})
-
-	// 		// Création en base de données
-	// 		try {
-	// 			const sql =
-	// 				'INSERT INTO tickets (ticketId, userId, threadId, createdAt, active) VALUES (?, ?, ?, ?, ?)'
-
-	// 			const data = [ticketId, user.id, thread.id, Math.round(new Date() / 1000), 1]
-
-	// 			await bdd.execute(sql, data)
-	// 		} catch (error) {
-	// 			return console.error(error)
-	// 		}
-	// 	}
-
-	// 	return
-	// }
-
-	// // Si le message est un thread privé
-	// if (message.channel.type === 12) {
-	// 	// Récupération du ticket
-	// 	let ticket = ''
-	// 	try {
-	// 		const sql = 'SELECT * FROM tickets WHERE threadId = ? AND active = ?'
-	// 		const data = [message.channel.id, 1]
-	// 		const [result] = await bdd.execute(sql, data)
-
-	// 		ticket = result[0]
-	// 	} catch {
-	// 		return console.log(
-	// 			'Une erreur est survenue lors de la récupération du message de bannissement en base de données (Automod)',
-	// 		)
-	// 	}
-
-	// 	if (ticket) {
-	// 		const member = message.guild.members.cache.get(ticket.userId)
-
-	// 		await member.send({
-	// 			content: `**Staff :** ${message.content}`,
-	// 		})
-	// 	}
-	// }
 
 	// Si le message vient d'une guild, on vérifie
 	if (message.member) {
@@ -212,150 +40,6 @@ export default async (message, client) => {
 					if (error.code !== RESTJSONErrorCodes.UnknownMember) throw error
 				})
 	}
-
-	// Automod //
-
-	// Acquisition du salon de logs liste-ban
-	const logsChannel = message.guild.channels.cache.get(
-		client.config.guild.channels.LOGS_BANS_CHANNEL_ID,
-	)
-	if (!logsChannel) return
-
-	// Partie domaines
-	const staffRoles = client.config.guild.managers.STAFF_ROLES_MANAGER_IDS
-		? client.config.guild.managers.STAFF_ROLES_MANAGER_IDS.split(/, */)
-		: []
-
-	if (!isStaffMember(message.member, staffRoles)) {
-		const sentMessage = await message.fetch().catch(() => false)
-
-		let guildMember = {}
-		if (message.guild)
-			guildMember = await message.guild.members.fetch(sentMessage.author).catch(() => false)
-
-		if (!sentMessage || !guildMember) return
-
-		const messageLinks = await findLinks(message.content)
-		if (!messageLinks) return
-
-		await messageLinks.forEach(async (link, domainName) => {
-			const finalLink = await getFinalLink(client, bdd, link, domainName)
-			const malicious = await isLinkMalicious(bdd, finalLink)
-
-			// Si lien frauduleux, alors ban
-			if (malicious) {
-				// Suppression du message
-				sentMessage.delete()
-
-				// Acquisition du message de bannissement
-				let banDM = ''
-				try {
-					const sql = 'SELECT * FROM forms WHERE name = ?'
-					const data = ['ban']
-					const [result] = await bdd.execute(sql, data)
-
-					banDM = result[0].content
-				} catch {
-					return console.log(
-						'Une erreur est survenue lors de la récupération du message de bannissement en base de données (Automod)',
-					)
-				}
-
-				// Envoi du message de bannissement en message privé
-				const embed = new EmbedBuilder()
-					.setColor('#C27C0E')
-					.setTitle('Bannissement')
-					.setDescription(banDM)
-					.setAuthor({
-						name: sentMessage.guild.name,
-						iconURL: sentMessage.guild.iconURL({ dynamic: true }),
-						url: sentMessage.guild.vanityURL,
-					})
-					.addFields([
-						{
-							name: 'Raison du bannissement',
-							value: 'Scam Nitro / Steam (Automod)',
-						},
-					])
-
-				const DMMessageBan = await guildMember
-					.send({
-						embeds: [embed],
-					})
-					.catch(error => {
-						console.error(error)
-					})
-
-				// Ban du membre
-				const banAction = await guildMember
-					.ban({
-						deleteMessageSeconds: 604800,
-						reason: `${client.user.tag} : Scam Nitro / Steam (Automod)`,
-					})
-					.catch(error => {
-						// Suppression du message privé envoyé
-						// car action de bannissement non réalisée
-						if (DMMessageBan) DMMessageBan.delete()
-
-						if (error.code === RESTJSONErrorCodes.MissingPermissions)
-							return console.log(
-								"Je n'ai pas les permissions pour bannir ce membre (Automod)",
-							)
-
-						console.error(error)
-						return console.log(
-							'Une erreur est survenue lors du bannissement du membre (Automod)',
-						)
-					})
-
-				// Si pas d'erreur, envoi du message log dans le salon
-				if (banAction instanceof GuildMember) {
-					// Création de l'embed
-					const logEmbed = new EmbedBuilder()
-						.setColor('C9572A')
-						.setAuthor({
-							name: displayNameAndID(banAction, banAction),
-							iconURL: banAction.displayAvatarURL({ dynamic: true }),
-						})
-						.setDescription(
-							`\`\`\`\n${client.user.tag} : Scam Nitro / Steam (Automod)\`\`\``,
-						)
-						.addFields([
-							{
-								name: 'Mention',
-								value: banAction.toString(),
-								inline: true,
-							},
-							{
-								name: 'Date de création du compte',
-								value: convertDateForDiscord(banAction.user.createdAt),
-								inline: true,
-							},
-							{
-								name: 'Âge du compte',
-								value: diffDate(banAction.user.createdAt),
-								inline: true,
-							},
-						])
-						.setFooter({
-							iconURL: banAction.user.displayAvatarURL({ dynamic: true }),
-							text: `Membre banni par ${banAction.user.tag}`,
-						})
-						.setTimestamp(new Date())
-
-					return logsChannel.send({ embeds: [logEmbed] })
-				}
-
-				if (banAction instanceof Error || DMMessageBan instanceof Error)
-					// Si au moins une erreur, throw
-					throw new Error(
-						"L'envoi d'un message et / ou le bannissement d'un membre a échoué. Voir les logs précédents pour plus d'informations.",
-					)
-			}
-		})
-	}
-
-	// Fin Automod
 
 	// Si c'est un salon no-text
 	const NOTEXT = client.config.guild.managers.NOTEXT_MANAGER_CHANNELS_IDS
@@ -406,6 +90,11 @@ export default async (message, client) => {
 			if (message.content.match(regexFeur)) message.react(feurEmoji)
 		}
 	}
+
+	// Acquisition de la base de données
+	const bdd = client.config.db.pools.userbot
+	if (!bdd)
+		return console.log('Une erreur est survenue lors de la connexion à la base de données')
 
 	// Alertes personnalisées
 	let alerts = []

@@ -24,7 +24,8 @@ export default {
 			form = result[0]
 		} catch (error) {
 			return modal.reply({
-				content: 'Une erreur est survenue lors de la vérification du nom du formulaire 😕',
+				content:
+					'Une erreur est survenue lors de la vérification du nom du formulaire en base de données 😕',
 				ephemeral: true,
 			})
 		}

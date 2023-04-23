@@ -53,9 +53,18 @@ export default {
 					})
 				break
 
-			case 'TRIBUNAL_CHANNEL_ID':
-				const matches_TRIBUNAL_CHANNEL_ID = contenu.match(regexId)
-				if (!matches_TRIBUNAL_CHANNEL_ID || matches_TRIBUNAL_CHANNEL_ID.length > 1)
+			case 'LOGS_ROLES_CHANNEL_ID':
+				const matches_LOGS_ROLES_CHANNEL_ID = contenu.match(regexId)
+				if (!matches_LOGS_ROLES_CHANNEL_ID || matches_LOGS_ROLES_CHANNEL_ID.length > 1)
+					return modal.reply({
+						content: "Tu n'as pas donné un ID valide 😕",
+						ephemeral: true,
+					})
+				break
+
+			case 'MEDIATION_CHANNEL_ID':
+				const matches_MEDIATION_CHANNEL_ID = contenu.match(regexId)
+				if (!matches_MEDIATION_CHANNEL_ID || matches_MEDIATION_CHANNEL_ID.length > 1)
 					return modal.reply({
 						content: "Tu n'as pas donné un ID valide 😕",
 						ephemeral: true,
@@ -187,15 +196,6 @@ export default {
 						ephemeral: true,
 					})
 				break
-
-			case 'STAFF_ROLES_MANAGER_IDS':
-				const matches_STAFF_ROLES_MANAGER_IDS = contenu.match(regexIds)
-				if (!matches_STAFF_ROLES_MANAGER_IDS)
-					return modal.reply({
-						content: "Tu n'as pas donné un / des ID(s) valide(s) 😕",
-						ephemeral: true,
-					})
-				break
 		}
 
 		if (contenu === '') contenu = null
@@ -246,8 +246,8 @@ export default {
 				client.config.guild.channels.LOGS_ROLES_CHANNEL_ID = contenu
 				break
 
-			case 'TRIBUNAL_CHANNEL_ID':
-				client.config.guild.channels.TRIBUNAL_CHANNEL_ID = contenu
+			case 'MEDIATION_CHANNEL_ID':
+				client.config.guild.channels.MEDIATION_CHANNEL_ID = contenu
 				break
 
 			case 'CONFIG_CHANNEL_ID':
@@ -307,10 +307,6 @@ export default {
 			case 'FEUR_MANAGER_CHANNELS_IDS':
 				client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS = contenu
 				break
-
-			case 'STAFF_ROLES_MANAGER_IDS':
-				client.config.guild.managers.STAFF_ROLES_MANAGER_IDS = contenu
-				break
 		}
 
 		const config = {
@@ -326,7 +322,7 @@ export default {
 					LOGS_MESSAGES_CHANNEL_ID: client.config.guild.channels.LOGS_MESSAGES_CHANNEL_ID,
 					LOGS_BANS_CHANNEL_ID: client.config.guild.channels.LOGS_BANS_CHANNEL_ID,
 					LOGS_ROLES_CHANNEL_ID: client.config.guild.channels.LOGS_ROLES_CHANNEL_ID,
-					TRIBUNAL_CHANNEL_ID: client.config.guild.channels.TRIBUNAL_CHANNEL_ID,
+					MEDIATION_CHANNEL_ID: client.config.guild.channels.MEDIATION_CHANNEL_ID,
 					CONFIG_CHANNEL_ID: client.config.guild.channels.CONFIG_CHANNEL_ID,
 					UPGRADE_CHANNEL_ID: client.config.guild.channels.UPGRADE_CHANNEL_ID,
 					BLABLA_CHANNEL_ID: client.config.guild.channels.BLABLA_CHANNEL_ID,
@@ -350,7 +346,6 @@ export default {
 						client.config.guild.managers.THREADS_MANAGER_CHANNELS_IDS,
 					FEUR_MANAGER_CHANNELS_IDS:
 						client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS,
-					STAFF_ROLES_MANAGER_IDS: client.config.guild.managers.STAFF_ROLES_MANAGER_IDS,
 				},
 			},
 		}

@@ -34,7 +34,7 @@ export default {
 		// On diffère la réponse pour avoir plus de 3 secondes
 		await interaction.deferReply()
 
-		// Acquisition du rôle muted
+		// Acquisition du rôle Muted
 		const mutedRole = client.config.guild.roles.MUTED_ROLE_ID
 		if (!mutedRole)
 			return interaction.editReply({
@@ -68,7 +68,7 @@ export default {
 							"Je n'ai pas trouvé cet utilisateur, vérifie la mention ou l'ID 😕",
 					})
 
-				// Vérification si le membre a bien le rôle muted
+				// Vérification si le membre a bien le rôle Muted
 				if (!member.roles.cache.has(mutedRole))
 					return interaction.editReply({
 						content: "Le membre n'est pas muté 😕",
@@ -149,7 +149,7 @@ export default {
 						} catch {
 							return interaction.editReply({
 								content:
-									'Une erreur est survenue lors de la levée du mute du membre 😬',
+									'Une erreur est survenue lors de la levée du mute du membre en base de données 😬',
 							})
 						}
 
@@ -226,7 +226,7 @@ export default {
 						const memberGroup = await interaction.guild.members.fetch(userGroup)
 						if (!memberGroup) return
 
-						// Vérification si le membre a déjà le rôle muted
+						// Vérification si le membre a déjà le rôle Muted
 						if (!memberGroup.roles.cache.has(mutedRole)) return
 
 						// On ne peut pas se mute soi-même

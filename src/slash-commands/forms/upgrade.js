@@ -65,7 +65,8 @@ export default {
 			upgradeDescription = resultSelectUpgradeDesc[0].content
 		} catch {
 			return interaction.editReply({
-				content: 'Une erreur est survenue lors de la récupération du formulaire 😬',
+				content:
+					'Une erreur est survenue lors de la récupération du formulaire en base de données 😬',
 			})
 		}
 

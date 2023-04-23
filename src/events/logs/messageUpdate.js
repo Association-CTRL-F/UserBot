@@ -1,5 +1,4 @@
 import {
-	GuildMember,
 	EmbedBuilder,
 	ButtonBuilder,
 	ActionRowBuilder,
@@ -7,16 +6,7 @@ import {
 	RESTJSONErrorCodes,
 	PermissionsBitField,
 } from 'discord.js'
-import {
-	convertDate,
-	displayNameAndID,
-	isStaffMember,
-	convertDateForDiscord,
-	diffDate,
-	findLinks,
-	getFinalLink,
-	isLinkMalicious,
-} from '../../util/util.js'
+import { convertDate, displayNameAndID } from '../../util/util.js'
 import { ChatGPTAPI } from 'chatgpt'
 
 export default async (oldMessage, newMessage, client) => {
@@ -88,157 +78,6 @@ export default async (oldMessage, newMessage, client) => {
 		await logsChannelMessages.send({ embeds: [logEmbedMessage] })
 	}
 
-	// Acquisition de la base de données
-	const bdd = client.config.db.pools.userbot
-	if (!bdd)
-		return console.log('Une erreur est survenue lors de la connexion à la base de données')
-
-	// Automod //
-
-	// Acquisition du salon de logs liste-ban
-	const logsChannelBans = newMessage.guild.channels.cache.get(
-		client.config.guild.channels.LOGS_BANS_CHANNEL_ID,
-	)
-	if (!logsChannelBans) return
-
-	// Partie domaines
-	const staffRoles = client.config.guild.managers.STAFF_ROLES_MANAGER_IDS
-		? client.config.guild.managers.STAFF_ROLES_MANAGER_IDS.split(/, */)
-		: []
-
-	if (!isStaffMember(newMessage.member, staffRoles)) {
-		const sentMessage = await newMessage.fetch().catch(() => false)
-
-		let guildMember = {}
-		if (newMessage.guild)
-			guildMember = await newMessage.guild.members
-				.fetch(sentMessage.author)
-				.catch(() => false)
-
-		if (!sentMessage || !guildMember) return
-
-		const messageLinks = await findLinks(newMessage.content)
-		if (!messageLinks) return
-
-		await messageLinks.forEach(async (link, domainName) => {
-			const finalLink = await getFinalLink(client, bdd, link, domainName)
-			const malicious = await isLinkMalicious(bdd, finalLink)
-
-			// Si lien frauduleux, alors ban
-			if (malicious) {
-				// Suppression du message
-				sentMessage.delete()
-
-				// Acquisition du message de bannissement
-				let banDM = ''
-				try {
-					const sql = 'SELECT * FROM forms WHERE name = ?'
-					const data = ['ban']
-					const [result] = await bdd.execute(sql, data)
-
-					banDM = result[0].content
-				} catch {
-					return console.log(
-						'Une erreur est survenue lors de la récupération du message de bannissement en base de données (Automod)',
-					)
-				}
-
-				// Envoi du message de bannissement en message privé
-				const embed = new EmbedBuilder()
-					.setColor('#C27C0E')
-					.setTitle('Bannissement')
-					.setDescription(banDM)
-					.setAuthor({
-						name: sentMessage.guild.name,
-						iconURL: sentMessage.guild.iconURL({ dynamic: true }),
-						url: sentMessage.guild.vanityURL,
-					})
-					.addFields([
-						{
-							name: 'Raison du bannissement',
-							value: 'Scam Nitro / Steam (Automod)',
-						},
-					])
-
-				const DMMessageBan = await guildMember
-					.send({
-						embeds: [embed],
-					})
-					.catch(error => {
-						console.error(error)
-					})
-
-				// Ban du membre
-				const banAction = await guildMember
-					.ban({
-						deleteMessageSeconds: 604800,
-						reason: `${client.user.tag} : Scam Nitro / Steam (Automod)`,
-					})
-					.catch(error => {
-						// Suppression du message privé envoyé
-						// car action de bannissement non réalisée
-						if (DMMessageBan) DMMessageBan.delete()
-
-						if (error.code === RESTJSONErrorCodes.MissingPermissions)
-							return console.log(
-								"Je n'ai pas les permissions pour bannir ce membre (Automod)",
-							)
-
-						console.error(error)
-						return console.log(
-							'Une erreur est survenue lors du bannissement du membre (Automod)',
-						)
-					})
-
-				// Si pas d'erreur, envoi du message log dans le salon
-				if (banAction instanceof GuildMember) {
-					// Création de l'embed
-					const logEmbedBan = new EmbedBuilder()
-						.setColor('C9572A')
-						.setAuthor({
-							name: displayNameAndID(banAction, banAction),
-							iconURL: banAction.displayAvatarURL({ dynamic: true }),
-						})
-						.setDescription(
-							`\`\`\`\n${client.user.tag} : Scam Nitro / Steam (Automod)\`\`\``,
-						)
-						.addFields([
-							{
-								name: 'Mention',
-								value: banAction.toString(),
-								inline: true,
-							},
-							{
-								name: 'Date de création du compte',
-								value: convertDateForDiscord(banAction.user.createdAt),
-								inline: true,
-							},
-							{
-								name: 'Âge du compte',
-								value: diffDate(banAction.user.createdAt),
-								inline: true,
-							},
-						])
-						.setFooter({
-							iconURL: banAction.user.displayAvatarURL({ dynamic: true }),
-							text: `Membre banni par ${banAction.user.tag}`,
-						})
-						.setTimestamp(new Date())
-
-					return logsChannelBans.send({ embeds: [logEmbedBan] })
-				}
-
-				if (banAction instanceof Error || DMMessageBan instanceof Error)
-					// Si au moins une erreur, throw
-					throw new Error(
-						"L'envoi d'un message et / ou le bannissement d'un membre a échoué. Voir les logs précédents pour plus d'informations.",
-					)
-			}
-		})
-	}
-
-	// Fin Automod
-
 	// Si c'est un salon no-text
 	const NOTEXT = client.config.guild.managers.NOTEXT_MANAGER_CHANNELS_IDS
 		? client.config.guild.managers.NOTEXT_MANAGER_CHANNELS_IDS.split(/, */)
@@ -288,6 +127,11 @@ export default async (oldMessage, newMessage, client) => {
 			if (newMessage.content.match(regexFeur)) newMessage.react(feurEmoji)
 		}
 	}
+
+	// Acquisition de la base de données
+	const bdd = client.config.db.pools.userbot
+	if (!bdd)
+		return console.log('Une erreur est survenue lors de la connexion à la base de données')
 
 	// Alertes personnalisées
 	let alerts = []
@@ -386,10 +230,6 @@ export default async (oldMessage, newMessage, client) => {
 	if (newMessage.guild)
 		if (newMessage.mentions.users.has(client.user.id) && !newMessage.mentions.repliedUser) {
 			// Répondre aux messages avec mention en utilisant ChatGPT
-			// // Répondre émoji si @bot
-			// eslint-disable-next-line max-len
-			// const pingEmoji = client.emojis.cache.find(emoji => emoji.name === 'ping')
-			// if (pingEmoji) message.react(pingEmoji)
 
 			const chatgpt = new ChatGPTAPI({
 				apiKey: client.config.others.openAiKey,

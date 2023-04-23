@@ -115,7 +115,7 @@ export default {
 							inline: true,
 						},
 						{
-							name: '**Nombre de canaux**',
+							name: '**Nombre de salons**',
 							value: `${interaction.guild.channels.cache.size}`,
 							inline: true,
 						},

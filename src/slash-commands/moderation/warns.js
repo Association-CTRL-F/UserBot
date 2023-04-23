@@ -275,7 +275,7 @@ export default {
 				} catch {
 					return interaction.reply({
 						content:
-							"Une erreur est survenue lors de la récupération de l'avertissement 😬",
+							"Une erreur est survenue lors de la récupération de l'avertissement en base de données 😬",
 						ephemeral: true,
 					})
 				}
@@ -305,7 +305,7 @@ export default {
 				} catch {
 					return interaction.reply({
 						content:
-							"Une erreur est survenue lors de la modification de l'avertissement 😬",
+							"Une erreur est survenue lors de la modification de l'avertissement en base de données 😬",
 						ephemeral: true,
 					})
 				}
@@ -335,7 +335,7 @@ export default {
 				} catch {
 					return interaction.reply({
 						content:
-							"Une erreur est survenue lors de la suppression de l'avertissement 😬",
+							"Une erreur est survenue lors de la suppression de l'avertissement en base de données 😬",
 						ephemeral: true,
 					})
 				}
@@ -366,7 +366,7 @@ export default {
 				} catch {
 					return interaction.reply({
 						content:
-							'Une erreur est survenue lors de la suppression des avertissements 😬',
+							'Une erreur est survenue lors de la récupération des avertissements en base de données 😬',
 						ephemeral: true,
 					})
 				}
@@ -385,7 +385,7 @@ export default {
 				} catch {
 					return interaction.reply({
 						content:
-							'Une erreur est survenue lors de la suppression des avertissements 😬',
+							'Une erreur est survenue lors de la suppression des avertissements en base de données 😬',
 						ephemeral: true,
 					})
 				}

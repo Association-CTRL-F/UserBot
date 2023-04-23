@@ -64,7 +64,7 @@ export default {
 		// On diffère la réponse pour avoir plus de 3 secondes
 		await interaction.deferReply()
 
-		// Acquisition du rôle muted
+		// Acquisition du rôle Muted
 		const mutedRole = client.config.guild.roles.MUTED_ROLE_ID
 		if (!mutedRole)
 			return interaction.editReply({
@@ -105,9 +105,9 @@ export default {
 			})
 		}
 
-		// Acquisition du salon tribunal
-		const tribunalChannel = interaction.guild.channels.cache.get(
-			client.config.guild.channels.TRIBUNAL_CHANNEL_ID,
+		// Acquisition du salon médiation
+		const mediationChannel = interaction.guild.channels.cache.get(
+			client.config.guild.channels.MEDIATION_CHANNEL_ID,
 		)
 
 		switch (interaction.options.getSubcommand()) {
@@ -121,7 +121,7 @@ export default {
 							"Je n'ai pas trouvé cet utilisateur, vérifie la mention ou l'ID 😕",
 					})
 
-				// Vérification si le membre a déjà le rôle muted
+				// Vérification si le membre a déjà le rôle Muted
 				if (member.roles.cache.has(mutedRole))
 					return interaction.editReply({
 						content: 'Le membre est déjà muté 😕',
@@ -288,13 +288,13 @@ export default {
 							})
 				}
 
-				// Suppression du rôle muted après le temps écoulé
+				// Suppression du rôle Muted après le temps écoulé
 				// et envoi du message privé
 				setTimeout(removeRole, duration * 60000)
 
 				// Si pas d'erreur, message de confirmation du mute
 				if (muteAction instanceof GuildMember) {
-					const thread = await tribunalChannel.threads.create({
+					const thread = await mediationChannel.threads.create({
 						name: `Mute de ${member.user.username}`,
 						autoArchiveDuration: 24 * 60,
 						type: ChannelType.PrivateThread,
@@ -302,12 +302,12 @@ export default {
 					})
 
 					// Création de l'embed
-					const embedTribunal = new EmbedBuilder()
+					const embedMediation = new EmbedBuilder()
 						.setColor('#C27C0E')
 						.setTitle('Mute simple')
 						.setDescription(`${displayNameAndID(member)} est muté`)
 
-					const buttonTribunal = new ActionRowBuilder().addComponents(
+					const buttonMediation = new ActionRowBuilder().addComponents(
 						new ButtonBuilder()
 							.setLabel('Thread de discussion')
 							.setStyle(ButtonStyle.Link)
@@ -316,9 +316,9 @@ export default {
 							),
 					)
 
-					await tribunalChannel.send({
-						embeds: [embedTribunal],
-						components: [buttonTribunal],
+					await mediationChannel.send({
+						embeds: [embedMediation],
+						components: [buttonMediation],
 					})
 
 					await thread.members.add(member.id)
@@ -354,7 +354,7 @@ export default {
 						content: "Tu n'as pas mute plusieurs membres 😕",
 					})
 
-				const threadGroup = await tribunalChannel.threads.create({
+				const threadGroup = await mediationChannel.threads.create({
 					name: `Mute groupé`,
 					autoArchiveDuration: 24 * 60,
 					type: ChannelType.PrivateThread,
@@ -367,7 +367,7 @@ export default {
 						const memberGroup = await interaction.guild.members.cache.get(userGroup)
 						if (!memberGroup) return
 
-						// Vérification si le membre a déjà le rôle muted
+						// Vérification si le membre a déjà le rôle Muted
 						if (memberGroup.roles.cache.has(mutedRole)) nbUsers += 1
 
 						// On ne peut pas se mute soi-même
@@ -485,7 +485,7 @@ export default {
 								})
 							})
 
-						// Suppression du rôle muted après le temps écoulé
+						// Suppression du rôle Muted après le temps écoulé
 						// et envoi du message privé
 						const removeRoleGroup = async () => {
 							if (!memberGroup.roles.cache.has(mutedRole)) return
@@ -549,12 +549,12 @@ export default {
 					await threadGroup.members.add(interaction.user.id)
 
 					// Création de l'embed
-					const embedTribunalGroup = new EmbedBuilder()
+					const embedMediationGroup = new EmbedBuilder()
 						.setColor('#C27C0E')
 						.setTitle('Mute groupé')
 						.setDescription(`${muteMessage} sont mutés`)
 
-					const buttonTribunalGroup = new ActionRowBuilder().addComponents(
+					const buttonMediationGroup = new ActionRowBuilder().addComponents(
 						new ButtonBuilder()
 							.setLabel('Thread de discussion')
 							.setStyle(ButtonStyle.Link)
@@ -563,9 +563,9 @@ export default {
 							),
 					)
 
-					await tribunalChannel.send({
-						embeds: [embedTribunalGroup],
-						components: [buttonTribunalGroup],
+					await mediationChannel.send({
+						embeds: [embedMediationGroup],
+						components: [buttonMediationGroup],
 					})
 
 					// Si pas d'erreur, message de confirmation du mute

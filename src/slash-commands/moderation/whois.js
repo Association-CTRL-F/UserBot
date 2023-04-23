@@ -56,7 +56,7 @@ export default {
 				},
 			])
 
-		// Ajout d'un field si l'utilisateur boost le serveur
+		// Ajout d'un champ si l'utilisateur boost le serveur
 		if (member.premiumSince)
 			embed.data.fields.push({
 				name: 'Boost Nitro depuis',

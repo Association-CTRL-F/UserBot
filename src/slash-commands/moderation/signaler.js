@@ -9,8 +9,10 @@ export default {
 		// On diffère la réponse pour avoir plus de 3 secondes
 		await interaction.deferReply({ ephemeral: true })
 
+		// Acquisition du message
 		const message = interaction.targetMessage
 
+		// On ne peut pas signaler le message d'un bot
 		if (message.author.bot || !message.guild)
 			return interaction.editReply({
 				content: "Tu ne peux pas signaler le message d'un bot 😕",
@@ -22,6 +24,7 @@ export default {
 				content: 'Tu ne peux pas signaler ton propre message 😕',
 			})
 
+		// Acquisition du salon de logs
 		const reportChannel = message.guild.channels.cache.get(
 			client.config.guild.channels.REPORT_CHANNEL_ID,
 		)

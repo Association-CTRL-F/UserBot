@@ -9,6 +9,7 @@ export default async (oldGuildMember, newGuildMember, client) => {
 	if (oldGuildMember.pending === true && newGuildMember.pending === false) {
 		const memberRole = client.config.guild.roles.MEMBER_ROLE_ID
 		const joinRole = client.config.guild.roles.JOIN_ROLE_ID
+
 		await newGuildMember.roles.add(memberRole)
 		await newGuildMember.roles.add(joinRole)
 

@@ -1,55 +1,16 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable default-case */
-import {
-	SlashCommandBuilder,
-	ActionRowBuilder,
-	StringSelectMenuBuilder,
-	ModalBuilder,
-	TextInputBuilder,
-	TextInputStyle,
-} from 'discord.js'
+import { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'
 
 export default {
 	data: new SlashCommandBuilder()
 		.setName('form')
 		.setDescription('Gère les formulaires')
 		.addSubcommand(subcommand =>
-			subcommand.setName('create').setDescription('Crée un nouveau formulaire'),
-		)
-		.addSubcommand(subcommand =>
 			subcommand.setName('edit').setDescription('Modifie un formulaire'),
 		),
 	interaction: async (interaction, client) => {
 		switch (interaction.options.getSubcommand()) {
-			// Nouveau formulaire
-			case 'create':
-				const modal = new ModalBuilder()
-					.setCustomId('form-create')
-					.setTitle("Création d'un nouveau formulaire")
-					.addComponents(
-						new ActionRowBuilder().addComponents(
-							new TextInputBuilder()
-								.setCustomId('form-create-name')
-								.setLabel('Nom')
-								.setStyle(TextInputStyle.Short)
-								.setMinLength(1)
-								.setMaxLength(255)
-								.setRequired(true),
-						),
-					)
-					.addComponents(
-						new ActionRowBuilder().addComponents(
-							new TextInputBuilder()
-								.setCustomId('form-create-content')
-								.setLabel('Contenu')
-								.setStyle(TextInputStyle.Paragraph)
-								.setMinLength(1)
-								.setRequired(true),
-						),
-					)
-
-				return interaction.showModal(modal)
-
 			// Modification d'un formulaire
 			case 'edit':
 				// Acquisition de la base de données

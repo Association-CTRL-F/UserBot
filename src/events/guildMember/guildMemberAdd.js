@@ -69,7 +69,7 @@ export default async (guildMember, client) => {
 		embeds: [embedJoin],
 	})
 
-	// Si le membre n'est pas bannisable, réaction avec 🚫
+	// Si le membre n'est pas bannable, réaction avec 🚫
 	if (!guildMember.bannable) return sentMessage.react('🚫')
 
 	// Lecture du fichier de configuration
@@ -138,7 +138,7 @@ export default async (guildMember, client) => {
 	// Si pas de réaction de confirmation return
 	if (!confirmationReactions) return
 
-	// Définition de la variable "reason" en fonction de la réaction cliquée
+	// Définition de la variable 'reason' en fonction de la réaction cliquée
 	const reason = emotesConfig.get(banReactionEmoji.name) || emotesConfig.get(banReactionEmoji.id)
 
 	// Acquisition du message de bannissement

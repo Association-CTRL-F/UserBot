@@ -35,8 +35,8 @@ const subCommands = {
 	'logs-roles-channel': {
 		LOGS_ROLES_CHANNEL_ID: 'Salon logs rôles',
 	},
-	'tribunal-channel': {
-		TRIBUNAL_CHANNEL_ID: 'Salon tribunal',
+	'mediation-channel': {
+		MEDIATION_CHANNEL_ID: 'Salon médiation',
 	},
 	'config-channel': {
 		CONFIG_CHANNEL_ID: 'Salon config',
@@ -79,9 +79,6 @@ const subCommands = {
 	},
 	'feur-channels': {
 		FEUR_MANAGER_CHANNELS_IDS: 'Salons avec réaction :feur: autorisée',
-	},
-	'staff-roles': {
-		STAFF_ROLES_MANAGER_IDS: 'Rôles staff',
 	},
 }
 
@@ -227,9 +224,9 @@ export default {
 				value = client.config.guild.channels.LOGS_ROLES_CHANNEL_ID
 				break
 
-			case 'tribunal-channel':
-				customId = 'TRIBUNAL_CHANNEL_ID'
-				value = client.config.guild.channels.TRIBUNAL_CHANNEL_ID
+			case 'mediation-channel':
+				customId = 'MEDIATION_CHANNEL_ID'
+				value = client.config.guild.channels.MEDIATION_CHANNEL_ID
 				break
 
 			case 'config-channel':
@@ -302,11 +299,6 @@ export default {
 			case 'feur-channels':
 				customId = 'FEUR_MANAGER_CHANNELS_IDS'
 				value = client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS
-				break
-
-			case 'staff-roles':
-				customId = 'STAFF_ROLES_MANAGER_IDS'
-				value = client.config.guild.managers.STAFF_ROLES_MANAGER_IDS
 				break
 		}
 

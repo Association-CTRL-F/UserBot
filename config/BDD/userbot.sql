@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 172.32.32.1:3306
--- Generation Time: Apr 09, 2023 at 01:04 AM
+-- Generation Time: Apr 23, 2023 at 10:56 PM
 -- Server version: 10.11.2-MariaDB-1:10.11.2+maria~ubu2204
--- PHP Version: 8.1.17
+-- PHP Version: 8.1.18
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -31,28 +31,6 @@ CREATE TABLE `alerts` (
   `id` int(11) NOT NULL,
   `discordID` varchar(255) NOT NULL,
   `text` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `automod_domains`
---
-
-CREATE TABLE `automod_domains` (
-  `id` int(11) NOT NULL,
-  `domain` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `automod_regex`
---
-
-CREATE TABLE `automod_regex` (
-  `id` int(11) NOT NULL,
-  `regex` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -153,21 +131,6 @@ CREATE TABLE `reminders` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `tickets`
---
-
-CREATE TABLE `tickets` (
-  `id` int(11) NOT NULL,
-  `ticketId` varchar(255) NOT NULL,
-  `userId` varchar(255) NOT NULL,
-  `threadId` varchar(255) NOT NULL,
-  `createdAt` varchar(255) NOT NULL,
-  `active` tinyint(1) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `vocal`
 --
 
@@ -217,18 +180,6 @@ ALTER TABLE `alerts`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `automod_domains`
---
-ALTER TABLE `automod_domains`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `automod_regex`
---
-ALTER TABLE `automod_regex`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indexes for table `cf`
 --
 ALTER TABLE `cf`
@@ -267,12 +218,6 @@ ALTER TABLE `reminders`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `tickets`
---
-ALTER TABLE `tickets`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indexes for table `vocal`
 --
 ALTER TABLE `vocal`
@@ -298,18 +243,6 @@ ALTER TABLE `warnings`
 -- AUTO_INCREMENT for table `alerts`
 --
 ALTER TABLE `alerts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `automod_domains`
---
-ALTER TABLE `automod_domains`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `automod_regex`
---
-ALTER TABLE `automod_regex`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -346,12 +279,6 @@ ALTER TABLE `mute`
 -- AUTO_INCREMENT for table `reminders`
 --
 ALTER TABLE `reminders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `tickets`
---
-ALTER TABLE `tickets`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --

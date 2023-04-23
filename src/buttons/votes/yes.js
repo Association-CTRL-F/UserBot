@@ -63,7 +63,7 @@ export default {
 			} catch (error) {
 				return interaction.editReply({
 					content:
-						"Une erreur est survenue lors du comptage des voix 'yes' de ton vote en base de données 😕",
+						"Une erreur est survenue lors du comptage des voix 'yes' du vote en base de données 😕",
 				})
 			}
 
@@ -78,7 +78,7 @@ export default {
 			} catch (error) {
 				return interaction.editReply({
 					content:
-						"Une erreur est survenue lors du comptage des voix 'wait' de ton vote en base de données 😕",
+						"Une erreur est survenue lors du comptage des voix 'wait' du vote en base de données 😕",
 				})
 			}
 
@@ -93,7 +93,7 @@ export default {
 			} catch (error) {
 				return interaction.editReply({
 					content:
-						"Une erreur est survenue lors du comptage des voix 'no' de ton vote en base de données 😕",
+						"Une erreur est survenue lors du comptage des voix 'no' du vote en base de données 😕",
 				})
 			}
 
@@ -165,7 +165,7 @@ export default {
 		} catch (error) {
 			return interaction.editReply({
 				content:
-					"Une erreur est survenue lors du comptage des voix 'yes' de ton vote en base de données 😕",
+					"Une erreur est survenue lors du comptage des voix 'yes' du vote en base de données 😕",
 			})
 		}
 
@@ -180,7 +180,7 @@ export default {
 		} catch (error) {
 			return interaction.editReply({
 				content:
-					"Une erreur est survenue lors du comptage des voix 'wait' de ton vote en base de données 😕",
+					"Une erreur est survenue lors du comptage des voix 'wait' du vote en base de données 😕",
 			})
 		}
 
@@ -195,7 +195,7 @@ export default {
 		} catch (error) {
 			return interaction.editReply({
 				content:
-					"Une erreur est survenue lors du comptage des voix 'no' de ton vote en base de données 😕",
+					"Une erreur est survenue lors du comptage des voix 'no' du vote en base de données 😕",
 			})
 		}
 

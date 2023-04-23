@@ -11,7 +11,7 @@
 	        "LOGS_MESSAGES_CHANNEL_ID": "",
 	        "LOGS_BANS_CHANNEL_ID": "",
             "LOGS_ROLES_CHANNEL_ID": "",
-            "TRIBUNAL_CHANNEL_ID": "",
+            "MEDIATION_CHANNEL_ID": "",
             "CONFIG_CHANNEL_ID": "",
             "UPGRADE_CHANNEL_ID": "",
             "BLABLA_CHANNEL_ID": ""
@@ -29,8 +29,7 @@
             "NOLOGS_MANAGER_CHANNELS_IDS": "",
             "NOTEXT_MANAGER_CHANNELS_IDS": "",
             "THREADS_MANAGER_CHANNELS_IDS": "",
-            "FEUR_MANAGER_CHANNELS_IDS": "",
-            "STAFF_ROLES_MANAGER_IDS": ""
+            "FEUR_MANAGER_CHANNELS_IDS": ""
         }
     }
 }

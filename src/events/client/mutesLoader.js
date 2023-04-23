@@ -1,7 +1,7 @@
 import { EmbedBuilder } from 'discord.js'
 
 export default async (client, bdd, guild) => {
-	// Acquisition du rôle muted
+	// Acquisition du rôle Muted
 	const mutedRole = client.config.guild.roles.MUTED_ROLE_ID
 	if (!mutedRole) return
 
@@ -32,9 +32,9 @@ export default async (client, bdd, guild) => {
 			const member = guild.members.cache.get(mutedMember.discordID)
 			if (!member) return
 
-			// Si le membre a le rôle muted
+			// Si le membre a le rôle Muted
 			// et que le temps du mute est expiré
-			// alors on retire le rôle muted
+			// alors on retire le rôle Muted
 			// et on supprime en base de données
 			if (
 				member.roles.cache.has(mutedRole) &&
@@ -75,7 +75,7 @@ export default async (client, bdd, guild) => {
 						})
 			} else {
 				// Sinon on réactive le timeout et on supprime
-				// le rôle muted après le temps écoulé
+				// le rôle Muted après le temps écoulé
 				// puis on envoi le message privé
 				const removeRole = async () => {
 					member.roles.remove(mutedRole).catch(error => {

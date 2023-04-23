@@ -39,7 +39,7 @@ export default {
 			})
 
 		switch (interaction.options.getSubcommand()) {
-			// Visualisation des rappels
+			// Visualisation des alertes
 			case 'view':
 				let alerts = []
 				try {
@@ -49,7 +49,8 @@ export default {
 					alerts = result
 				} catch (error) {
 					return interaction.reply({
-						content: 'Une erreur est survenue lors de la récupération des alertes 😕',
+						content:
+							'Une erreur est survenue lors de la récupération des alertes en base de données 😕',
 						ephemeral: true,
 					})
 				}
@@ -135,7 +136,8 @@ export default {
 					fetchAlert = result[0]
 				} catch {
 					return interaction.reply({
-						content: "Une erreur est survenue lors de la suppression de l'alerte 😬",
+						content:
+							"Une erreur est survenue lors de la suppression de l'alerte base de données 😬",
 						ephemeral: true,
 					})
 				}
@@ -164,7 +166,8 @@ export default {
 					deleteAlert = result
 				} catch {
 					return interaction.reply({
-						content: "Une erreur est survenue lors de la suppression de l'alerte 😬",
+						content:
+							"Une erreur est survenue lors de la suppression de l'alerte base de données 😬",
 						ephemeral: true,
 					})
 				}

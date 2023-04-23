@@ -30,7 +30,8 @@ export default {
 			userdiagMessage = result[0].content
 		} catch {
 			return interaction.editReply({
-				content: 'Une erreur est survenue lors de la récupération du message UserDiag 😬',
+				content:
+					'Une erreur est survenue lors de la récupération du message UserDiag en base de données 😬',
 			})
 		}
 

@@ -82,7 +82,8 @@ export default {
 					reminders = result
 				} catch (error) {
 					return interaction.reply({
-						content: 'Une erreur est survenue lors de la récupération des rappels 😕',
+						content:
+							'Une erreur est survenue lors de la récupération des rappels en base de données 😕',
 						ephemeral: true,
 					})
 				}
@@ -223,7 +224,8 @@ export default {
 					fetchReminderEdit = result[0]
 				} catch {
 					return interaction.reply({
-						content: 'Une erreur est survenue lors de la modification du rappel 😬',
+						content:
+							'Une erreur est survenue lors de la modification du rappel en base de données 😬',
 						ephemeral: true,
 					})
 				}
@@ -328,7 +330,8 @@ export default {
 					fetchReminder = result[0]
 				} catch {
 					return interaction.reply({
-						content: 'Une erreur est survenue lors de la suppression du rappel 😬',
+						content:
+							'Une erreur est survenue lors de la suppression du rappel en base de données 😬',
 						ephemeral: true,
 					})
 				}
@@ -357,7 +360,8 @@ export default {
 					deleteReminder = result
 				} catch {
 					return interaction.reply({
-						content: 'Une erreur est survenue lors de la suppression du rappel 😬',
+						content:
+							'Une erreur est survenue lors de la suppression du rappel en base de données 😬',
 						ephemeral: true,
 					})
 				}

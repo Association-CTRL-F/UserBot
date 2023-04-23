@@ -8,8 +8,10 @@ export default {
 		// On diffère la réponse pour avoir plus de 3 secondes
 		await interaction.deferReply({ ephemeral: true })
 
+		// Acquisition du message
 		const message = interaction.targetMessage
 
+		// On ne peut pas définir hors-sujet le message d'un bot
 		if (message.author.bot || !message.guild)
 			return interaction.editReply({
 				content: "Tu ne peux pas déclarer hors-sujet le message d'un bot 😕",

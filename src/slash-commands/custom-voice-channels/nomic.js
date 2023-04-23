@@ -26,7 +26,7 @@ export default {
 					'Tu dois être dans un salon vocal personnalisé pour utiliser cette commande 😕',
 			})
 
-		// Check si il y a déjà un salon no-mic
+		// Check s'il y a déjà un salon no-mic
 		const existingNoMicChannel = client.voiceManager.get(voiceChannel.id)
 		if (existingNoMicChannel)
 			return interaction.editReply({
@@ -45,8 +45,8 @@ export default {
 		})
 
 		// Suppression des permissions existantes sauf
-		// pour les rôles qui peuvent supprimer les messages (modos)
-		// ou qui ne peuvent pas envoyer de messages (muted)
+		// pour les rôles qui peuvent supprimer les messages (Modos)
+		// ou qui ne peuvent pas envoyer de messages (Muted)
 		await Promise.all(
 			noMicChannel.permissionOverwrites.cache
 				.filter(
@@ -70,7 +70,7 @@ export default {
 					ReadMessageHistory: true,
 				}),
 			),
-			// Setup les permissions (pas d'accès) pour le role everyone
+			// Setup les permissions (pas d'accès) pour le role @everyone
 			noMicChannel.permissionOverwrites.edit(interaction.guild.id, {
 				ViewChannel: false,
 			}),

@@ -28,12 +28,12 @@ export default {
 		),
 	interaction: async interaction => {
 		switch (interaction.options.getSubcommand()) {
-			// Ajout d'un cooldown
+			// Ajout d'un slowmode
 			case 'set':
 				const delai = interaction.options.getInteger('délai')
 				const duree = interaction.options.getInteger('durée')
 
-				// On ajoute le cooldown
+				// On ajoute le slowmode
 				// Erreur si le salon est déjà en mode lent
 				if (interaction.channel.rateLimitPerUser > 0)
 					return interaction.reply({
@@ -59,7 +59,7 @@ export default {
 					)}\nDurée : ${convertSecondsToString(duree)}`,
 				})
 
-				// On attend le montant défini
+				// On attend la durée défini
 				await wait(duree * 1000)
 
 				// Si le salon est encore en mode lent
@@ -73,7 +73,7 @@ export default {
 
 				return
 
-			// Suppression du cooldown
+			// Suppression du slowmode
 			case 'clear':
 				if (interaction.channel.rateLimitPerUser > 0) {
 					await interaction.channel.setRateLimitPerUser(0)

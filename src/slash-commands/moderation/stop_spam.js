@@ -8,8 +8,10 @@ export default {
 		// On diffère la réponse pour avoir plus de 3 secondes
 		await interaction.deferReply({ ephemeral: true })
 
+		// Acquisition du message
 		const message = interaction.targetMessage
 
+		// On ne peut pas déclarer comme spam le message d'un bot
 		if (message.author.bot || !message.guild)
 			return interaction.editReply({
 				content: 'Tu ne peux pas déclarer les messages du bot comme spam 😕',
@@ -21,6 +23,7 @@ export default {
 				content: 'Tu ne peux pas déclarer ton propre message comme spam 😕',
 			})
 
+		// Acquisition du membre
 		const member = interaction.guild.members.cache.get(message.author.id)
 		if (!member)
 			return interaction.editReply({

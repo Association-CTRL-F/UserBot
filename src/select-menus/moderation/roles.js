@@ -32,10 +32,10 @@ export default {
 			client.config.guild.channels.LOGS_ROLES_CHANNEL_ID,
 		)
 
-		// Vérification si double rôle
-		if (menu.values.includes(modo.id) && menu.values.includes(certifie.id))
+		// Vérification si aucun rôle parmis Modos et Certifiés
+		if (!menu.values.includes(modo.id) && !menu.values.includes(certifie.id))
 			return menu.reply({
-				content: 'Tu ne peux pas avoir les rôles Modos et Certifiés en même temps 😬',
+				content: 'Tu dois sélectionner au minimum le rôle Modos ou le rôle Certifiés 😬',
 				ephemeral: true,
 			})
 
