@@ -16,7 +16,9 @@ export default async (oldMessage, newMessage, client) => {
 		!oldMessage.guild.available ||
 		newMessage.author.bot ||
 		!newMessage.guild ||
-		!newMessage.guild.available
+		!newMessage.guild.available ||
+		oldMessage.length > 1024 ||
+		newMessage.length > 1024
 	)
 		return
 
