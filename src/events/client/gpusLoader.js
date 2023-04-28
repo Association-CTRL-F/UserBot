@@ -26,7 +26,7 @@ export default guild => {
 					// Si la carte graphique est disponible
 					// et qu'annonce non envoyée
 					if (res.data.listMap[0].is_active === 'true' && gpu.active !== 'true') {
-						// On change la variable active à 'false'
+						// On change la variable active à 'true'
 						gpu.active = 'true'
 
 						const role = `<@&${gpu.roleId}>` || ''
