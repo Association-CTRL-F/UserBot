@@ -5,6 +5,7 @@ import giveaways from './giveawaysLoader.js'
 import voiceChannels from './voiceChannelsLoader.js'
 import noSpeak from './noSpeakLoader.js'
 import gpus from './gpusLoader.js'
+import serverLoader from './serverLoader.js'
 
 export default async client => {
 	// Acquisition de la base de données
@@ -32,6 +33,9 @@ export default async client => {
 
 	// Alertes Nvidia
 	gpus(guild)
+
+	// Lancement du serveur
+	serverLoader(client)
 
 	// Rich presence
 	const richPresenceText = client.config.bot.richPresenceText
