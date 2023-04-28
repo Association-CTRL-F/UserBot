@@ -39,15 +39,23 @@ export default {
 				ephemeral: true,
 			})
 
+		// Suppression des rôles actuels
+		const rolesRemove = []
 		rolesArray.forEach(role => {
-			if (member.roles.cache.has(role)) member.roles.remove(role)
+			if (member.roles.cache.has(role)) rolesRemove.push(role)
 		})
 
+		await member.roles.remove(rolesRemove)
+
+		// Ajout des rôles choisis
 		let description = ''
+		const rolesAdd = []
 		await menu.values.forEach(role => {
-			member.roles.add(role)
+			rolesAdd.push(role)
 			description = description.concat(`- <@&${role}>\n`)
 		})
+
+		await member.roles.add(rolesAdd)
 
 		description = description.concat(`\n**Raison :** ${reason}`)
 
