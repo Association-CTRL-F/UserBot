@@ -48,7 +48,7 @@ const subCommands = {
 		BLABLA_CHANNEL_ID: 'Salon blabla-hs',
 	},
 	'member-role': {
-		JOIN_ROLE_ID: 'Rôle @Membre',
+		JOIN_ROLE_ID: 'Rôle @Membres',
 	},
 	'join-role': {
 		JOIN_ROLE_ID: 'Rôle @Pas de blabla',
@@ -75,7 +75,7 @@ const subCommands = {
 		NOTEXT_MANAGER_CHANNELS_IDS: 'Salons no-text messages',
 	},
 	'threads-channels': {
-		THREADS_MANAGER_CHANNELS_IDS: 'Salons threads',
+		THREADS_MANAGER_CHANNELS_IDS: 'Salons threads auto',
 	},
 	'feur-channels': {
 		FEUR_MANAGER_CHANNELS_IDS: 'Salons avec réaction :feur: autorisée',
