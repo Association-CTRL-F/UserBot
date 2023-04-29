@@ -39,28 +39,31 @@ La configuration du serveur doit être totalement effectuée afin que le bot pui
 
 Cela s'effectue de la façon suivante avec la commande `/setup` :
 * `/setup view` : voir la configuration du serveur
-* `/setup rich-presence-text` : rich presence du bot (facultatif)
-* `/setup timeout-join` : timeout rôle Pas de blabla (`30m` par défaut)
+* `/setup rich-presence-text` : texte de présence du bot (facultatif)
+* `/setup timeout-join` : temps du @Pas de blabla (`30m` par défaut)
 * `/setup commands-prefix` : préfixe des commandes personnalisées (`!` par défaut)
 * `/setup leave-join-channel` : salon départs-arrivées
 * `/setup report-channel` : salon signalements
 * `/setup logs-messages-channel` : salon logs messages
 * `/setup logs-bans-channel` : salon logs bans
-* `/setup tribunal-channel` : salon tribunal
-* `/setup tickets-channel` : salon tickets
+* `/setup logs-roles-channel` : salon logs rôles
+* `/setup mediation-channel` : salon médiation
 * `/setup config-channel` : salon config
 * `/setup upgrade-channel` : salon upgrade
 * `/setup blabla-channel` : salon blabla-hs
 * `/setup access-channel` : salon acces-aux-canaux
+* `/setup member-role` : rôle @Membres
 * `/setup join-role` : rôle @Pas de blabla
 * `/setup no-entraide-role` : rôle @Pas d'entraide
 * `/setup muted-role` : rôle @Muted
-* `/setup voice-channels` : salons vocaux "créer-ton-vocal"
+* `/setup staff-editeurs-role` : rôle @STAFF éditeurs
+* `/setup modo-role` : rôle @Modos
+* `/setup certif-role` : rôle @Certifiés
+* `/setup voice-channels` : salons vocaux ("créer-ton-vocal")
 * `/setup no-logs-channels` : salons no-logs messages (facultatif)
 * `/setup no-text-channels` : salons no-text messages (facultatif)
 * `/setup threads-channels` : salons threads auto (facultatif)
-* `/setup feur-channels` : Salons avec réaction :feur: autorisée
-* `/setup staff-roles` : rôles staff
+* `/setup feur-channels` : salons avec réaction :feur: autorisée (facultatif)
 
 Lorsqu'il est possible d'y entrer plusieurs IDs, ceux-ci doivent être séparés par des virgules, comme suit : `123456789012345678,123456789012345678,123456789012345678`
 
@@ -75,7 +78,7 @@ L'application est capable de tourner sous plusieurs environnements :
 
 #### Prérequis
 
-1. Il est nécessaire d'avoir [Node.js](https://nodejs.org/fr) 17.0.0 ou plus récent d'installé sur votre machine.
+1. Il est nécessaire d'avoir [Node.js](https://nodejs.org/fr) v18.7.0 ou plus récent d'installé sur votre machine.
 
 	> Utilisez la commande `node -v` pour vous assurez que Node est bien installé et que sa version est suffisante.
 
@@ -97,9 +100,9 @@ L'application est capable de tourner sous plusieurs environnements :
 
 -   Vous pouvez utiliser `npm start` pour lancer l'application.
 
--   Vous pouvez utiliser la combinaison de touches Ctrl+C ou fermer la fenêtre de commandes pour tuer l'application.
+-   Vous pouvez utiliser la combinaison de touches `Ctrl + C` ou fermer la fenêtre de commandes pour tuer l'application.
 
-> Vous pouvez utiliser un gestionnaire d'application comme [PM2](https://pm2.keymetrics.io) pour faciliter la gestion de l'application. _cf. [ Managing your bot process with PM2](https://discordjs.guide/improving-dev-environment/pm2.html)_
+> Vous pouvez utiliser un gestionnaire d'application comme [PM2](https://pm2.keymetrics.io) pour faciliter la gestion de l'application. _cf. [Managing your bot process with PM2](https://discordjs.guide/improving-dev-environment/pm2.html)_
 
 
 ### Setup dans un container avec Docker et Docker Compose
@@ -145,7 +148,7 @@ L'application est capable de tourner sous plusieurs environnements :
 
 -   Vous pouvez utiliser les commandes `docker pull ctrlfdocker/userbot:latest` puis `docker-compose -f ./docker/docker-compose.yml up -d` pour lancer l'application.
 
-> docker pull va télécharger ou mettre à jour si besoin l'image de l'application hébergée sur [Docker Hub](https://hub.docker.com/repository/docker/ctrlfdocker/userbot). Le tag ici est `latest` ce qui correspond, de fait, au code présent sur la branche [master](https://github.com/Association-CTRL-F/UserBot/tree/master). Vous pouvez spécifier une version spécifique comme par exemple `5.0.0`. _cf. [liste des tags disponibles](https://hub.docker.com/repository/registry-1.docker.io/ctrlfdocker/userbot/tags?page=1) ainsi que leur [version correspondante](https://github.com/Association-CTRL-F/UserBot/releases)_
+> docker pull va télécharger ou mettre à jour si besoin l'image de l'application hébergée sur [Docker Hub](https://hub.docker.com/repository/docker/ctrlfdocker/userbot). Le tag ici est `latest` ce qui correspond, de fait, au code présent sur la branche [master](https://github.com/Association-CTRL-F/UserBot/tree/master). Vous pouvez spécifier une version spécifique comme par exemple `8.0.0`. _cf. [liste des tags disponibles](https://hub.docker.com/repository/registry-1.docker.io/ctrlfdocker/userbot/tags?page=1) ainsi que leur [version correspondante](https://github.com/Association-CTRL-F/UserBot/releases)_
 
 > docker-compose va lancer le container avec les règles définies dans `docker-compose.yml`.
 
