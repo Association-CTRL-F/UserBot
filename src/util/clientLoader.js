@@ -47,7 +47,6 @@ export default async () => {
 		},
 		guild: configGuild.guild,
 		others: {
-			jokeToken: process.env.JOKE_TOKEN,
 			openAiKey: process.env.OPEN_AI_KEY,
 		},
 	}
