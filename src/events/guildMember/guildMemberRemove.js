@@ -1,9 +1,21 @@
 import { convertDateForDiscord, diffDate, displayNameAndID } from '../../util/util.js'
 import { EmbedBuilder } from 'discord.js'
 
-export default (guildMember, client) => {
+export default async (guildMember, client) => {
 	const guild = guildMember.guild
 	if (guildMember.user.bot || !guild.available) return
+
+	// Acquisition de la base de données
+	const bdd = client.config.db.pools.userbot
+
+	// Vérification si le membre a des alertes
+	try {
+		const sqlDelete = 'SELECT * FROM alerts WHERE discordID = ?'
+		const dataDelete = [guildMember.user.id]
+		await bdd.execute(sqlDelete, dataDelete)
+	} catch (error) {
+		console.error(error)
+	}
 
 	// Acquisition du salon de logs
 	const leaveJoinChannel = guild.channels.cache.get(
