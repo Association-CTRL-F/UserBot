@@ -17,7 +17,7 @@
 		"bent": "^7.3.12",
 		"chatgpt": "^5.2.2",
 		"discord-api-types": "^0.37.41",
-		"discord.js": "^14.10.0",
+		"discord.js": "^14.10.2",
 		"http": "^0.0.1-security",
 		"mathjs": "^11.8.0",
 		"ms": "^2.1.3",
