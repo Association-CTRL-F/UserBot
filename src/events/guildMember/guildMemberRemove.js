@@ -10,7 +10,7 @@ export default async (guildMember, client) => {
 
 	// Vérification si le membre a des alertes
 	try {
-		const sqlDelete = 'SELECT * FROM alerts WHERE discordID = ?'
+		const sqlDelete = 'DELETE FROM alerts WHERE discordID = ?'
 		const dataDelete = [guildMember.user.id]
 		await bdd.execute(sqlDelete, dataDelete)
 	} catch (error) {
