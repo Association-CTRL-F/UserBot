@@ -22,17 +22,25 @@ export default {
 			})
 
 		// Requête de récupération de la clé API de l'utilisateur
-		let api_key = ''
+		let key = ''
 		try {
-			const sql = 'SELECT api_key FROM tokens WHERE discord_id = ?'
+			const sql = 'SELECT * FROM `keys` WHERE discord_id = ?'
 			const data = [interaction.user.id]
 			const [result] = await bdd.execute(sql, data)
-			api_key = result[0].api_key
-		} catch {
+			key = result[0]
+		} catch (error) {
 			return interaction.editReply({
-				content: "Tu n'es pas autorisé à créer un lien affilié 😬",
+				content: "Tu n'as pas de clé API 😬",
 			})
 		}
+
+		// Vérification des permissions
+		const permissions = JSON.parse(key.permissions)
+
+		if (!permissions.includes('CREATE_URL'))
+			return interaction.editReply({
+				content: "Tu n'es pas autorisé à créer des liens 😬",
+			})
 
 		try {
 			// Requête
@@ -40,27 +48,28 @@ export default {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					Authorization: `Bearer ${api_key}`,
+					Authorization: key.key,
 				},
 				body: JSON.stringify({
 					long_url: long_url,
+					discord_id: interaction.user.id,
 				}),
 			})
 
-			// eslint-disable-next-line no-undefined
-			const { status_message, short_url = undefined } = await res.json()
+			const { status_message, data } = await res.json()
 
 			// S'il y a une erreur en retour ou pas d'url
-			if (!res.ok || !short_url)
+			if (!res.ok || !data)
 				return interaction.editReply({
 					content: status_message,
 				})
 
 			// Sinon on affiche l'url
 			return interaction.editReply({
-				content: `<${short_url}>`,
+				content: `<${data.short_url}>`,
 			})
 		} catch (error) {
+			console.log(error)
 			return interaction.editReply({
 				content: 'Une erreur est survenue lors de la création du lien 😕',
 			})
