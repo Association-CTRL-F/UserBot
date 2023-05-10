@@ -52,7 +52,6 @@ export default {
 				},
 				body: JSON.stringify({
 					long_url: long_url,
-					discord_id: interaction.user.id,
 				}),
 			})
 
