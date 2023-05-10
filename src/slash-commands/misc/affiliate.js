@@ -30,9 +30,15 @@ export default {
 			key = result[0]
 		} catch (error) {
 			return interaction.editReply({
-				content: "Tu n'as pas de clé API 😬",
+				content: 'Une erreur est survenue 😬',
 			})
 		}
+
+		// Vérification de l'accès
+		if (!key)
+			return interaction.editReply({
+				content: "Tu n'es pas autorisé à utiliser ce service 😬",
+			})
 
 		// Vérification des permissions
 		const permissions = JSON.parse(key.permissions)
