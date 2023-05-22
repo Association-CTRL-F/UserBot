@@ -68,6 +68,9 @@ const subCommands = {
 	'certif-role': {
 		CERTIF_ROLE_ID: 'Rôle @Certifiés',
 	},
+	'notif-games-role': {
+		NOTIF_GAMES_ROLE_ID: 'Rôle @Notif jeux',
+	},
 	'voice-channels': {
 		VOICE_MANAGER_CHANNELS_IDS: 'Salons vocaux',
 	},
@@ -281,6 +284,11 @@ export default {
 			case 'certif-role':
 				customId = 'CERTIF_ROLE_ID'
 				value = client.config.guild.roles.CERTIF_ROLE_ID
+				break
+
+			case 'notif-games-role':
+				customId = 'NOTIF_GAMES_ROLE_ID'
+				value = client.config.guild.roles.NOTIF_GAMES_ROLE_ID
 				break
 
 			// Managers

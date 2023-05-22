@@ -11,6 +11,9 @@ export default (guild, client) => {
 		let freeGamesJSON = await readFile('./config/env/freeGames.json', (err, data) => data)
 		freeGamesJSON = JSON.parse(freeGamesJSON)
 
+		// Acquisition du rôle
+		const freeGamesRole = client.config.guild.roles.NOTIF_GAMES_ROLE_ID
+
 		// Acquisition du salon
 		const freeGamesChannel = guild.channels.cache.get(
 			client.config.guild.channels.FREE_GAMES_CHANNEL_ID,
@@ -74,7 +77,11 @@ export default (guild, client) => {
 							)
 
 						// On envoie le message
-						await freeGamesChannel.send({ embeds: [embed], components: [row] })
+						await freeGamesChannel.send({
+							content: `<@${freeGamesRole}>`,
+							embeds: [embed],
+							components: [row],
+						})
 					}
 				})
 			})

@@ -23,7 +23,8 @@
             "MUTED_ROLE_ID": "",
             "STAFF_EDITEURS_ROLE_ID": "",
             "MODO_ROLE_ID": "",
-            "CERTIF_ROLE_ID": ""
+            "CERTIF_ROLE_ID": "",
+            "NOTIF_GAMES_ROLE_ID": ""
         },
         "managers": {
             "VOICE_MANAGER_CHANNELS_IDS": "",

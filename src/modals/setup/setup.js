@@ -161,6 +161,15 @@ export default {
 					})
 				break
 
+			case 'NOTIF_GAMES_ROLE_ID':
+				const matches_NOTIF_GAMES_ROLE_ID = contenu.match(regexId)
+				if (!matches_NOTIF_GAMES_ROLE_ID || matches_NOTIF_GAMES_ROLE_ID.length > 1)
+					return modal.reply({
+						content: "Tu n'as pas donné un ID valide 😕",
+						ephemeral: true,
+					})
+				break
+
 			case 'VOICE_MANAGER_CHANNELS_IDS':
 				const matches_VOICE_MANAGER_CHANNELS_IDS = contenu.match(regexIds)
 				if (!matches_VOICE_MANAGER_CHANNELS_IDS)
@@ -300,6 +309,10 @@ export default {
 				client.config.guild.roles.CERTIF_ROLE_ID = contenu
 				break
 
+			case 'NOTIF_GAMES_ROLE_ID':
+				client.config.guild.roles.NOTIF_GAMES_ROLE_ID = contenu
+				break
+
 			// Managers
 			case 'VOICE_MANAGER_CHANNELS_IDS':
 				client.config.guild.managers.VOICE_MANAGER_CHANNELS_IDS = contenu
@@ -348,6 +361,7 @@ export default {
 					STAFF_EDITEURS_ROLE_ID: client.config.guild.roles.STAFF_EDITEURS_ROLE_ID,
 					MODO_ROLE_ID: client.config.guild.roles.MODO_ROLE_ID,
 					CERTIF_ROLE_ID: client.config.guild.roles.CERTIF_ROLE_ID,
+					NOTIF_GAMES_ROLE_ID: client.config.guild.roles.NOTIF_GAMES_ROLE_ID,
 				},
 				managers: {
 					VOICE_MANAGER_CHANNELS_IDS:

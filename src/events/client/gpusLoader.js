@@ -42,7 +42,7 @@ export default guild => {
 								.setStyle(ButtonStyle.Link),
 						)
 
-						const exampleEmbed = new EmbedBuilder()
+						const embed = new EmbedBuilder()
 							.setTitle(`DROP DE ${gpu.name} FE !`)
 							.setColor('57C92A')
 							.addFields({
@@ -54,7 +54,7 @@ export default guild => {
 						// On envoie le message
 						await channel.send({
 							content: role,
-							embeds: [exampleEmbed],
+							embeds: [embed],
 							components: [row],
 						})
 					}
@@ -75,12 +75,12 @@ export default guild => {
 						const channel = guild.channels.cache.get(gpu.channelId)
 
 						// On prépare un embed
-						const exampleEmbed = new EmbedBuilder()
+						const embed = new EmbedBuilder()
 							.setTitle(`DROP DE ${gpu.name} FE TERMINÉ !`)
 							.setColor('C9572A')
 
 						// On envoie le message
-						await channel.send({ embeds: [exampleEmbed] })
+						await channel.send({ embeds: [embed] })
 					}
 				})
 				.catch(() => null)
