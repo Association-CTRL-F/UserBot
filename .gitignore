@@ -13,6 +13,7 @@ config.json
 reactionRoleConfig.json
 banEmotesAtJoin.json
 gpu.json
+freeGames.json
 
 # Autres
 .DS_Store
