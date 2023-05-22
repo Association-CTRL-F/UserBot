@@ -91,9 +91,6 @@ const subCommands = {
 const command = new SlashCommandBuilder()
 	.setName('setup')
 	.setDescription('Configuration du serveur')
-	.addSubcommand(subCommand =>
-		subCommand.setName('view').setDescription('Voir la configuration du serveur'),
-	)
 
 for (const [subCommandName, subCommandContent] of Object.entries(subCommands))
 	for (const [subCommandCode, subCommandDesc] of Object.entries(subCommandContent))
@@ -104,91 +101,10 @@ for (const [subCommandName, subCommandContent] of Object.entries(subCommands))
 export default {
 	data: command,
 	interaction: (interaction, client) => {
-		if (interaction.options.getSubcommand() === 'view') {
-			// Récupération des valeurs actuelles
-			const fieldsEmbedView = []
-
-			fieldsEmbedView.push({
-				name: 'TIMEZONE',
-				value: client.config.timezone ? client.config.timezone : 'Aucune valeur définie',
-			})
-
-			fieldsEmbedView.push({
-				name: 'RICH_PRESENCE_TEXT',
-				value: client.config.bot.richPresenceText
-					? client.config.bot.richPresenceText
-					: 'Aucune valeur définie',
-			})
-
-			// Guild
-			for (const [varCode, varContent] of Object.entries(client.config.guild)) {
-				// eslint-disable-next-line no-continue
-				if (typeof varContent === 'object' || varCode === 'GUILD_ID') continue
-				fieldsEmbedView.push({
-					name: varCode,
-					value: `${varContent ? varContent : 'Aucune valeur définie'}`,
-				})
-			}
-
-			// Salons
-			for (const [varCode, varContent] of Object.entries(client.config.guild.channels))
-				fieldsEmbedView.push({
-					name: varCode,
-					value: `${varContent ? varContent : 'Aucune valeur définie'}`,
-				})
-
-			// Rôles
-			for (const [varCode, varContent] of Object.entries(client.config.guild.roles))
-				fieldsEmbedView.push({
-					name: varCode,
-					value: `${varContent ? varContent : 'Aucune valeur définie'}`,
-				})
-
-			// Managers
-			for (const [varCode, varContent] of Object.entries(client.config.guild.managers))
-				fieldsEmbedView.push({
-					name: varCode,
-					value: `${varContent ? varContent : 'Aucune valeur définie'}`,
-				})
-
-			// Configuration de l'embed
-			const paginationView = new Pagination(interaction, {
-				firstEmoji: '⏮',
-				prevEmoji: '◀️',
-				nextEmoji: '▶️',
-				lastEmoji: '⏭',
-				limit: 5,
-				idle: 120000,
-				ephemeral: false,
-				prevDescription: '',
-				postDescription: '',
-				buttonStyle: ButtonStyle.Secondary,
-				loop: false,
-			})
-
-			paginationView.setTitle('Configuration du serveur')
-			paginationView.setColor('#C27C0E')
-			paginationView.setAuthor({
-				name: `${interaction.guild.name} (ID : ${interaction.guild.id})`,
-				iconURL: interaction.guild.iconURL({ dynamic: true }),
-			})
-			paginationView.setFields(fieldsEmbedView)
-			paginationView.setFooter({ text: 'Page : {pageNumber} / {totalPages}' })
-			paginationView.paginateFields(true)
-
-			// Envoi de l'embed
-			return paginationView.render()
-		}
-
 		let customId = ''
 		let value = ''
 
 		switch (interaction.options.getSubcommand()) {
-			case 'timezone':
-				customId = 'TIMEZONE'
-				value = client.config.timezone
-				break
-
 			case 'rich-presence-text':
 				customId = 'RICH_PRESENCE_TEXT'
 				value = client.config.bot.richPresenceText
