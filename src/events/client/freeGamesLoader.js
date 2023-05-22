@@ -78,7 +78,7 @@ export default (guild, client) => {
 
 						// On envoie le message
 						await freeGamesChannel.send({
-							content: `<@${freeGamesRole}>`,
+							content: `<@&${freeGamesRole}>`,
 							embeds: [embed],
 							components: [row],
 						})
