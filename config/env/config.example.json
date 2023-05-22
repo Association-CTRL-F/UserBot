@@ -14,7 +14,8 @@
             "MEDIATION_CHANNEL_ID": "",
             "CONFIG_CHANNEL_ID": "",
             "UPGRADE_CHANNEL_ID": "",
-            "BLABLA_CHANNEL_ID": ""
+            "BLABLA_CHANNEL_ID": "",
+            "FREE_GAMES_CHANNEL_ID": ""
         },
         "roles": {
             "MEMBER_ROLE_ID": "",

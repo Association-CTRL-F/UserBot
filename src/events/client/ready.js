@@ -5,6 +5,7 @@ import giveaways from './giveawaysLoader.js'
 import voiceChannels from './voiceChannelsLoader.js'
 import noSpeak from './noSpeakLoader.js'
 import gpus from './gpusLoader.js'
+import freeGames from './freeGamesLoader.js'
 import serverLoader from './serverLoader.js'
 
 export default async client => {
@@ -33,6 +34,9 @@ export default async client => {
 
 	// Alertes Nvidia
 	gpus(guild)
+
+	// Alertes jeux Epic Games Store
+	freeGames(guild, client)
 
 	// Lancement du serveur
 	serverLoader(client)
