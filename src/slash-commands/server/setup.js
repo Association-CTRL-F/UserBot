@@ -47,6 +47,9 @@ const subCommands = {
 	'blabla-channel': {
 		BLABLA_CHANNEL_ID: 'Salon blabla-hs',
 	},
+	'free-games-channel': {
+		FREE_GAMES_CHANNEL_ID: 'Salon jeux-epic-games',
+	},
 	'member-role': {
 		JOIN_ROLE_ID: 'Rôle @Membres',
 	},
@@ -242,6 +245,11 @@ export default {
 			case 'blabla-channel':
 				customId = 'BLABLA_CHANNEL_ID'
 				value = client.config.guild.channels.BLABLA_CHANNEL_ID
+				break
+
+			case 'free-games-channel':
+				customId = 'FREE_GAMES_CHANNEL_ID'
+				value = client.config.guild.channels.FREE_GAMES_CHANNEL_ID
 				break
 
 			// Rôles

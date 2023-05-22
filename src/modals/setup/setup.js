@@ -98,6 +98,15 @@ export default {
 					})
 				break
 
+			case 'FREE_GAMES_CHANNEL_ID':
+				const matches_FREE_GAMES_CHANNEL_ID = contenu.match(regexId)
+				if (!matches_FREE_GAMES_CHANNEL_ID || matches_FREE_GAMES_CHANNEL_ID.length > 1)
+					return modal.reply({
+						content: "Tu n'as pas donné un ID valide 😕",
+						ephemeral: true,
+					})
+				break
+
 			case 'MEMBER_ROLE_ID':
 				const matches_MEMBER_ROLE_ID = contenu.match(regexId)
 				if (!matches_MEMBER_ROLE_ID || matches_MEMBER_ROLE_ID.length > 1)
@@ -262,6 +271,10 @@ export default {
 				client.config.guild.channels.BLABLA_CHANNEL_ID = contenu
 				break
 
+			case 'FREE_GAMES_CHANNEL_ID':
+				client.config.guild.channels.FREE_GAMES_CHANNEL_ID = contenu
+				break
+
 			// Rôles
 			case 'MEMBER_ROLE_ID':
 				client.config.guild.roles.MEMBER_ROLE_ID = contenu
@@ -326,6 +339,7 @@ export default {
 					CONFIG_CHANNEL_ID: client.config.guild.channels.CONFIG_CHANNEL_ID,
 					UPGRADE_CHANNEL_ID: client.config.guild.channels.UPGRADE_CHANNEL_ID,
 					BLABLA_CHANNEL_ID: client.config.guild.channels.BLABLA_CHANNEL_ID,
+					FREE_GAMES_CHANNEL_ID: client.config.guild.channels.FREE_GAMES_CHANNEL_ID,
 				},
 				roles: {
 					MEMBER_ROLE_ID: client.config.guild.roles.MEMBER_ROLE_ID,
