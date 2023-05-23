@@ -5,7 +5,7 @@ import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'disc
 import axios from 'axios'
 
 export default (guild, client) => {
-	// Récupérer les données de l'API toutes les 5 secondes
+	// Récupérer les données de l'API toutes les 10 secondes
 	setInterval(async () => {
 		// Lire le fichier gpu.json qui contient la liste des gpus Nvidia
 		let freeGamesJSON = await readFile('./config/env/freeGames.json', (err, data) => data)
@@ -85,12 +85,13 @@ export default (guild, client) => {
 					}
 				})
 			})
+			.catch(() => null)
 
 		// On écrit dans le fichier freeGames.json les nouvelles valeurs
-		// après 3 secondes afin de s'assurer que les requêtes d'API
+		// après 5 secondes afin de s'assurer que les requêtes d'API
 		// aient le temps de s'effectuer
 		setTimeout(async () => {
 			await writeFile('./config/env/freeGames.json', JSON.stringify(freeGamesJSON, null, 2))
-		}, 3000)
-	}, 5000)
+		}, 5000)
+	}, 10000)
 }
