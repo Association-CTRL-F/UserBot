@@ -10,7 +10,7 @@ export default (guild, client) => {
 	// Récupérer les données de l'API toutes les 10 secondes
 	setInterval(async () => {
 		// Lire le fichier gpu.json qui contient la liste des gpus Nvidia
-		let freeGamesJSON = await readFile('./config/env/freeGames.json', (err, data) => data)
+		let freeGamesJSON = await readFile('./config/env/freeGames.json')
 		freeGamesJSON = JSON.parse(freeGamesJSON)
 
 		// Acquisition du rôle
