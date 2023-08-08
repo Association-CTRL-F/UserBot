@@ -33,6 +33,12 @@ export default {
 						.setName('durée')
 						.setDescription('Durée du mute en minutes')
 						.setRequired(true),
+				)
+				.addBooleanOption(option =>
+					option
+						.setName('thread')
+						.setDescription("Création d'un thread")
+						.setRequired(true),
 				),
 		)
 		.addSubcommand(subcommand =>
@@ -71,9 +77,13 @@ export default {
 				content: "Il n'y a pas de rôle Muted 😕",
 			})
 
-		// Acquisition de la raison du mute et de sa durée
+		// Acquisition de la raison du mute, de sa durée
+		// et de la création d'un thread
 		const reason = interaction.options.getString('raison')
 		const duration = interaction.options.getInteger('durée')
+		let createThread = ''
+		if (interaction.options.getSubcommand() === 'member')
+			createThread = interaction.options.getBoolean('thread')
 
 		// Acquisition du message de mute
 		let muteDM = ''
@@ -294,35 +304,47 @@ export default {
 
 				// Si pas d'erreur, message de confirmation du mute
 				if (muteAction instanceof GuildMember) {
-					const thread = await mediationChannel.threads.create({
-						name: `Mute de ${member.user.username}`,
-						autoArchiveDuration: 24 * 60,
-						type: ChannelType.PrivateThread,
-						invitable: false,
-					})
+					if (createThread) {
+						const thread = await mediationChannel.threads.create({
+							name: `Mute de ${member.user.username}`,
+							autoArchiveDuration: 24 * 60,
+							type: ChannelType.PrivateThread,
+							invitable: false,
+						})
 
-					// Création de l'embed
-					const embedMediation = new EmbedBuilder()
-						.setColor('#C27C0E')
-						.setTitle('Mute simple')
-						.setDescription(`${displayNameAndID(member)} est muté`)
+						// Création de l'embed
+						const embedMediation = new EmbedBuilder()
+							.setColor('#C27C0E')
+							.setTitle('Mute simple')
+							.setDescription(`${displayNameAndID(member)} est muté`)
 
-					const buttonMediation = new ActionRowBuilder().addComponents(
-						new ButtonBuilder()
-							.setLabel('Thread de discussion')
-							.setStyle(ButtonStyle.Link)
-							.setURL(
-								`https://discord.com/channels/${interaction.guild.id}/${thread.id}`,
-							),
-					)
+						const buttonMediation = new ActionRowBuilder().addComponents(
+							new ButtonBuilder()
+								.setLabel('Thread de discussion')
+								.setStyle(ButtonStyle.Link)
+								.setURL(
+									`https://discord.com/channels/${interaction.guild.id}/${thread.id}`,
+								),
+						)
 
-					await mediationChannel.send({
-						embeds: [embedMediation],
-						components: [buttonMediation],
-					})
+						await mediationChannel.send({
+							embeds: [embedMediation],
+							components: [buttonMediation],
+						})
 
-					await thread.members.add(member.id)
-					await thread.members.add(interaction.user.id)
+						await thread.members.add(member.id)
+						await thread.members.add(interaction.user.id)
+					} else {
+						// Création de l'embed
+						const embedMediation = new EmbedBuilder()
+							.setColor('#C27C0E')
+							.setTitle('Mute simple')
+							.setDescription(`${displayNameAndID(member)} est muté`)
+
+						await mediationChannel.send({
+							embeds: [embedMediation],
+						})
+					}
 
 					return interaction.editReply({
 						content: `🔇 \`${
