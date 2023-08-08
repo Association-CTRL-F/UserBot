@@ -128,7 +128,7 @@ export default {
 
 					if (warnedBy)
 						warnText = `Par ${
-							warnedBy.user.tag ? warnedBy.user.tag : warning.warnedBy
+							warnedBy.user.tag === null ? warning.warnedBy : warnedBy.user.tag
 						} - ${convertDateForDiscord(warning.warnedAt * 1000)}\nRaison : ${
 							warning.warnReason
 						}${warning.warnPreuve ? `\nPreuve : <${warning.warnPreuve}>` : ''}`
