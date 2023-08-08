@@ -125,7 +125,7 @@ export default {
 					const warnedBy = interaction.guild.members.cache.get(warning.warnedBy)
 
 					const warnText = `Par ${
-						warnedBy.user.tag ? warnedBy.user.tag : warning.warnedBy
+						warnedBy ? warnedBy.user.tag : warning.warnedBy
 					} - ${convertDateForDiscord(warning.warnedAt * 1000)}\nRaison : ${
 						warning.warnReason
 					}${warning.warnPreuve ? `\nPreuve : <${warning.warnPreuve}>` : ''}`
