@@ -127,11 +127,11 @@ export default {
 					let warnText = ''
 
 					if (warnedBy)
-						warnText = `Par ${warnedBy.user.tag} - ${convertDateForDiscord(
-							warning.warnedAt * 1000,
-						)}\nRaison : ${warning.warnReason}${
-							warning.warnPreuve ? `\nPreuve : <${warning.warnPreuve}>` : ''
-						}`
+						warnText = `Par ${
+							warnedBy.user.tag ? warnedBy.user.tag : warning.warnedBy
+						} - ${convertDateForDiscord(warning.warnedAt * 1000)}\nRaison : ${
+							warning.warnReason
+						}${warning.warnPreuve ? `\nPreuve : <${warning.warnPreuve}>` : ''}`
 					else warnText = `Le ${convertDateForDiscord(warning.warnedAt * 1000)}`
 
 					fieldsEmbed.push({
