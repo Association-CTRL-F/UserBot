@@ -29,6 +29,12 @@ export default {
 						.setDescription("Raison de l'avertissement")
 						.setRequired(true),
 				)
+				.addBooleanOption(option =>
+					option
+						.setName('notify')
+						.setDescription('Avertir le membre par message privé')
+						.setRequired(true),
+				)
 				.addAttachmentOption(option =>
 					option.setName('preuve').setDescription("Preuve de l'avertissement"),
 				),
@@ -170,8 +176,11 @@ export default {
 
 			// Crée un nouvel avertissement
 			case 'create':
-				// Acquisition de la raison et de la preuve
+				// Acquisition de la raison, de la notification en MP
+				// et de la preuve
 				const reason = interaction.options.getString('raison')
+				const notify = interaction.options.getBoolean('notify')
+
 				let preuve = ''
 				if (interaction.options.getAttachment('preuve'))
 					preuve = interaction.options.getAttachment('preuve').attachment
@@ -199,64 +208,68 @@ export default {
 				}
 
 				let errorDM = ''
-				if (member) {
-					// Lecture du message d'avertissement
-					let warnDM = ''
-					try {
-						const sqlSelectWarn = 'SELECT * FROM forms WHERE name = ?'
-						const dataSelectWarn = ['warn']
-						const [resultSelectWarn] = await bdd.execute(sqlSelectWarn, dataSelectWarn)
-						warnDM = resultSelectWarn[0].content
-					} catch (error) {
-						return interaction.reply({
-							content:
-								"Une erreur est survenue lors de la récupération du message d'avertissement en base de données 😕",
-							ephemeral: true,
-						})
+				if (notify)
+					if (member) {
+						// Lecture du message d'avertissement
+						let warnDM = ''
+						try {
+							const sqlSelectWarn = 'SELECT * FROM forms WHERE name = ?'
+							const dataSelectWarn = ['warn']
+							const [resultSelectWarn] = await bdd.execute(
+								sqlSelectWarn,
+								dataSelectWarn,
+							)
+							warnDM = resultSelectWarn[0].content
+						} catch (error) {
+							return interaction.reply({
+								content:
+									"Une erreur est survenue lors de la récupération du message d'avertissement en base de données 😕",
+								ephemeral: true,
+							})
+						}
+
+						// Envoi du message d'avertissement en message privé
+						const embedWarn = new EmbedBuilder()
+							.setColor('#C27C0E')
+							.setTitle('Avertissement')
+							.setDescription(warnDM)
+							.setAuthor({
+								name: interaction.guild.name,
+								iconURL: interaction.guild.iconURL({ dynamic: true }),
+								url: interaction.guild.vanityURL,
+							})
+							.addFields([
+								{
+									name: 'Raison',
+									value: reason,
+								},
+							])
+
+						const DMMessage = await member
+							.send({
+								embeds: [embedWarn],
+							})
+							.catch(error => {
+								console.error(error)
+								errorDM =
+									"\n\nℹ️ Le message privé n'a pas été envoyé car le membre les a bloqué"
+							})
+
+						// Si au moins une erreur, throw
+						if (DMMessage instanceof Error)
+							throw new Error(
+								"L'envoi d'un message a échoué. Voir les logs précédents pour plus d'informations.",
+							)
 					}
-
-					// Envoi du message d'avertissement en message privé
-					const embedWarn = new EmbedBuilder()
-						.setColor('#C27C0E')
-						.setTitle('Avertissement')
-						.setDescription(warnDM)
-						.setAuthor({
-							name: interaction.guild.name,
-							iconURL: interaction.guild.iconURL({ dynamic: true }),
-							url: interaction.guild.vanityURL,
-						})
-						.addFields([
-							{
-								name: 'Raison',
-								value: reason,
-							},
-						])
-
-					const DMMessage = await member
-						.send({
-							embeds: [embedWarn],
-						})
-						.catch(error => {
-							console.error(error)
-							errorDM =
-								"\n\nℹ️ Le message privé n'a pas été envoyé car le membre les a bloqué"
-						})
-
-					// Si au moins une erreur, throw
-					if (DMMessage instanceof Error)
-						throw new Error(
-							"L'envoi d'un message a échoué. Voir les logs précédents pour plus d'informations.",
-						)
-				}
 
 				// Message de confirmation
 				await interaction.deferReply()
 				return interaction.editReply({
 					content: `⚠️ \`${
 						member ? member.user.tag : user
-					}\` a reçu un avertissement\n\nRaison : ${reason}${errorDM}${
-						preuve ? `\n\nPreuve : <${preuve}>` : ''
-					}`,
+					}\` a reçu un avertissement\n\nRaison : ${reason}\n\nNotification en message privé : ${
+						notify ? 'Oui' : 'Non'
+					}${errorDM}${preuve ? `\n\nPreuve : <${preuve}>` : ''}`,
 				})
 
 			// Modifie un avertissement
