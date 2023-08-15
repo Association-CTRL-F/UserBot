@@ -4,7 +4,6 @@ import reminders from './remindersLoader.js'
 import giveaways from './giveawaysLoader.js'
 import voiceChannels from './voiceChannelsLoader.js'
 import noSpeak from './noSpeakLoader.js'
-import gpus from './gpusLoader.js'
 import serverLoader from './serverLoader.js'
 
 export default async client => {
@@ -30,9 +29,6 @@ export default async client => {
 
 	// Mise en place du @Pas de blabla
 	noSpeak(client, guild)
-
-	// Alertes Nvidia
-	gpus(guild)
 
 	// Lancement du serveur
 	serverLoader(client)
