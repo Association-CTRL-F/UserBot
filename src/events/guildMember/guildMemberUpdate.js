@@ -1,4 +1,4 @@
-import { modifyWrongUsernames } from '../../util/util.js'
+// import { modifyWrongUsernames } from '../../util/util.js'
 import { RESTJSONErrorCodes } from 'discord.js'
 import ms from 'ms'
 
@@ -22,5 +22,5 @@ export default async (oldGuildMember, newGuildMember, client) => {
 		)
 	}
 
-	modifyWrongUsernames(newGuildMember).catch(() => null)
+	// modifyWrongUsernames(newGuildMember).catch(() => null)
 }
