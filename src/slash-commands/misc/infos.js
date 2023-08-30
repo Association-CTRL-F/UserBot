@@ -95,11 +95,6 @@ export default {
 							inline: true,
 						},
 						{
-							name: '**Propriétaire du serveur**',
-							value: `<@${interaction.guild.ownerId}>`,
-							inline: true,
-						},
-						{
 							name: '**Rôle le plus élevé**',
 							value: `${interaction.guild.roles.highest}`,
 							inline: true,
