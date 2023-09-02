@@ -215,12 +215,7 @@ export default {
 			try {
 				const sql =
 					'INSERT INTO bans_logs (discord_id, executor_id, reason, timestamp) VALUES (?, ?, ?, ?)'
-				const data = [
-					member.user.id,
-					interaction.user.id,
-					reason,
-					Math.round(Date.now() / 1000),
-				]
+				const data = [user, interaction.user.id, reason, Math.round(Date.now() / 1000)]
 
 				await bddUnban.execute(sql, data)
 			} catch (error) {
