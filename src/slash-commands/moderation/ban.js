@@ -65,11 +65,21 @@ export default {
 			preuve = interaction.options.getAttachment('preuve').attachment
 		else preuve = null
 
-		// Acquisition de la base de données
-		const bdd = client.config.db.pools.userbot
-		if (!bdd)
+		// Acquisition de la base de données UserBot
+		const bddUserbot = client.config.db.pools.userbot
+		if (!bddUserbot)
 			return interaction.editReply({
-				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
+				content:
+					'Une erreur est survenue lors de la connexion à la base de données UserBot 😕',
+				ephemeral: true,
+			})
+
+		// Acquisition de la base de données Unban
+		const bddUnban = client.config.db.pools.unban
+		if (!bddUnban)
+			return interaction.editReply({
+				content:
+					'Une erreur est survenue lors de la connexion à la base de données Unban 😕',
 				ephemeral: true,
 			})
 
@@ -84,7 +94,7 @@ export default {
 		try {
 			const sql = 'SELECT * FROM forms WHERE name = ?'
 			const data = ['ban']
-			const [result] = await bdd.execute(sql, data)
+			const [result] = await bddUserbot.execute(sql, data)
 
 			banDM = result[0].content
 		} catch {
@@ -200,6 +210,25 @@ export default {
 					text: `Membre banni par ${interaction.user.tag}`,
 				})
 				.setTimestamp(new Date())
+
+			// Insertion du nouveau ban en base de données
+			try {
+				const sql =
+					'INSERT INTO bans_logs (discord_id, executor_id, reason, timestamp) VALUES (?, ?, ?, ?)'
+				const data = [
+					member.user.id,
+					interaction.user.id,
+					reason,
+					Math.round(Date.now() / 1000),
+				]
+
+				await bddUnban.execute(sql, data)
+			} catch (error) {
+				console.error(error)
+				return interaction.editReply({
+					content: 'Une erreur est survenue lors du ban du membre en base de données 😬',
+				})
+			}
 
 			return logsChannel.send({ embeds: [logEmbed] })
 		}

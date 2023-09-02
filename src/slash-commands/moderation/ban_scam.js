@@ -36,6 +36,15 @@ export default {
 				ephemeral: true,
 			})
 
+		// Acquisition de la base de données Unban
+		const bddUnban = client.config.db.pools.unban
+		if (!bddUnban)
+			return interaction.editReply({
+				content:
+					'Une erreur est survenue lors de la connexion à la base de données Unban 😕',
+				ephemeral: true,
+			})
+
 		// Acquisition du salon de logs
 		const logsChannel = interaction.guild.channels.cache.get(
 			client.config.guild.channels.LOGS_BANS_CHANNEL_ID,
@@ -137,6 +146,25 @@ export default {
 					text: `Membre banni par ${interaction.user.tag}`,
 				})
 				.setTimestamp(new Date())
+
+			// Insertion du nouveau ban en base de données
+			try {
+				const sql =
+					'INSERT INTO bans_logs (discord_id, executor_id, reason, timestamp) VALUES (?, ?, ?, ?)'
+				const data = [
+					member.user.id,
+					interaction.user.id,
+					'compte compromis',
+					Math.round(Date.now() / 1000),
+				]
+
+				await bddUnban.execute(sql, data)
+			} catch (error) {
+				console.error(error)
+				return interaction.editReply({
+					content: 'Une erreur est survenue lors du ban du membre en base de données 😬',
+				})
+			}
 
 			return logsChannel.send({ embeds: [logEmbed] })
 		}
