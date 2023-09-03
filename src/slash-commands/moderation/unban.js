@@ -30,6 +30,15 @@ export default {
 				ephemeral: true,
 			})
 
+		// Acquisition de la base de données Moderation
+		const bddModeration = client.config.db.pools.moderation
+		if (!bddModeration)
+			return interaction.editReply({
+				content:
+					'Une erreur est survenue lors de la connexion à la base de données Moderation 😕',
+				ephemeral: true,
+			})
+
 		// Acquisition du salon de logs
 		const logsChannel = interaction.guild.channels.cache.get(
 			client.config.guild.channels.LOGS_BANS_CHANNEL_ID,
@@ -69,6 +78,19 @@ export default {
 			await interaction.editReply({
 				content: `🔓 Le bannissement de \`${user}\` a été levé`,
 			})
+
+			// Suppression du ban en base de données
+			try {
+				const sql = 'DELETE FROM bans_logs WHERE discord_id = ?'
+				const data = [user]
+				await bddModeration.execute(sql, data)
+			} catch (error) {
+				console.error(error)
+				return interaction.editReply({
+					content:
+						'Une erreur est survenue lors de la levée du ban du membre en base de données 😬',
+				})
+			}
 
 			// Création de l'embed
 			const logEmbed = new EmbedBuilder()

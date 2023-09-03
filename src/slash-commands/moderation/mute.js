@@ -526,7 +526,7 @@ export default {
 								console.error(error)
 								return interaction.editReply({
 									content:
-										'Une erreur est survenue lors de la levé du mute du membre en base de données 😬',
+										'Une erreur est survenue lors de la levée du mute du membre en base de données 😬',
 								})
 							}
 

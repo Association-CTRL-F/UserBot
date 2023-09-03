@@ -41,7 +41,7 @@ export default {
 		if (!bddModeration)
 			return interaction.editReply({
 				content:
-					'Une erreur est survenue lors de la connexion à la base de données Unban 😕',
+					'Une erreur est survenue lors de la connexion à la base de données Moderation 😕',
 				ephemeral: true,
 			})
 
