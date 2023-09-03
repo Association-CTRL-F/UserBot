@@ -150,10 +150,13 @@ export default {
 			// Insertion du nouveau ban en base de données
 			try {
 				const sql =
-					'INSERT INTO bans_logs (discord_id, executor_id, reason, timestamp) VALUES (?, ?, ?, ?)'
+					'INSERT INTO bans_logs (discord_id, username, avatar, executor_id, executor_username, reason, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)'
 				const data = [
 					member.user.id,
+					member.user.username,
+					member.user.avatar ? member.user.avatar : null,
 					interaction.user.id,
+					interaction.user.username,
 					'compte compromis',
 					Math.round(Date.now() / 1000),
 				]
