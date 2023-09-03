@@ -217,8 +217,8 @@ export default {
 					'INSERT INTO bans_logs (discord_id, username, avatar, executor_id, executor_username, reason, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)'
 				const data = [
 					user,
-					member.user.username ? member.user.username : user,
-					member.user.avatar ? member.user.avatar : null,
+					member ? member.user.username : user,
+					member ? member.user.avatar : null,
 					interaction.user.id,
 					interaction.user.username,
 					reason,
