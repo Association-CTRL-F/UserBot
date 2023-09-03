@@ -74,9 +74,9 @@ export default {
 				ephemeral: true,
 			})
 
-		// Acquisition de la base de données Unban
-		const bddUnban = client.config.db.pools.unban
-		if (!bddUnban)
+		// Acquisition de la base de données Moderation
+		const bddModeration = client.config.db.pools.moderation
+		if (!bddModeration)
 			return interaction.editReply({
 				content:
 					'Une erreur est survenue lors de la connexion à la base de données Unban 😕',
@@ -225,7 +225,7 @@ export default {
 					Math.round(Date.now() / 1000),
 				]
 
-				await bddUnban.execute(sql, data)
+				await bddModeration.execute(sql, data)
 			} catch (error) {
 				console.error(error)
 				return interaction.editReply({

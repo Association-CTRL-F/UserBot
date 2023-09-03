@@ -57,9 +57,9 @@ export default async () => {
 			...client.config.db,
 			dbName: process.env.DB_NAME_URLS_API,
 		})
-		const POOL_unban = await pool({
+		const POOL_moderation = await pool({
 			...client.config.db,
-			dbName: process.env.DB_NAME_UNBAN,
+			dbName: process.env.DB_NAME_MODERATION,
 		})
 		const POOL_userbot = await pool({
 			...client.config.db,
@@ -68,7 +68,7 @@ export default async () => {
 
 		client.config.db.pools = {
 			urlsAPI: POOL_urlsAPI,
-			unban: POOL_unban,
+			moderation: POOL_moderation,
 			userbot: POOL_userbot,
 		}
 	} catch (error) {
