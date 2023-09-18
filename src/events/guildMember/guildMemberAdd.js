@@ -26,6 +26,13 @@ export default async (guildMember, client) => {
 	if (!bdd)
 		return console.log('Une erreur est survenue lors de la connexion à la base de données')
 
+	// Acquisition de la base de données Moderation
+	const bddModeration = client.config.db.pools.moderation
+	if (!bddModeration)
+		return console.log(
+			'Une erreur est survenue lors de la connexion à la base de données Moderation',
+		)
+
 	// Acquisition du salon de logs join-leave
 	const leaveJoinChannel = guild.channels.cache.get(
 		client.config.guild.channels.LEAVE_JOIN_CHANNEL_ID,
@@ -209,6 +216,25 @@ export default async (guildMember, client) => {
 
 	// Si pas d'erreur, réaction avec 🚪 pour confirmer le ban
 	if (banAction instanceof GuildMember) {
+		// Insertion du nouveau ban en base de données
+		try {
+			const sql =
+				'INSERT INTO bans_logs (discord_id, username, avatar, executor_id, executor_username, reason, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)'
+			const data = [
+				guildMember.user.id,
+				guildMember.user.username,
+				guildMember.user.avatar ? guildMember.user.avatar : null,
+				banReactionUser.user.id,
+				banReactionUser.user.username,
+				`${reason} (réaction)`,
+				Math.round(Date.now() / 1000),
+			]
+
+			await bddModeration.execute(sql, data)
+		} catch (error) {
+			console.error(error)
+		}
+
 		await sentMessage.react('🚪')
 
 		// Création de l'embed
