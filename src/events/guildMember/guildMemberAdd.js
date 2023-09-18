@@ -224,8 +224,8 @@ export default async (guildMember, client) => {
 				guildMember.user.id,
 				guildMember.user.username,
 				guildMember.user.avatar ? guildMember.user.avatar : null,
-				banReactionUser.user.id,
-				banReactionUser.user.username,
+				banReactionUser.id,
+				banReactionUser.username,
 				`${reason} (réaction)`,
 				Math.round(Date.now() / 1000),
 			]
