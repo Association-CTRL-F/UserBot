@@ -89,10 +89,11 @@ export default {
 		}
 
 		// Acquisition de la base de données
-		const bdd = client.config.db.pools.userbot
+		const bdd = client.config.db.pools.moderation
 		if (!bdd)
 			return interaction.reply({
-				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
+				content:
+					'Une erreur est survenue lors de la connexion à la base de données Moderation😕',
 				ephemeral: true,
 			})
 
@@ -101,7 +102,7 @@ export default {
 			case 'view':
 				let warnings = []
 				try {
-					const sqlView = 'SELECT * FROM warnings WHERE discordID = ?'
+					const sqlView = 'SELECT * FROM warnings_logs WHERE discord_id = ?'
 					const dataView = [user]
 					const [resultWarnings] = await bdd.execute(sqlView, dataView)
 					warnings = resultWarnings
@@ -185,7 +186,7 @@ export default {
 				// Création de l'avertissement en base de données
 				try {
 					const sqlCreate =
-						'INSERT INTO warnings (discordID, warnedBy, warnReason, warnPreuve, warnedAt) VALUES (?, ?, ?, ?, ?)'
+						'INSERT INTO warnings_logs (discord_id, executor_id, reason, preuve, timestamp) VALUES (?, ?, ?, ?, ?)'
 					const dataCreate = [
 						user,
 						interaction.user.id,
@@ -277,7 +278,7 @@ export default {
 				let editedWarn = {}
 				try {
 					const id = interaction.options.getString('id')
-					const sqlSelect = 'SELECT * FROM warnings WHERE id = ?'
+					const sqlSelect = 'SELECT * FROM warnings_logs WHERE id = ?'
 					const dataSelect = [id]
 					const [resultSelect] = await bdd.execute(sqlSelect, dataSelect)
 					editedWarn = resultSelect[0]
@@ -307,7 +308,7 @@ export default {
 				// Modification de l'avertissement
 				try {
 					const id = interaction.options.getString('id')
-					const sqlEdit = 'UPDATE warnings SET warnReason = ? WHERE id = ?'
+					const sqlEdit = 'UPDATE warnings_logs SET reason = ? WHERE id = ?'
 					const dataEdit = [reasonEdit, id]
 					const [resultEdit] = await bdd.execute(sqlEdit, dataEdit)
 					editedWarn = resultEdit
@@ -337,7 +338,7 @@ export default {
 				let deletedWarn = {}
 				try {
 					const id = interaction.options.getString('id')
-					const sqlDelete = 'DELETE FROM warnings WHERE id = ?'
+					const sqlDelete = 'DELETE FROM warnings_logs WHERE id = ?'
 					const dataDelete = [id]
 					const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
 					deletedWarn = resultDelete
@@ -368,7 +369,7 @@ export default {
 				// Vérification si le membre a des avertissements
 				let deletedWarns = []
 				try {
-					const sqlDelete = 'SELECT * FROM warnings WHERE discordID = ?'
+					const sqlDelete = 'SELECT * FROM warnings_logs WHERE discord_id = ?'
 					const dataDelete = [discordId]
 					const [resultDelete] = await bdd.execute(sqlDelete, dataDelete)
 					deletedWarns = resultDelete
@@ -388,7 +389,7 @@ export default {
 
 				try {
 					// Suppression en base de données
-					const sqlDeleteAll = 'DELETE FROM warnings WHERE discordID = ?'
+					const sqlDeleteAll = 'DELETE FROM warnings_logs WHERE discord_id = ?'
 					const dataDeleteAll = [discordId]
 					await bdd.execute(sqlDeleteAll, dataDeleteAll)
 				} catch {
