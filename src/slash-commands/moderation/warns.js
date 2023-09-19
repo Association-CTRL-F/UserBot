@@ -93,7 +93,7 @@ export default {
 		if (!bdd)
 			return interaction.reply({
 				content:
-					'Une erreur est survenue lors de la connexion à la base de données Moderation😕',
+					'Une erreur est survenue lors de la connexion à la base de données Moderation 😕',
 				ephemeral: true,
 			})
 
@@ -123,13 +123,13 @@ export default {
 				// Sinon, boucle d'ajout des champs
 				const fieldsEmbed = []
 				warnings.forEach(warning => {
-					const warnedBy = interaction.guild.members.cache.get(warning.warnedBy)
+					const warnedBy = interaction.guild.members.cache.get(warning.executor_id)
 
 					const warnText = `Par ${
-						warnedBy ? warnedBy.user.tag : warning.warnedBy
-					} - ${convertDateForDiscord(warning.warnedAt * 1000)}\nRaison : ${
+						warnedBy ? warnedBy.user.tag : warning.executor_id
+					} - ${convertDateForDiscord(warning.timestamp * 1000)}\nRaison : ${
 						warning.warnReason
-					}${warning.warnPreuve ? `\nPreuve : <${warning.warnPreuve}>` : ''}`
+					}${warning.warnPreuve ? `\nPreuve : <${warning.preuve}>` : ''}`
 
 					fieldsEmbed.push({
 						name: `Avertissement #${warning.id}`,
@@ -299,7 +299,7 @@ export default {
 
 				// Vérification si l'avertissement
 				// a été créé par le même utilisateur
-				if (editedWarn.warnedBy !== interaction.user.id)
+				if (editedWarn.executor_id !== interaction.user.id)
 					return interaction.reply({
 						content: "L'avertissement ne t'appartient pas 😬",
 						ephemeral: true,
