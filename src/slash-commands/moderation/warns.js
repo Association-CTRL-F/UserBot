@@ -128,8 +128,8 @@ export default {
 					const warnText = `Par ${
 						warnedBy ? warnedBy.user.tag : warning.executor_id
 					} - ${convertDateForDiscord(warning.timestamp * 1000)}\nRaison : ${
-						warning.warnReason
-					}${warning.warnPreuve ? `\nPreuve : <${warning.preuve}>` : ''}`
+						warning.reason
+					}${warning.preuve ? `\nPreuve : <${warning.preuve}>` : ''}`
 
 					fieldsEmbed.push({
 						name: `Avertissement #${warning.id}`,
