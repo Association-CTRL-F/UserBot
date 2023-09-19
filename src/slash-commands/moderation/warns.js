@@ -80,6 +80,11 @@ export default {
 		) {
 			user = interaction.options.getString('membre')
 			member = interaction.guild.members.cache.get(user)
+			if (!member)
+				return interaction.editReply({
+					content: "Je n'ai pas trouvé cet utilisateur, vérifie la mention ou l'ID 😕",
+				})
+
 			const matchID = user.match(/^(\d{17,19})$/)
 			if (!matchID)
 				return interaction.reply({
@@ -186,10 +191,13 @@ export default {
 				// Création de l'avertissement en base de données
 				try {
 					const sqlCreate =
-						'INSERT INTO warnings_logs (discord_id, executor_id, reason, preuve, timestamp) VALUES (?, ?, ?, ?, ?)'
+						'INSERT INTO warnings_logs (discord_id, username, avatar, executor_id, executor_username, reason, preuve, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
 					const dataCreate = [
 						user,
+						member ? member.user.username : user,
+						member ? member.user.avatar : null,
 						interaction.user.id,
+						interaction.user.username,
 						reason,
 						preuve,
 						Math.round(Date.now() / 1000),
