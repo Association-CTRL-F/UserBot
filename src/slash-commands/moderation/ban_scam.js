@@ -60,7 +60,7 @@ export default {
 			.setDescription(
 				`**Vous êtes à présent banni du serveur**
 				Votre compte semble avoir été compromis. Pour votre sécurité, nous vous conseillons de changer vos mots de passe.
-				Si vous estimez que cette sanction est illégitime, vous pouvez effectuer une demande de levée de bannissement que nous étudierons à l'adresse https://unban.ctrl-f.io`,
+				Si vous estimez que cette sanction est illégitime, vous pouvez effectuer une demande de levée de bannissement que nous étudierons à l'adresse https://moderation.ctrl-f.io`,
 			)
 			.setAuthor({
 				name: interaction.guild.name,
