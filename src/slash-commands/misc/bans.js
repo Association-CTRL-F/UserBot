@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js'
 import { readFileSync } from 'fs'
-const banJson = JSON.parse(readFileSync('./bansArray.json'))
+// const banJson = JSON.parse(readFileSync('./bansArray.json'))
 
 export default {
 	data: new SlashCommandBuilder().setName('bans').setDescription('bans'),
