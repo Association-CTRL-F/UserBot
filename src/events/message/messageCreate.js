@@ -15,6 +15,7 @@ import {
 	getFileInfos,
 	displayNameAndID,
 } from '../../util/util.js'
+import { setTimeout } from 'timers/promises'
 import { ChatGPTAPI } from 'chatgpt'
 
 export default async (message, client) => {
@@ -74,12 +75,38 @@ export default async (message, client) => {
 		await message.react('💬')
 	}
 
+	// Acquisition de la base de données
+	const bdd = client.config.db.pools.userbot
+	if (!bdd)
+		return console.log('Une erreur est survenue lors de la connexion à la base de données')
+
 	// Répondre emoji :feur:
 	const feurChannels = client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS
 		? client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS.split(/, */)
 		: []
 
 	if (feurChannels.includes(message.channel.id)) {
+		// Vérifications des messages anti-feur
+		// Délai de 10 secondes afin de laisser le temps d'ajouter un anti-feur
+		await setTimeout(10000)
+
+		let antifeurMessages = []
+		try {
+			const sql = 'SELECT * FROM antifeur'
+			const [result] = await bdd.execute(sql)
+			antifeurMessages = result
+		} catch (error) {
+			return console.error(error)
+		}
+
+		let block = 0
+		antifeurMessages.forEach(antifeurMessage => {
+			if (message.id === antifeurMessage.message_id) block += 1
+		})
+
+		if (block > 0) return
+
+		// Si pas de blocage anti-feur
 		const random = Math.round(Math.random() * 100)
 
 		// 10% de chances
@@ -90,11 +117,6 @@ export default async (message, client) => {
 			if (message.content.match(regexFeur)) message.react(feurEmoji)
 		}
 	}
-
-	// Acquisition de la base de données
-	const bdd = client.config.db.pools.userbot
-	if (!bdd)
-		return console.log('Une erreur est survenue lors de la connexion à la base de données')
 
 	// Alertes personnalisées
 	let alerts = []
