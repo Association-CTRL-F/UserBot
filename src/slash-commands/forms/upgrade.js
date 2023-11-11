@@ -125,7 +125,8 @@ export default {
 
 		if (member.user === interaction.user)
 			return interaction.editReply({
-				content: 'Formulaire envoyé en message privé 👌',
+				content:
+					"Formulaire envoyé en message privé 👌\n\n⚠️ Si quelqu'un te MP suite à ta demande, **c'est une arnaque**, ne répond pas et contacte immédiatement un modérateur ⚠️",
 			})
 
 		return upgradeChannel
@@ -133,7 +134,7 @@ export default {
 					content: `${member}, remplis le formulaire reçu en message privé puis poste le dans ${upgradeChannel} 👌`,
 			  })
 			: interaction.editReply({
-					content: `${member}, remplis le formulaire reçu en message privé 👌`,
+					content: `${member}, remplis le formulaire reçu en message privé 👌\n\n⚠️ Si quelqu'un te MP suite à ta demande, **c'est une arnaque**, ne répond pas et contacte immédiatement un modérateur ⚠️`,
 			  })
 	},
 }
