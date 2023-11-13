@@ -157,18 +157,18 @@ export const isImage = fileName => {
 }
 
 /**
- * Renomme l'utilisateur si son pseudo commence par un caractère spécial
+ * Renomme l'utilisateur si son pseudo contient par un caractère spécial
  * @param {GuildMember} guildMember
  * @returns promesse de la modification du pseudo ou une promesse résolue
  */
 export const modifyWrongUsernames = guildMember => {
-	// Trigger si le premier caractère n'est pas "normal" ou s'il vaut "Change ton pseudo"
+	// Trigger
 	const triggerRegex = /^[^a-zA-Z0-9áàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ].*/
 
 	// Si son nom de compte ou son pseudo est incorrect
 	if (guildMember.displayName.match(triggerRegex))
-		// On le renomme "Change ton pseudo"
-		return guildMember.setNickname('Change ton pseudo')
+		// On le renomme avec son pseudo classique
+		return guildMember.setNickname(guildMember.user.username)
 
 	return Promise.resolve()
 }
