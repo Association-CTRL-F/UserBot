@@ -20,7 +20,7 @@ export default {
 				),
 		)
 		.addSubcommand(subcommand =>
-			subcommand.setName('multi').setDescription('Crées des liens affiliés'),
+			subcommand.setName('multi').setDescription('Crée des liens affiliés'),
 		),
 	interaction: async (interaction, client) => {
 		if (interaction.options.getSubcommand()) {
