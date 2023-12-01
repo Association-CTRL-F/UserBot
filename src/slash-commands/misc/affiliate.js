@@ -1,14 +1,46 @@
-import { SlashCommandBuilder } from 'discord.js'
+import {
+	SlashCommandBuilder,
+	ModalBuilder,
+	TextInputBuilder,
+	ActionRowBuilder,
+	TextInputStyle,
+} from 'discord.js'
 import fetch from 'node-fetch'
 
 export default {
 	data: new SlashCommandBuilder()
 		.setName('affiliate')
 		.setDescription('Crée un lien affilié')
-		.addStringOption(option =>
-			option.setName('url').setDescription('URL longue').setRequired(true),
+		.addSubcommand(subcommand =>
+			subcommand
+				.setName('simple')
+				.setDescription('Crée un lien affilié')
+				.addStringOption(option =>
+					option.setName('url').setDescription('URL longue').setRequired(true),
+				),
+		)
+		.addSubcommand(subcommand =>
+			subcommand.setName('multi').setDescription('Crées des liens affiliés'),
 		),
 	interaction: async (interaction, client) => {
+		if (interaction.options.getSubcommand()) {
+			const modalCreate = new ModalBuilder()
+				.setCustomId('affiliate-multi')
+				.setTitle('Création de liens affiliés')
+				.addComponents(
+					new ActionRowBuilder().addComponents(
+						new TextInputBuilder()
+							.setCustomId('liens-affiliate-multi')
+							.setLabel('Collez ici les différents liens à affilier')
+							.setStyle(TextInputStyle.Paragraph)
+							.setMinLength(1)
+							.setRequired(false),
+					),
+				)
+
+			return interaction.showModal(modalCreate)
+		}
+
 		// On diffère la réponse pour avoir plus de 3 secondes
 		await interaction.deferReply({ ephemeral: true })
 
