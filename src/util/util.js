@@ -239,13 +239,14 @@ export const splitMessage = (
 
 /**
  * Formate le pseudo et l'ID de l'utilisateur sous la forme "Pseudo (ID : 123456789123456789)"
+ * !!! A mettre à jour !!!
  * @param {GuildMember} guildMember
  * @param {User} user
  * @returns le pseudo du guildMember ou le tag de l'user
  */
 export const displayNameAndID = (guildMember, user) => {
-	if (guildMember && guildMember.displayName)
-		return `${guildMember.displayName} (ID : ${guildMember.id})`
+	if (guildMember && guildMember.user.username)
+		return `${guildMember.user.username} (ID : ${guildMember.user.id})`
 
 	if (user && user.username) return `${user.username} (ID : ${user.id})`
 
