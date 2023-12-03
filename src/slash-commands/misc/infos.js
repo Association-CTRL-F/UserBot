@@ -1,6 +1,6 @@
 /* eslint-disable default-case */
 /* eslint-disable no-case-declarations */
-import { convertDateForDiscord, diffDate, displayNameAndID } from '../../util/util.js'
+import { convertDateForDiscord, diffDate } from '../../util/util.js'
 import discordjs, { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
 import { ChatGPTAPI } from 'chatgpt'
 
@@ -26,7 +26,7 @@ export default {
 				const embedBot = new EmbedBuilder()
 					.setColor('#3366FF')
 					.setAuthor({
-						name: displayNameAndID(client.user, client.user),
+						name: `${client.user.username} (ID : ${client.user.id})`,
 						iconURL: client.user.displayAvatarURL({ dynamic: true }),
 					})
 					.addFields([
