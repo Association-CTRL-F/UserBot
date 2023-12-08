@@ -27,7 +27,7 @@ export default {
 				),
 		),
 	interaction: async interaction => {
-		switch (interaction.options.getSubcommand()) {
+		
 			// Ajout d'un slowmode
 			case 'set':
 				const delai = interaction.options.getInteger('délai')
