@@ -1,11 +1,10 @@
 import { readdir } from 'fs/promises'
-import { REST } from '@discordjs/rest'
-import { Routes } from 'discord-api-types/v9'
+import { REST, Routes } from 'discord.js'
 import { removeFileExtension } from '../util/util.js'
 
 export default async client => {
 	const clientId = client.user.id
-	const rest = new REST({ version: '9' }).setToken(client.token)
+	const rest = new REST().setToken(client.token)
 
 	// Dossier des commandes
 	const commandsDir = (await readdir('./src/slash-commands')).filter(dir => !dir.endsWith('.js'))
