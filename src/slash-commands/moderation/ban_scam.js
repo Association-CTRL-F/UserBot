@@ -5,7 +5,7 @@ import {
 	GuildBan,
 	User,
 } from 'discord.js'
-import { displayNameAndID, convertDateForDiscord, diffDate } from '../../util/util.js'
+import { convertDateForDiscord, diffDate } from '../../util/util.js'
 
 export default {
 	contextMenu: new ContextMenuCommandBuilder().setName('ban_scam').setType(2),
@@ -120,7 +120,7 @@ export default {
 			const logEmbed = new EmbedBuilder()
 				.setColor('C9572A')
 				.setAuthor({
-					name: displayNameAndID(banAction, banAction),
+					name: `${member.user.tag} (ID : ${member.user.id})`,
 					iconURL: banAction.displayAvatarURL({ dynamic: true }),
 				})
 				.setDescription(`\`\`\`\n${interaction.user.tag} : compte compromis\`\`\``)

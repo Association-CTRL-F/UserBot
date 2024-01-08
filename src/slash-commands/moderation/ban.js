@@ -183,7 +183,9 @@ export default {
 			const logEmbed = new EmbedBuilder()
 				.setColor('C9572A')
 				.setAuthor({
-					name: `${member.user.tag} (ID : ${member.user.id})`,
+					name: `${member.user.tag ? member.user.tag : user} (ID : ${
+						member.user.id ? member.user.id : user
+					})`,
 					iconURL: banAction.displayAvatarURL({ dynamic: true }),
 				})
 				.setDescription(`\`\`\`\n${interaction.user.tag} : ${escapedcontent}\`\`\``)
