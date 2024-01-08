@@ -163,10 +163,10 @@ export const isImage = fileName => {
  */
 export const modifyWrongUsernames = guildMember => {
 	// Trigger
-	const triggerRegex = /^[^a-zA-Z0-9áàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ].*/
+	const triggerRegex = /^[\wÀ-ÿ\-_.]+$/
 
 	// Si son nom de compte ou son pseudo est incorrect
-	if (guildMember.displayName.match(triggerRegex))
+	if (!guildMember.displayName.match(triggerRegex))
 		// On le renomme avec son pseudo classique
 		return guildMember.setNickname(guildMember.user.username)
 
