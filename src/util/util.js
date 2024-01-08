@@ -163,7 +163,7 @@ export const isImage = fileName => {
  */
 export const modifyWrongUsernames = guildMember => {
 	// Trigger
-	const triggerRegex = /^[\wà-âç-öù-ÿÀ-ÂÈ-ÖÙ-Ü\-_ '.]+$/
+	const triggerRegex = /^[ -~à-âç-öù-ÿÀ-ÂÈ-ÖÙ-Ü]+$/
 
 	// Si son nom de compte ou son pseudo est incorrect
 	if (!guildMember.displayName.match(triggerRegex))
