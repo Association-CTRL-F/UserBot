@@ -1,4 +1,5 @@
 import { EmbedBuilder, ContextMenuCommandBuilder, RESTJSONErrorCodes } from 'discord.js'
+import { displayNameAndID } from '../../util/util'
 
 export default {
 	contextMenu: new ContextMenuCommandBuilder().setName('hors_sujet').setType(3),
@@ -22,6 +23,11 @@ export default {
 			return interaction.editReply({
 				content: 'Tu ne peux pas définir hors-sujet ton propre message 😕',
 			})
+
+		// Acquisition du salon de logs
+		const logsChannel = message.guild.channels.cache.get(
+			client.config.guild.channels.LOGS_MESSAGES_CHANNEL_ID,
+		)
 
 		const member = interaction.guild.members.cache.get(message.author.id)
 		if (!member)
@@ -53,9 +59,36 @@ export default {
 				},
 			])
 
+		const logEmbed = new EmbedBuilder()
+			.setColor('00FF00')
+			.setTitle('Hors-sujet')
+			.setAuthor({
+				name: displayNameAndID(message.author, message.author),
+				iconURL: message.author.displayAvatarURL({ dynamic: true }),
+			})
+			.addFields([
+				{
+					name: 'Message posté',
+					value: `\`\`\`${
+						message.content.length < 1024
+							? message.content
+							: `${message.content.substr(0, 1012)} [...]`
+					}\`\`\``,
+				},
+			])
+			.setFooter({
+				iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+				text: `Déclaré par ${interaction.user.tag}`,
+			})
+			.setTimestamp(new Date())
+
 		try {
 			await member.send({
 				embeds: [embed],
+			})
+
+			await logsChannel.send({
+				embeds: [logEmbed],
 			})
 		} catch (error) {
 			if (error.code !== RESTJSONErrorCodes.CannotSendMessagesToThisUser) throw error
