@@ -1,5 +1,5 @@
 import { EmbedBuilder, ContextMenuCommandBuilder, RESTJSONErrorCodes } from 'discord.js'
-import { displayNameAndID } from '../../util/util'
+import { displayNameAndID } from '../../util/util.js'
 
 export default {
 	contextMenu: new ContextMenuCommandBuilder().setName('hors_sujet').setType(3),
