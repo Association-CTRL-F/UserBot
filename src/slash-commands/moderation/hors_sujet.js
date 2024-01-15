@@ -60,7 +60,7 @@ export default {
 			])
 
 		const logEmbed = new EmbedBuilder()
-			.setColor('00FF00')
+			.setColor('#C27C0E')
 			.setTitle('Hors-sujet')
 			.setAuthor({
 				name: displayNameAndID(message.author, message.author),

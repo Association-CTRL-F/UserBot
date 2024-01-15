@@ -245,7 +245,7 @@ export const splitMessage = (
  * @returns le pseudo du guildMember ou le tag de l'user
  */
 export const displayNameAndID = (guildMember, user) => {
-	if (guildMember && guildMember.user.username)
+	if (guildMember && guildMember.user)
 		return `${guildMember.user.username} (ID : ${guildMember.user.id})`
 
 	if (user && user.username) return `${user.username} (ID : ${user.id})`
