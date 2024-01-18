@@ -1,12 +1,4 @@
-/* eslint-disable no-unused-vars */
-import {
-	EmbedBuilder,
-	ContextMenuCommandBuilder,
-	RESTJSONErrorCodes,
-	GuildBan,
-	User,
-} from 'discord.js'
-import { convertDateForDiscord, diffDate } from '../../util/util.js'
+import { EmbedBuilder, ContextMenuCommandBuilder } from 'discord.js'
 
 export default {
 	contextMenu: new ContextMenuCommandBuilder().setName('warn_command').setType(3),
