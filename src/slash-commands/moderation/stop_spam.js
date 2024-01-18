@@ -1,8 +1,9 @@
 import { EmbedBuilder, ContextMenuCommandBuilder, RESTJSONErrorCodes } from 'discord.js'
+import { displayNameAndID } from '../../util/util.js'
 
 export default {
 	contextMenu: new ContextMenuCommandBuilder().setName('stop_spam').setType(3),
-	interaction: async interaction => {
+	interaction: async (interaction, client) => {
 		if (!interaction.commandType === 3) return
 
 		// On diffère la réponse pour avoir plus de 3 secondes
@@ -22,6 +23,11 @@ export default {
 			return interaction.editReply({
 				content: 'Tu ne peux pas déclarer ton propre message comme spam 😕',
 			})
+
+		// Acquisition du salon de logs
+		const logsChannel = message.guild.channels.cache.get(
+			client.config.guild.channels.LOGS_MESSAGES_CHANNEL_ID,
+		)
 
 		// Acquisition du membre
 		const member = interaction.guild.members.cache.get(message.author.id)
@@ -54,9 +60,36 @@ export default {
 				},
 			])
 
+		const logEmbed = new EmbedBuilder()
+			.setColor('#C27C0E')
+			.setTitle('Spam')
+			.setAuthor({
+				name: displayNameAndID(message.author, message.author),
+				iconURL: message.author.displayAvatarURL({ dynamic: true }),
+			})
+			.addFields([
+				{
+					name: 'Message posté',
+					value: `\`\`\`${
+						message.content.length < 1024
+							? message.content
+							: `${message.content.substr(0, 1012)} [...]`
+					}\`\`\``,
+				},
+			])
+			.setFooter({
+				iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+				text: `Déclaré par ${interaction.user.tag}`,
+			})
+			.setTimestamp(new Date())
+
 		try {
 			await member.send({
 				embeds: [embed],
+			})
+
+			await logsChannel.send({
+				embeds: [logEmbed],
 			})
 		} catch (error) {
 			if (error.code !== RESTJSONErrorCodes.CannotSendMessagesToThisUser) throw error
