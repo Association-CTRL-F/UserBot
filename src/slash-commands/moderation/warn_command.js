@@ -123,7 +123,7 @@ export default {
 			return interaction.editReply({
 				content: `⚠️ \`${
 					member ? member.user.tag : interaction.targetMessage.author.id
-				}\` a reçu un avertissement\n\nRaison : Salon commande-bot non respecté`,
+				}\` a reçu un avertissement\n\nRaison : Salon commande-bot non respecté${errorDM}`,
 			})
 		}
 	},
