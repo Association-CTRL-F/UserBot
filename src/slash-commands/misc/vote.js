@@ -112,7 +112,7 @@ export default {
 					// Création automatique du thread associé
 					if (thread) {
 						const threadCreate = await sentMessage.startThread({
-							name: `Vote de ${interaction.member.displayName}`,
+							name: `Vote de ${interaction.member.user.username}`,
 							// Archivage après 24H
 							autoArchiveDuration: 24 * 60,
 							reason: proposition,
@@ -132,7 +132,7 @@ export default {
 				// Création automatique du thread associé
 				if (thread) {
 					const threadCreate = await sentMessage.startThread({
-						name: `Vote de ${interaction.member.displayName}`,
+						name: `Vote de ${interaction.member.user.username}`,
 						// Archivage après 24H
 						autoArchiveDuration: 24 * 60,
 						reason: proposition,
