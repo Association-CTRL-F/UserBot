@@ -15,7 +15,7 @@
 		"axios": "^1.6.8",
 		"bent": "^7.3.12",
 		"chatgpt": "^5.2.5",
-		"discord.js": "^14.14.1",
+		"discord.js": "^14.15.2",
 		"http": "^0.0.1-security",
 		"mathjs": "^12.4.1",
 		"ms": "^2.1.3",
