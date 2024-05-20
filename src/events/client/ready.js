@@ -1,4 +1,3 @@
-import reactionRole from './reactionRoleLoader.js'
 import mutes from './mutesLoader.js'
 import reminders from './remindersLoader.js'
 import giveaways from './giveawaysLoader.js'
@@ -20,7 +19,6 @@ export default async client => {
 	// et réactivation ou désactivation des
 	// mutes, rappels, giveaways, vocaux
 	await Promise.all([
-		reactionRole(client),
 		mutes(client, bdd, guild),
 		reminders(bdd, guild),
 		giveaways(bdd, guild),
