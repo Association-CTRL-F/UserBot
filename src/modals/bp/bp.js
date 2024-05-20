@@ -26,7 +26,8 @@ export default {
 				.setStyle(ButtonStyle.Link),
 		)
 
-		await bpChannel.send({ embeds: [embed], components: [button] })
+		const bpPosted = await bpChannel.send({ embeds: [embed], components: [button] })
+		await bpPosted.crosspost()
 
 		return modal.reply({
 			content: 'Le bon-plan a bien été envoyé ! 👌',
