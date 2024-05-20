@@ -50,11 +50,11 @@ export default {
 							name: 'Version Discord.js',
 							value: discordjs.version,
 						},
-						{
-							name: 'Modèle OpenAI ChatGPT',
-							// eslint-disable-next-line no-underscore-dangle
-							value: chatgpt._completionParams.model,
-						},
+						// {
+						// 	name: 'Modèle OpenAI ChatGPT',
+						// 	// eslint-disable-next-line no-underscore-dangle
+						// 	value: chatgpt._completionParams.model,
+						// },
 					])
 
 				return interaction.reply({ embeds: [embedBot] })
