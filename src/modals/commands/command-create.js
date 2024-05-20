@@ -140,7 +140,6 @@ export default {
 				}\n__Prévisualisation :__\n\n${contenu}`,
 			})
 
-		console.log(button)
 		return modal.reply({
 			content: `La commande **${nom}** a bien été créée et est **activée** 👌\n${
 				aliases ? `\n__Alias :__\n\`\`\`${aliases}\`\`\`` : ''
