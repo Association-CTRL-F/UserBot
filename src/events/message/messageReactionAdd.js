@@ -12,16 +12,6 @@ export default async (messageReaction, user, client) => {
 	// Acquisition de la base de données
 	const bdd = client.config.db.pools.userbot
 
-	// Partie système de réaction / rôle
-	if (client.reactionRoleMap.has(message.id)) {
-		const emojiRoleMap = client.reactionRoleMap.get(message.id)
-		const resolvedEmoji = emoji.id || emoji.name
-		const { id: roleID } = emojiRoleMap[resolvedEmoji]
-		const guildMember = await message.guild.members.fetch(user)
-
-		return guildMember.roles.add(roleID)
-	}
-
 	switch (emoji.name) {
 		// Si c'est un signalement (report)
 		case '🚨': {
