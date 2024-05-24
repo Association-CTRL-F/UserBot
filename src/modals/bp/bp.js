@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js'
+import { ActionRowBuilder, EmbedBuilder } from 'discord.js'
 
 export default {
 	data: {
@@ -17,17 +17,15 @@ export default {
 		const embed = new EmbedBuilder()
 			.setColor('#1ABC9C')
 			.setTitle(titre)
+			.setURL(lien)
 			.setDescription(description)
+			.setFooter({
+				iconURL: modal.user.displayAvatarURL({ dynamic: true }),
+				text: `Bon-plan proposé par ${modal.user.tag}`,
+			})
 
-		const button = new ActionRowBuilder().addComponents(
-			new ButtonBuilder()
-				.setLabel('Accéder à ce bon-plan !')
-				.setURL(lien)
-				.setStyle(ButtonStyle.Link),
-		)
-
-		const bpPosted = await bpChannel.send({ embeds: [embed], components: [button] })
-		await bpPosted.crosspost()
+		const bpPosted = await bpChannel.send({ embeds: [embed] })
+		// await bpPosted.crosspost()
 
 		return modal.reply({
 			content: 'Le bon-plan a bien été envoyé ! 👌',
