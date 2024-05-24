@@ -7,6 +7,7 @@ import {
 	ActionRowBuilder,
 	TextInputStyle,
 	EmbedBuilder,
+	RESTJSONErrorCodes,
 } from 'discord.js'
 import fetch from 'node-fetch'
 
@@ -29,6 +30,11 @@ export default {
 				),
 		),
 	interaction: async (interaction, client) => {
+		// Acquisition du salon
+		const bpChannel = interaction.guild.channels.cache.get(
+			client.config.guild.channels.BP_CHANNEL_ID,
+		)
+
 		switch (interaction.options.getSubcommand()) {
 			// Nouveau bon-plan
 			case 'create':
@@ -79,20 +85,18 @@ export default {
 					})
 
 				// Fetch du message
-				const message = await interaction.channel.messages
-					.fetch(matchID[0])
-					.catch(error => {
-						if (error.code === RESTJSONErrorCodes.UnknownMessage) {
-							interaction.reply({
-								content: "Je n'ai pas trouvé ce message dans ce salon 😕",
-								ephemeral: true,
-							})
+				const message = await bpChannel.messages.fetch(matchID[0]).catch(error => {
+					if (error.code === RESTJSONErrorCodes.UnknownMessage) {
+						interaction.reply({
+							content: `Je n'ai pas trouvé ce message dans le salon <#${bpChannel.id}> 😕`,
+							ephemeral: true,
+						})
 
-							return error
-						}
+						return error
+					}
 
-						throw error
-					})
+					throw error
+				})
 
 				// Handle des mauvais cas
 				if (message instanceof Error) return
