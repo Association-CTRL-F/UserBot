@@ -88,15 +88,15 @@ export default {
 			// Clôturer un bon-plan
 			case 'end':
 				const receivedIDEnd = interaction.options.getString('id')
-				const matchID = receivedIDEnd.match(/^(\d{17,19})$/)
-				if (!matchID)
+				const matchIDEnd = receivedIDEnd.match(/^(\d{17,19})$/)
+				if (!matchIDEnd)
 					return interaction.reply({
 						content: "Tu ne m'as pas donné un ID valide 😕",
 						ephemeral: true,
 					})
 
 				// Fetch du message
-				const message = await bpChannel.messages.fetch(matchID[0]).catch(error => {
+				const message = await bpChannel.messages.fetch(matchIDEnd[0]).catch(error => {
 					if (error.code === RESTJSONErrorCodes.UnknownMessage) {
 						interaction.reply({
 							content: `Je n'ai pas trouvé ce message dans le salon <#${bpChannel.id}> 😕`,
@@ -143,15 +143,15 @@ export default {
 			// Supprimer un bon-plan
 			case 'del':
 				const receivedIDDel = interaction.options.getString('id')
-				const matchID = receivedIDDel.match(/^(\d{17,19})$/)
-				if (!matchID)
+				const matchIDDel = receivedIDDel.match(/^(\d{17,19})$/)
+				if (!matchIDDel)
 					return interaction.reply({
 						content: "Tu ne m'as pas donné un ID valide 😕",
 						ephemeral: true,
 					})
 
 				// Fetch du message
-				const message = await bpChannel.messages.fetch(matchID[0]).catch(error => {
+				const message = await bpChannel.messages.fetch(matchIDDel[0]).catch(error => {
 					if (error.code === RESTJSONErrorCodes.UnknownMessage) {
 						interaction.reply({
 							content: `Je n'ai pas trouvé ce message dans le salon <#${bpChannel.id}> 😕`,
