@@ -28,6 +28,17 @@ export default {
 						.setDescription('ID du bon-plan à clôturer')
 						.setRequired(true),
 				),
+		)
+		.addSubcommand(subcommand =>
+			subcommand
+				.setName('del')
+				.setDescription('Supprime un bon-plan')
+				.addStringOption(option =>
+					option
+						.setName('id')
+						.setDescription('ID du bon-plan à supprimer')
+						.setRequired(true),
+				),
 		),
 	interaction: async (interaction, client) => {
 		// Acquisition du salon
@@ -36,7 +47,7 @@ export default {
 		)
 
 		switch (interaction.options.getSubcommand()) {
-			// Nouveau bon-plan
+			// Créer un bon-plan
 			case 'create':
 				const modalCreate = new ModalBuilder()
 					.setCustomId('bp')
@@ -74,7 +85,7 @@ export default {
 
 				return interaction.showModal(modalCreate)
 
-			// Fin d'bon-plan
+			// Clôturer un bon-plan
 			case 'end':
 				const receivedID = interaction.options.getString('id')
 				const matchID = receivedID.match(/^(\d{17,19})$/)
@@ -126,6 +137,40 @@ export default {
 
 				return interaction.reply({
 					content: 'Le bon-plan a bien été clôturé 👌',
+					ephemeral: true,
+				})
+
+			// Supprimer un bon-plan
+			case 'del':
+				const receivedID = interaction.options.getString('id')
+				const matchID = receivedID.match(/^(\d{17,19})$/)
+				if (!matchID)
+					return interaction.reply({
+						content: "Tu ne m'as pas donné un ID valide 😕",
+						ephemeral: true,
+					})
+
+				// Fetch du message
+				const message = await bpChannel.messages.fetch(matchID[0]).catch(error => {
+					if (error.code === RESTJSONErrorCodes.UnknownMessage) {
+						interaction.reply({
+							content: `Je n'ai pas trouvé ce message dans le salon <#${bpChannel.id}> 😕`,
+							ephemeral: true,
+						})
+
+						return error
+					}
+
+					throw error
+				})
+
+				// Handle des mauvais cas
+				if (message instanceof Error) return
+
+				await message.delete()
+
+				return interaction.reply({
+					content: 'Le bon-plan a bien été supprimé 👌',
 					ephemeral: true,
 				})
 		}

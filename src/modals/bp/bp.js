@@ -8,7 +8,7 @@ export default {
 		// Acquisition du titre, de la description et du lien
 		const titre = modal.fields.getTextInputValue('bp-titre').trim()
 		const description = modal.fields.getTextInputValue('bp-description').trim()
-		const lien = modal.fields.getTextInputValue('bp-lien').trim().toLowerCase()
+		const lien = modal.fields.getTextInputValue('bp-lien').trim()
 
 		// Acquisition du salon
 		const bpChannel = modal.guild.channels.cache.get(client.config.guild.channels.BP_CHANNEL_ID)
