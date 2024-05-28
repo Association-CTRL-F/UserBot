@@ -96,7 +96,7 @@ export default {
 					})
 
 				// Fetch du message
-				const message = await bpChannel.messages.fetch(matchIDEnd[0]).catch(error => {
+				const messageEnd = await bpChannel.messages.fetch(matchIDEnd[0]).catch(error => {
 					if (error.code === RESTJSONErrorCodes.UnknownMessage) {
 						interaction.reply({
 							content: `Je n'ai pas trouvé ce message dans le salon <#${bpChannel.id}> 😕`,
@@ -110,10 +110,10 @@ export default {
 				})
 
 				// Handle des mauvais cas
-				if (message instanceof Error) return
+				if (messageEnd instanceof Error) return
 				if (
-					!message.embeds[0] ||
-					!message.embeds[0].data.footer.text.startsWith('Bon-plan')
+					!messageEnd.embeds[0] ||
+					!messageEnd.embeds[0].data.footer.text.startsWith('Bon-plan')
 				)
 					return interaction.reply({
 						content: "Le message initial n'est pas un bon-plan 😕",
@@ -123,15 +123,15 @@ export default {
 				// Clôture du bon-plan
 				const embedEdit = new EmbedBuilder()
 					.setColor('#8DA1AC')
-					.setTitle('[TERMINÉ] ' + message.embeds[0].data.title)
-					.setURL(message.embeds[0].data.url)
-					.setDescription(message.embeds[0].data.description)
+					.setTitle('[TERMINÉ] ' + messageEnd.embeds[0].data.title)
+					.setURL(messageEnd.embeds[0].data.url)
+					.setDescription(messageEnd.embeds[0].data.description)
 					.setFooter({
 						iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
 						text: `Bon-plan proposé par ${interaction.user.tag}`,
 					})
 
-				await message.edit({
+				await messageEnd.edit({
 					embeds: [embedEdit],
 				})
 
@@ -151,7 +151,7 @@ export default {
 					})
 
 				// Fetch du message
-				const message = await bpChannel.messages.fetch(matchIDDel[0]).catch(error => {
+				const messageDel = await bpChannel.messages.fetch(matchIDDel[0]).catch(error => {
 					if (error.code === RESTJSONErrorCodes.UnknownMessage) {
 						interaction.reply({
 							content: `Je n'ai pas trouvé ce message dans le salon <#${bpChannel.id}> 😕`,
@@ -165,9 +165,9 @@ export default {
 				})
 
 				// Handle des mauvais cas
-				if (message instanceof Error) return
+				if (messageDel instanceof Error) return
 
-				await message.delete()
+				await messageDel.delete()
 
 				return interaction.reply({
 					content: 'Le bon-plan a bien été supprimé 👌',
