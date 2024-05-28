@@ -87,8 +87,8 @@ export default {
 
 			// Clôturer un bon-plan
 			case 'end':
-				const receivedID = interaction.options.getString('id')
-				const matchID = receivedID.match(/^(\d{17,19})$/)
+				const receivedIDEnd = interaction.options.getString('id')
+				const matchID = receivedIDEnd.match(/^(\d{17,19})$/)
 				if (!matchID)
 					return interaction.reply({
 						content: "Tu ne m'as pas donné un ID valide 😕",
@@ -142,8 +142,8 @@ export default {
 
 			// Supprimer un bon-plan
 			case 'del':
-				const receivedID = interaction.options.getString('id')
-				const matchID = receivedID.match(/^(\d{17,19})$/)
+				const receivedIDDel = interaction.options.getString('id')
+				const matchID = receivedIDDel.match(/^(\d{17,19})$/)
 				if (!matchID)
 					return interaction.reply({
 						content: "Tu ne m'as pas donné un ID valide 😕",
