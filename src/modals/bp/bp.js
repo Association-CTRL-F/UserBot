@@ -25,7 +25,7 @@ export default {
 			})
 
 		const bpPosted = await bpChannel.send({ embeds: [embed] })
-		// await bpPosted.crosspost()
+		await bpPosted.crosspost()
 
 		return modal.reply({
 			content: 'Le bon-plan a bien été envoyé ! 👌',
