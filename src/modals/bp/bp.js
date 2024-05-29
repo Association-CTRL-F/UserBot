@@ -29,6 +29,7 @@ export default {
 
 		return modal.reply({
 			content: 'Le bon-plan a bien été envoyé ! 👌',
+			ephemeral: true,
 		})
 	},
 }
