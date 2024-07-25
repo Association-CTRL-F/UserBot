@@ -114,7 +114,7 @@ L'application est capable de tourner sous plusieurs environnements :
 
 2. Créez les fichiers `bot.env`, `config.json`, `reactionRoleConfig.json` et `banEmotesAtJoin.json` dans le dossier `config` ainsi que le fichier `docker-compose.yml` dans le dossier `docker` :
 	```bash
-	mdkir config
+	mkdir config
 	cd config
 	touch bot.env config.json reactionRoleConfig.json banEmotesAtJoin.json
 	cd ..
