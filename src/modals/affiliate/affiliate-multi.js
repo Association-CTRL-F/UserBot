@@ -43,7 +43,7 @@ export default {
 		let liensResponse = ''
 		try {
 			const requests = liens.map(async lien => {
-				const res = await fetch('https://api.ctrl-f.io/api/urls', {
+				const res = await fetch('https://api.ctrl-f.info/api/urls', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',

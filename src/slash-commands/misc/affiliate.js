@@ -70,7 +70,7 @@ export default {
 
 				try {
 					// Requête
-					const res = await fetch('https://api.ctrl-f.io/api/urls', {
+					const res = await fetch('https://api.ctrl-f.info/api/urls', {
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json',

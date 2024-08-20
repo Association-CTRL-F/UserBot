@@ -35,7 +35,7 @@ export default {
 				},
 				{
 					name: 'Q : "Un ami est banni et souhaite faire une demande de levée de bannissement, comment faire ?"',
-					value: "R : Afin de laisser une seconde chance aux membres bannis, nous avons mis en place un formulaire de levée de bannissement disponible à l'adresse https://moderation.ctrl-f.io\nLes conditions de levée y sont indiquées, ainsi que la mise en garde si le résultat de la demande est positif.",
+					value: "R : Afin de laisser une seconde chance aux membres bannis, nous avons mis en place un formulaire de levée de bannissement disponible à l'adresse https://moderation.ctrl-f.info\nLes conditions de levée y sont indiquées, ainsi que la mise en garde si le résultat de la demande est positif.",
 					inline: false,
 				},
 			])

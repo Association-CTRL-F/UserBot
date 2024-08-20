@@ -27,7 +27,7 @@ export default {
 				`👮 **__Sanctions__**\n\nLes actions et sanctions que l'équipe de modération peut appliquer sont les suivantes :\n\n➡️ Le slowmode : si un salon est soumis à une trop grande activité, un temps d'attente entre chaque message peut être instauré afin de la canaliser.\n\n➡️ Le mute : l'ensemble des salons est alors en lecture seule, vous ne pouvez plus écrire à l'exception du salon médiation où vous pouvez entrer en communication avec le staff.\n\n➡️ L'avertissement : que vous recevez en privé via notre bot. Des précisions sur la raison et la partie du règlement enfreinte y sont jointes.\n\n➡️ Le bannissement : lorsque vous avez reçu 4 avertissements, ou que votre comportement a été trop néfaste, nous vous excluons du serveur avec une interdiction de revenir pour une durée déterminée ou non.\n\nHors situations exceptionnelles, si vous avez plusieurs mutes rapprochés ou que commettez une faute grave, vous serez sanctionné par un avertissement.\n\nSachez que l'équipe de modération se réserve le droit de sanctionner un comportement qui ne respecterait pas la bienséance et le savoir-vivre, même si celui-ci ne va pas à l'encontre de l'une des parties de ce présent règlement.\n\nIl est inutile de contester en privé une sanction à l'un des administrateurs ou l'un des modérateurs.`,
 			)
 			.setFooter({
-				text: `Mise à jour le 13 janvier 2024`,
+				text: `Mis à jour le 20 août 2024`,
 			})
 
 		await interaction.channel.send({
