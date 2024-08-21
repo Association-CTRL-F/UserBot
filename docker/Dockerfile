@@ -3,8 +3,10 @@ RUN apk add dumb-init tzdata
 ENV NODE_ENV=production
 WORKDIR /usr/src/app
 
-COPY --chown=node:node . ./
-RUN npm ci --only=production
+COPY package*.json .
+COPY src src
+COPY config/*.png config/
+COPY config/commands/* config/commands/
 
-USER node
+RUN npm ci --only=production
 CMD ["dumb-init", "node", "src/index.js"]
