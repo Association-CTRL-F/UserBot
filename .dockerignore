@@ -2,6 +2,7 @@
 *
 
 # Sauf
+!config/
 !src/
 !package.json
 !package-lock.json
