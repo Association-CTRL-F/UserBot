@@ -6,7 +6,7 @@ export default {
 		.setName('whois')
 		.setDescription('Donne des infos sur soit ou un autre utilisateur')
 		.addUserOption(option => option.setName('membre').setDescription('Membre')),
-	interaction: async interaction => {
+	interaction: async (interaction, client) => {
 		// Acquisition du membre
 		const user = interaction.options.getUser('membre') || interaction.user
 		const member = interaction.guild.members.cache.get(user.id)
@@ -16,13 +16,22 @@ export default {
 				ephemeral: true,
 			})
 
+		// Acquisition de la base de données
+		const bddModeration = client.config.db.pools.moderation
+		if (!bddModeration)
+			return interaction.reply({
+				content:
+					'Une erreur est survenue lors de la connexion à la base de données Moderation 😕',
+				ephemeral: true,
+			})
+
 		// Nombre de warns
 		let warnings = []
 		try {
-			const sqlView = 'SELECT * FROM warnings_logs WHERE discord_id = ?'
-			const dataView = [user.id]
-			const [resultWarnings] = await bddModeration.execute(sqlView, dataView)
-			warnings = resultWarnings
+			const sql = 'SELECT * FROM warnings_logs WHERE discord_id = ?'
+			const data = [user.id]
+			const [result] = await bddModeration.execute(sql, data)
+			warnings = result
 		} catch {
 			return interaction.reply({
 				content:
@@ -34,10 +43,10 @@ export default {
 		// Historique ban
 		let ban = []
 		try {
-			const sqlView = 'SELECT * FROM demandes_logs WHERE discord_id = ?'
-			const dataView = [user.id]
-			const [resultBan] = await bddModeration.execute(sqlView, dataView)
-			ban = resultBan
+			const sql = 'SELECT * FROM demandes_logs WHERE discord_id = ?'
+			const data = [user.id]
+			const [result] = await bddModeration.execute(sql, data)
+			ban = result
 		} catch {
 			return interaction.reply({
 				content:
