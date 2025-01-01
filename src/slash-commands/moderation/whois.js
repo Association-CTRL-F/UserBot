@@ -6,7 +6,7 @@ export default {
 		.setName('whois')
 		.setDescription('Donne des infos sur soit ou un autre utilisateur')
 		.addUserOption(option => option.setName('membre').setDescription('Membre')),
-	interaction: interaction => {
+	interaction: async interaction => {
 		// Acquisition du membre
 		const user = interaction.options.getUser('membre') || interaction.user
 		const member = interaction.guild.members.cache.get(user.id)
@@ -15,6 +15,36 @@ export default {
 				content: "Je n'ai pas trouvé cet utilisateur, vérifie la mention ou l'ID 😕",
 				ephemeral: true,
 			})
+
+		// Nombre de warns
+		let warnings = []
+		try {
+			const sqlView = 'SELECT * FROM warnings_logs WHERE discord_id = ?'
+			const dataView = [user]
+			const [resultWarnings] = await bddModeration.execute(sqlView, dataView)
+			warnings = resultWarnings
+		} catch {
+			return interaction.reply({
+				content:
+					'Une erreur est survenue lors de la récupération des avertissements 😬',
+				ephemeral: true,
+			})
+		}
+
+		// Historique ban
+		let ban = []
+		try {
+			const sqlView = 'SELECT * FROM demandes_logs WHERE discord_id = ?'
+			const dataView = [user]
+			const [resultBan] = await bddModeration.execute(sqlView, dataView)
+			ban = resultBan
+		} catch {
+			return interaction.reply({
+				content:
+					"Une erreur est survenue lors de la récupération de l'historique de bannissement 😬",
+				ephemeral: true,
+			})
+		}
 
 		// Création de l'embed
 		const embed = new EmbedBuilder()
@@ -53,6 +83,11 @@ export default {
 					name: 'Est sur le serveur depuis',
 					value: diffDate(member.joinedAt),
 					inline: true,
+				},
+				{
+					name: "Historique",
+					value: `Nombre d'avertissement(s) : ${warnings.length}\nA déjà été banni : ${ban.length} fois`,
+					inline: false,
 				},
 			])
 
