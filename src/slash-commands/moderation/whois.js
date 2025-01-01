@@ -20,7 +20,7 @@ export default {
 		let warnings = []
 		try {
 			const sqlView = 'SELECT * FROM warnings_logs WHERE discord_id = ?'
-			const dataView = [user]
+			const dataView = [user.id]
 			const [resultWarnings] = await bddModeration.execute(sqlView, dataView)
 			warnings = resultWarnings
 		} catch {
@@ -35,7 +35,7 @@ export default {
 		let ban = []
 		try {
 			const sqlView = 'SELECT * FROM demandes_logs WHERE discord_id = ?'
-			const dataView = [user]
+			const dataView = [user.id]
 			const [resultBan] = await bddModeration.execute(sqlView, dataView)
 			ban = resultBan
 		} catch {
