@@ -294,39 +294,38 @@ export default async (message, client) => {
 	// Partie citation
 	if (message.guild) {
 		// Répondre aux messages avec mention en utilisant ChatGPT
-		// // Répondre émoji si @bot
-		// if (message.mentions.users.has(client.user.id) && !message.mentions.repliedUser) {
-		// 	// const pingEmoji = client.emojis.cache.find(emoji => emoji.name === 'ping')
-		// 	// if (pingEmoji) message.react(pingEmoji)
+		// Répondre émoji si @bot
+		if (message.mentions.users.has(client.user.id) && !message.mentions.repliedUser) {
+			if (client.config.others.openAiKey !== '') {
+				const chatgpt = new ChatGPTAPI({
+					apiKey: client.config.others.openAiKey,
+				})
 
-		// 	const chatgpt = new ChatGPTAPI({
-		// 		apiKey: client.config.others.openAiKey,
-		// 	})
+				try {
+					const chatgptResponse = await chatgpt.sendMessage(message.content)
+					if (
+						chatgptResponse.text.includes('@everyone') ||
+						chatgptResponse.text.includes('@here')
+					)
+						return message.reply({
+							content: `Désolé, je ne peux pas mentionner ${message.guild.memberCount} personnes 😬`,
+						})
 
-		// 	try {
-		// 		const chatgptResponse = await chatgpt.sendMessage(message.content)
-		// 		if (
-		// 			chatgptResponse.text.includes('@everyone') ||
-		// 			chatgptResponse.text.includes('@here')
-		// 		)
-		// 			return message.reply({
-		// 				content: `Désolé, je ne peux pas mentionner ${message.guild.memberCount} personnes 😬`,
-		// 			})
+					if (chatgptResponse.text.length > 1960)
+						return message.reply({
+							content: `**[Réponse partielle]**\n\n${chatgptResponse.text.substr(
+								0,
+								1960,
+							)} [...]`,
+						})
 
-		// 		if (chatgptResponse.text.length > 1960)
-		// 			return message.reply({
-		// 				content: `**[Réponse partielle]**\n\n${chatgptResponse.text.substr(
-		// 					0,
-		// 					1960,
-		// 				)} [...]`,
-		// 			})
-
-		// 		return message.reply({ content: chatgptResponse.text })
-		// 	} catch (error) {
-		// 		console.error(error)
-		// 		return message.reply({ content: 'Une erreur est survenue 😬' })
-		// 	}
-		// }
+					return message.reply({ content: chatgptResponse.text })
+				} catch (error) {
+					console.error(error)
+					return message.reply({ content: 'Une erreur est survenue 😬' })
+				}
+			}
+		}
 
 		// Regex pour match les liens Discord
 		const regexGlobal =
