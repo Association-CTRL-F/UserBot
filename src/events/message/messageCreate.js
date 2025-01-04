@@ -299,6 +299,9 @@ export default async (message, client) => {
 			if (client.config.others.openAiKey !== '') {
 				const chatgpt = new ChatGPTAPI({
 					apiKey: client.config.others.openAiKey,
+					completionParams: {
+						model: 'gpt-4o-mini',
+					},
 				})
 
 				try {
@@ -323,7 +326,7 @@ export default async (message, client) => {
 				} catch (error) {
 					console.error(error)
 
-					return message.reply({ content: ChatGPTError.error.message })
+					return message.reply({ content: 'Une erreur est survenue 😬' })
 				}
 			}
 		}
