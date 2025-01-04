@@ -16,7 +16,7 @@ import {
 	displayNameAndID,
 } from '../../util/util.js'
 import { setTimeout } from 'timers/promises'
-import { ChatGPTAPI } from 'chatgpt'
+import { ChatGPTAPI, ChatGPTError } from 'chatgpt'
 
 export default async (message, client) => {
 	if (message.author.bot) return
@@ -322,7 +322,8 @@ export default async (message, client) => {
 					return message.reply({ content: chatgptResponse.text })
 				} catch (error) {
 					console.error(error)
-					return message.reply({ content: 'Une erreur est survenue 😬' })
+
+					return message.reply({ content: ChatGPTError.error.message })
 				}
 			}
 		}
