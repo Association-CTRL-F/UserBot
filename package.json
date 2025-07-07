@@ -1,6 +1,6 @@
 {
 	"name": "userbot",
-	"version": "25.7.1",
+	"version": "25.7.7",
 	"description": "UserBot",
 	"main": "src/index.js",
 	"scripts": {
