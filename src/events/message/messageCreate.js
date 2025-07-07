@@ -81,42 +81,42 @@ export default async (message, client) => {
 		return console.log('Une erreur est survenue lors de la connexion à la base de données')
 
 	// Répondre emoji :feur:
-	const feurChannels = client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS
-		? client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS.split(/, */)
-		: []
+	// const feurChannels = client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS
+	// 	? client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS.split(/, */)
+	// 	: []
 
-	if (feurChannels.includes(message.channel.id)) {
-		// Vérifications des messages anti-feur
-		// Délai de 10 secondes afin de laisser le temps d'ajouter un anti-feur
-		await setTimeout(10000)
+	// if (feurChannels.includes(message.channel.id)) {
+	// 	// Vérifications des messages anti-feur
+	// 	// Délai de 10 secondes afin de laisser le temps d'ajouter un anti-feur
+	// 	await setTimeout(10000)
 
-		let antifeurMessages = []
-		try {
-			const sql = 'SELECT * FROM antifeur'
-			const [result] = await bdd.execute(sql)
-			antifeurMessages = result
-		} catch (error) {
-			return console.error(error)
-		}
+	// 	let antifeurMessages = []
+	// 	try {
+	// 		const sql = 'SELECT * FROM antifeur'
+	// 		const [result] = await bdd.execute(sql)
+	// 		antifeurMessages = result
+	// 	} catch (error) {
+	// 		return console.error(error)
+	// 	}
 
-		let block = 0
-		antifeurMessages.forEach(antifeurMessage => {
-			if (message.id === antifeurMessage.message_id) block += 1
-		})
+	// 	let block = 0
+	// 	antifeurMessages.forEach(antifeurMessage => {
+	// 		if (message.id === antifeurMessage.message_id) block += 1
+	// 	})
 
-		if (block > 0) return
+	// 	if (block > 0) return
 
-		// Si pas de blocage anti-feur
-		const random = Math.round(Math.random() * 100)
+	// 	// Si pas de blocage anti-feur
+	// 	const random = Math.round(Math.random() * 100)
 
-		// 10% de chances
-		if (random >= 45 && random <= 55) {
-			const regexFeur =
-				/.*[qQ][uU][oO][iI]([^a-zA-Z]*|(<:[a-zA-Z0-9]+:[0-9]+>)|(:[a-zA-Z0-9]+:))*$/
-			const feurEmoji = client.emojis.cache.find(emoji => emoji.name === 'feur')
-			if (message.content.match(regexFeur)) message.react(feurEmoji)
-		}
-	}
+	// 	// 10% de chances
+	// 	if (random >= 45 && random <= 55) {
+	// 		const regexFeur =
+	// 			/.*[qQ][uU][oO][iI]([^a-zA-Z]*|(<:[a-zA-Z0-9]+:[0-9]+>)|(:[a-zA-Z0-9]+:))*$/
+	// 		const feurEmoji = client.emojis.cache.find(emoji => emoji.name === 'feur')
+	// 		if (message.content.match(regexFeur)) message.react(feurEmoji)
+	// 	}
+	// }
 
 	// Alertes personnalisées
 	let alerts = []
