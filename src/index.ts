@@ -1,6 +1,15 @@
 import { env } from '#app/env';
-import { SapphireClient } from '@sapphire/framework';
-import { GatewayIntentBits } from 'discord.js';
+import {
+	ApplicationCommandRegistries,
+	RegisterBehavior,
+	SapphireClient,
+} from '@sapphire/framework';
+import '@sapphire/plugin-logger/register';
+import { GatewayIntentBits, Partials } from 'discord.js';
+
+ApplicationCommandRegistries.setDefaultBehaviorWhenNotIdentical(
+	RegisterBehavior.BulkOverwrite
+);
 
 const client = new SapphireClient({
 	intents: [
@@ -9,6 +18,22 @@ const client = new SapphireClient({
 		GatewayIntentBits.GuildMessages,
 	],
 	loadMessageCommandListeners: true,
+	defaultPrefix: '!',
+	caseInsensitiveCommands: true,
+	shards: 'auto',
+	partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
 
-client.login(env.DISCORD_TOKEN);
+const main = async () => {
+	try {
+		client.logger.info('Logging in');
+		await client.login(env.DISCORD_TOKEN);
+		client.logger.info('logged in');
+	} catch (error) {
+		client.logger.fatal(error);
+		await client.destroy();
+		process.exit(1);
+	}
+};
+
+void main();

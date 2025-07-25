@@ -1,6 +1,7 @@
 {
 	"compilerOptions": {
 		"rootDir": "./src",
+		"outDir": "./dist",
 		"target": "ESNext",
 		"module": "NodeNext",
 		"lib": ["ESNext"],
@@ -23,8 +24,9 @@
 		"types": ["@types/node"],
 		"baseUrl": "./src",
 		"paths": {
-			"#app/*": ["app/*.ts"]
+			"#app/*": ["app/*"]
 		}
 	},
-	"include": ["src/**/*.ts"]
+	"include": ["src/**/*.ts"],
+	"exclude": ["node_modules", "dist"]
 }
