@@ -1,7 +1,0 @@
-# On ignore tous les fichiers
-*
-
-# Sauf
-!src/
-!package.json
-!package-lock.json

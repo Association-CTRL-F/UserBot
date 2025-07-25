@@ -12,23 +12,24 @@
 		"docker-compose-build-stop": "docker-compose -f ./docker/docker-compose-build.yml down -d"
 	},
 	"dependencies": {
-		"axios": "^1.7.9",
-		"bent": "^7.3.12",
+		"@sapphire/framework": "^5.3.6",
 		"chatgpt": "^5.2.5",
-		"discord.js": "^14.21.0",
-		"http": "^0.0.1-security",
-		"mathjs": "^14.5.0",
-		"ms": "^2.1.3",
-		"mysql2": "^3.12.0",
-		"node-fetch": "^2.6.7",
-		"pagination.djs": "^4.0.17"
+		"discord.js": "14.x",
+		"mathjs": "^14.5.3",
+		"mysql2": "^3.14.2",
+		"pagination.djs": "^4.0.18"
 	},
 	"devDependencies": {
-		"dotenv": "^16.4.7",
-		"eslint": "^9.27.0",
-		"eslint-config-prettier": "^10.1.5",
-		"eslint-plugin-prettier": "^5.4.0",
-		"prettier": "^3.6.2"
+		"@eslint/js": "^9.31.0",
+		"@eslint/json": "^0.13.1",
+		"dotenv": "^17.2.1",
+		"eslint": "^9.31.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-prettier": "^5.5.3",
+		"globals": "^16.3.0",
+		"prettier": "^3.6.2",
+		"typescript": "^5.8.3",
+		"typescript-eslint": "^8.38.0"
 	},
 	"type": "module"
 }
