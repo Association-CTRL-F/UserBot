@@ -4,7 +4,9 @@
 		"outDir": "./dist",
 		"target": "ESNext",
 		"module": "NodeNext",
-		"lib": ["ESNext"],
+		"lib": [
+			"ESNext"
+		],
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"isolatedModules": true,
@@ -21,12 +23,24 @@
 		"noImplicitThis": true,
 		"skipLibCheck": true,
 		"strict": true,
-		"types": ["@types/node"],
+		"types": [
+			"@types/node"
+		],
 		"baseUrl": "./src",
 		"paths": {
-			"#app/*": ["app/*"]
+			"#app/*": [
+				"app/*"
+			],
+			"#lib/*": [
+				"lib/*"
+			]
 		}
 	},
-	"include": ["src/**/*.ts"],
-	"exclude": ["node_modules", "dist"]
+	"include": [
+		"src/**/*.ts"
+	],
+	"exclude": [
+		"node_modules",
+		"dist"
+	]
 }

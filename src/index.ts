@@ -1,10 +1,10 @@
-import { env } from '#app/env';
+import { env } from '#app/setup';
+import { getLocale } from '#lib/utils';
 import {
 	ApplicationCommandRegistries,
 	RegisterBehavior,
 	SapphireClient,
 } from '@sapphire/framework';
-import type { InternationalizationContext } from '@sapphire/plugin-i18next';
 import { GatewayIntentBits, Partials } from 'discord.js';
 
 import '@sapphire/plugin-hmr/register';
@@ -14,8 +14,6 @@ import '@sapphire/plugin-logger/register';
 ApplicationCommandRegistries.setDefaultBehaviorWhenNotIdentical(
 	RegisterBehavior.BulkOverwrite
 );
-
-const DEFAULT_LOCALE = 'fr-FR';
 
 const client = new SapphireClient({
 	intents: [
@@ -32,13 +30,7 @@ const client = new SapphireClient({
 		enabled: env.isDev,
 	},
 	i18n: {
-		fetchLanguage: (context: InternationalizationContext) => {
-			const language =
-				context.interactionGuildLocale ??
-				context.interactionLocale ??
-				DEFAULT_LOCALE;
-			return language;
-		},
+		fetchLanguage: getLocale,
 	},
 });
 

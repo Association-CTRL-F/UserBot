@@ -1,5 +1,8 @@
+import * as colorette from 'colorette';
 import 'dotenv/config';
 import { cleanEnv, makeValidator, str } from 'envalid';
+
+colorette.createColors({ useColor: true });
 
 const discordTokenValidator = makeValidator((v: string) => {
 	if (typeof v !== 'string' || v.length === 0) {
