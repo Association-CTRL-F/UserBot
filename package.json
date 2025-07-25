@@ -4,24 +4,24 @@
 	"description": "UserBot",
 	"main": "src/index.js",
 	"scripts": {
-		"start": "node .",
-		"test": "eslint src && prettier --check src/**/*.js",
-		"docker-start": "docker-compose -f ./docker/docker-compose.yml up -d",
-		"docker-stop": "docker-compose -f ./docker/docker-compose.yml down -d",
-		"docker-compose-build-start": "docker-compose -f ./docker/docker-compose-build.yml up -d --build",
-		"docker-compose-build-stop": "docker-compose -f ./docker/docker-compose-build.yml down -d"
+		"dev": "node src/index.ts",
+		"lint": "eslint .",
+		"format": "prettier --write .",
+		"typecheck": "tsc --noEmit",
+		"check": "pnpm run lint && pnpm run typecheck"
+	},
+	"imports": {
+		"#app/*": "./src/app/*.ts"
 	},
 	"dependencies": {
 		"@sapphire/framework": "^5.3.6",
-		"chatgpt": "^5.2.5",
 		"discord.js": "14.x",
-		"mathjs": "^14.5.3",
-		"mysql2": "^3.14.2",
-		"pagination.djs": "^4.0.18"
+		"envalid": "^8.1.0"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.31.0",
 		"@eslint/json": "^0.13.1",
+		"@types/node": "^24.1.0",
 		"dotenv": "^17.2.1",
 		"eslint": "^9.31.0",
 		"eslint-config-prettier": "^10.1.8",
@@ -31,5 +31,8 @@
 		"typescript": "^5.8.3",
 		"typescript-eslint": "^8.38.0"
 	},
-	"type": "module"
+	"type": "module",
+	"volta": {
+		"node": "24.1.0"
+	}
 }
