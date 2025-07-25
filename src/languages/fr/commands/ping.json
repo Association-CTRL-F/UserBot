@@ -1,0 +1,4 @@
+{
+	"success": "Pong !",
+	"success_with_args": "Pong 🏓! (Modification d'un message: {{latency}}ms. Heartbeat: {{ping}}ms.)"
+}

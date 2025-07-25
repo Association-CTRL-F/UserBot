@@ -4,12 +4,18 @@ import {
 	RegisterBehavior,
 	SapphireClient,
 } from '@sapphire/framework';
-import '@sapphire/plugin-logger/register';
+import type { InternationalizationContext } from '@sapphire/plugin-i18next';
 import { GatewayIntentBits, Partials } from 'discord.js';
+
+import '@sapphire/plugin-hmr/register';
+import '@sapphire/plugin-i18next/register';
+import '@sapphire/plugin-logger/register';
 
 ApplicationCommandRegistries.setDefaultBehaviorWhenNotIdentical(
 	RegisterBehavior.BulkOverwrite
 );
+
+const DEFAULT_LOCALE = 'fr-FR';
 
 const client = new SapphireClient({
 	intents: [
@@ -22,13 +28,26 @@ const client = new SapphireClient({
 	caseInsensitiveCommands: true,
 	shards: 'auto',
 	partials: [Partials.Message, Partials.Channel, Partials.Reaction],
+	hmr: {
+		enabled: env.isDev,
+	},
+	i18n: {
+		fetchLanguage: (context: InternationalizationContext) => {
+			const language =
+				context.interactionGuildLocale ??
+				context.interactionLocale ??
+				DEFAULT_LOCALE;
+			return language;
+		},
+	},
 });
 
 const main = async () => {
 	try {
-		client.logger.info('Logging in');
 		await client.login(env.DISCORD_TOKEN);
-		client.logger.info('logged in');
+		client.logger.info(
+			`Logged in as ${client.user?.username} (${client.user?.id})`
+		);
 	} catch (error) {
 		client.logger.fatal(error);
 		await client.destroy();
