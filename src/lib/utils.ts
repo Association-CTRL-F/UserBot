@@ -83,7 +83,7 @@ export function getDatabaseUrl() {
 export async function closeGracefully(signal: string) {
 	container.logger.info(`Received signal to terminate : ${signal}`);
 
-	await container.client?.destroy();
+	container.client?.destroy();
 	container.logger.info('Discord client successfully destroyed');
 
 	process.exit(0);

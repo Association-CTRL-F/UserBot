@@ -2,9 +2,16 @@ install:
 	@pnpm install
 
 dev:
+	@docker compose down
+	@docker compose -f dev.compose.yml pull
 	@docker compose -f dev.compose.yml up -d --wait
 	@pnpm run migrate
 	@pnpm run dev
+
+prod:
+	@docker compose -f dev.compose.yml down
+	@docker compose pull
+	@docker compose up -d --build --wait
 
 migrate:
 	@pnpm run migrate

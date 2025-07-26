@@ -1,4 +1,4 @@
-name: userbot-dev
+name: userbot
 services:
   postgres:
     restart: always
@@ -13,6 +13,19 @@ services:
       - postgres-volume:/var/lib/postgresql/data
     ports:
       - '${DB_PORT}:5432'
+
+  userbot:
+    restart: always
+    build:
+      context: .
+    environment:
+      - DB_HOST=postgres
+      - NODE_ENV=production
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres-volume:

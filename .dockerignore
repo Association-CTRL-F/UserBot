@@ -1,0 +1,11 @@
+# Ignore everything by default
+*
+
+# Allow specific files and folders
+!package.json
+!pnpm-lock.yaml
+!tsconfig.json
+!src/
+!kysely.config.ts
+!tsc-alias.config.js
+!scripts/
