@@ -22,7 +22,8 @@
 	"imports": {
 		"#app/*": "./src/app/*.ts",
 		"#lib/*": "./src/lib/*.ts",
-		"#database/*": "./src/database/*.ts"
+		"#database/*": "./src/database/*.ts",
+		"#repository/*": "./src/repository/*.ts"
 	},
 	"dependencies": {
 		"@sapphire/discord.js-utilities": "^7.3.3",

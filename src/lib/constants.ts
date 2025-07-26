@@ -1,5 +1,5 @@
 import { getDatabaseUrl } from '#lib/utils';
-import { PoolConfig } from 'pg';
+import { type PoolConfig } from 'pg';
 
 export const DEFAULT_LOCALE = 'fr';
 export const DB_CONFIG: PoolConfig = {
