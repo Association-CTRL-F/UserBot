@@ -79,3 +79,12 @@ export function getLocale(context: InternationalizationContext) {
 export function getDatabaseUrl() {
 	return `postgresql://${env.DB_USER}:${env.DB_PASSWORD}@${env.DB_HOST}:${env.DB_PORT}/${env.DB_DATABASE}`;
 }
+
+export async function closeGracefully(signal: string) {
+	container.logger.info(`Received signal to terminate : ${signal}`);
+
+	await container.client?.destroy();
+	container.logger.info('Discord client successfully destroyed');
+
+	process.exit(0);
+}

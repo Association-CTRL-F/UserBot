@@ -1,5 +1,5 @@
 import { env } from '#app/setup';
-import { getLocale } from '#lib/utils';
+import { closeGracefully, getLocale } from '#lib/utils';
 import {
 	ApplicationCommandRegistries,
 	RegisterBehavior,
@@ -46,5 +46,8 @@ const main = async () => {
 		process.exit(1);
 	}
 };
+
+process.on('SIGINT', closeGracefully);
+process.on('SIGTERM', closeGracefully);
 
 void main();
