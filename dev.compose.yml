@@ -1,0 +1,18 @@
+name: takumi-dev
+services:
+  postgres:
+    restart: always
+    image: postgres:17
+    environment:
+      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready', '-U', '${DB_USER}']
+    volumes:
+      - postgres-volume:/var/lib/postgresql/data
+    ports:
+      - '${DB_PORT}:5432'
+
+volumes:
+  postgres-volume:

@@ -41,7 +41,6 @@ export class UserEvent extends Listener {
 		const line02 = llc('');
 		const line03 = llc('');
 
-		// Offset Pad
 		const pad = ' '.repeat(7);
 
 		console.log(
