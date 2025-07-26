@@ -6,23 +6,46 @@ dev:
 	@pnpm run migrate
 	@pnpm run dev
 
-db-migrate:
+migrate:
 	@pnpm run migrate
 
-db-test:
+migrate-down:
+	@pnpm run migrate:down
+
+migrate-create:
+	@pnpm run migrate:create
+
+migrate-list:
+	@pnpm run migrate:list
+
+seed-run:
+	@pnpm run seed:run
+
+seed-create:
+	@pnpm run seed:make
+
+sql:
+	@pnpm run sql
+
+test:
 	@pnpm run test:db
 
-db-reset:
-	@echo "Dropping all tables..."
-	@psql $(DATABASE_URL) -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
-	@echo "Running migrations..."
+reset:
+	@echo "Suppression de toutes les tables..."
+	@pnpm exec kysely sql "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+	@echo "Exécution des migrations..."
 	@pnpm run migrate
-	@echo "Database reset complete!"
+	@echo "Réinitialisation de la base de données terminée !"
 
-db-seed:
-	@echo "Seeding database..."
-	@ts-node --project tsconfig.json -r tsconfig-paths/register src/database/seed.ts
+fresh:
+	@echo "Suppression de toutes les tables et réinsertion des seeds..."
+	@pnpm exec kysely sql "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+	@echo "Exécution des migrations..."
+	@pnpm run migrate
+	@echo "Exécution des seeds..."
+	@pnpm run seed:run
+	@echo "Base de données fraîche prête !"
 
-db-status:
-	@echo "Database connection status:"
+status:
+	@echo "Statut de connexion à la base de données :"
 	@pnpm run test:db

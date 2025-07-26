@@ -1,3 +1,4 @@
+import { env } from '#app/setup';
 import { DEFAULT_LOCALE } from '#lib/constants';
 import {
 	container,
@@ -73,4 +74,8 @@ export function getLocale(context: InternationalizationContext) {
 		context.interactionLocale ??
 		DEFAULT_LOCALE
 	);
+}
+
+export function getDatabaseUrl() {
+	return `postgresql://${env.DB_USER}:${env.DB_PASSWORD}@${env.DB_HOST}:${env.DB_PORT}/${env.DB_DATABASE}`;
 }

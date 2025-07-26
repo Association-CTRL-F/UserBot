@@ -10,11 +10,19 @@
 		"lint": "eslint .",
 		"format": "prettier --write .",
 		"typecheck": "tsc --noEmit",
-		"check": "pnpm run lint && pnpm run typecheck"
+		"check": "pnpm run lint && pnpm run typecheck",
+		"migrate": "kysely migrate:latest",
+		"migrate:down": "kysely migrate:down",
+		"migrate:create": "kysely migrate:make",
+		"migrate:list": "kysely migrate:list",
+		"seed:run": "kysely seed:run",
+		"seed:make": "kysely seed:make",
+		"sql": "kysely sql"
 	},
 	"imports": {
 		"#app/*": "./src/app/*.ts",
-		"#lib/*": "./src/lib/*.ts"
+		"#lib/*": "./src/lib/*.ts",
+		"#database/*": "./src/database/*.ts"
 	},
 	"dependencies": {
 		"@sapphire/discord.js-utilities": "^7.3.3",
@@ -25,17 +33,21 @@
 		"@sapphire/plugin-logger": "^4.1.0",
 		"colorette": "^2.0.20",
 		"discord.js": "~14.21.0",
-		"envalid": "^8.1.0"
+		"envalid": "^8.1.0",
+		"kysely": "^0.28.3",
+		"pg": "^8.16.3"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.32.0",
 		"@eslint/json": "^0.13.1",
 		"@types/node": "^24.1.0",
+		"@types/pg": "^8.15.4",
 		"dotenv": "^17.2.1",
 		"eslint": "^9.32.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-prettier": "^5.5.3",
 		"globals": "^16.3.0",
+		"kysely-ctl": "^0.14.0",
 		"prettier": "^3.6.2",
 		"ts-node": "^10.9.2",
 		"tsconfig-paths": "^4.2.0",
