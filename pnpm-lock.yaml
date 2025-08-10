@@ -25,6 +25,12 @@ importers:
       '@sapphire/plugin-logger':
         specifier: ^4.1.0
         version: 4.1.0
+      '@sapphire/plugin-subcommands':
+        specifier: ^7.0.1
+        version: 7.0.1
+      '@sapphire/utilities':
+        specifier: ^3.18.2
+        version: 3.18.2
       colorette:
         specifier: ^2.0.20
         version: 2.0.20
@@ -560,6 +566,13 @@ packages:
     resolution:
       {
         integrity: sha512-+vLTITQw3DI8+kfDPNJ0yhIK/LrfM/Gro/UFcxgYWLLm+lwNmSpLZxdWe9v7ESXprody7rTp8JXPNBK7UWyE8w==,
+      }
+    engines: { node: '>=v18', npm: '>=7' }
+
+  '@sapphire/plugin-subcommands@7.0.1':
+    resolution:
+      {
+        integrity: sha512-3ngUpfKfcMX4zIlJ4SHLe10N79XU72H+Wdfcnd9ueMf6FOSMJFvVUfqDIp1rb7/iXi7C5dfx0pQqSwqu3UG0KQ==,
       }
     engines: { node: '>=v18', npm: '>=7' }
 
@@ -1868,6 +1881,10 @@ snapshots:
     dependencies:
       '@sapphire/timestamp': 1.0.5
       colorette: 2.0.20
+
+  '@sapphire/plugin-subcommands@7.0.1':
+    dependencies:
+      '@sapphire/utilities': 3.18.2
 
   '@sapphire/ratelimits@2.4.11': {}
 

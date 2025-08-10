@@ -10,6 +10,7 @@ import { GatewayIntentBits, Partials } from 'discord.js';
 import '@sapphire/plugin-hmr/register';
 import '@sapphire/plugin-i18next/register';
 import '@sapphire/plugin-logger/register';
+import '@sapphire/plugin-subcommands/register';
 
 ApplicationCommandRegistries.setDefaultBehaviorWhenNotIdentical(
 	RegisterBehavior.BulkOverwrite

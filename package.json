@@ -33,6 +33,8 @@
 		"@sapphire/plugin-hmr": "^3.0.2",
 		"@sapphire/plugin-i18next": "^8.0.0",
 		"@sapphire/plugin-logger": "^4.1.0",
+		"@sapphire/plugin-subcommands": "^7.0.1",
+		"@sapphire/utilities": "^3.18.2",
 		"colorette": "^2.0.20",
 		"discord.js": "~14.21.0",
 		"dotenv": "^17.2.1",

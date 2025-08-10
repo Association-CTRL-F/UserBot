@@ -3,9 +3,9 @@
 		"rootDir": ".",
 		"baseUrl": ".",
 		"outDir": "./dist",
-    "target": "ESNext",
-    "module": "NodeNext",
-    "lib": ["ESNext"],
+		"target": "ESNext",
+		"module": "NodeNext",
+		"lib": ["ESNext"],
 		"moduleDetection": "force",
 		"incremental": true, // speeds up the build process
 		"noUnusedLocals": true,

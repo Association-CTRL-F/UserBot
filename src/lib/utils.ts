@@ -1,5 +1,5 @@
 import { env } from '#app/setup';
-import { DEFAULT_LOCALE } from '#lib/constants';
+import { DEFAULT_LOCALE, TIME_UNITS } from '#lib/constants';
 import {
 	container,
 	type ChatInputCommandSuccessPayload,
@@ -10,6 +10,7 @@ import {
 import { type InternationalizationContext } from '@sapphire/plugin-i18next';
 import { cyan } from 'colorette';
 import type { APIUser, Guild, User } from 'discord.js';
+import packageJson from '../../package.json' with { type: 'json' };
 
 export function logSuccessCommand(
 	payload:
@@ -87,4 +88,33 @@ export async function closeGracefully(signal: string) {
 	container.logger.info('Discord client successfully destroyed');
 
 	process.exit(0);
+}
+
+export function diffDate(date: Date): string {
+	const now = new Date();
+	let diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+	const parts: string[] = [];
+
+	for (const unit of TIME_UNITS) {
+		const value = Math.floor(diff / unit.seconds);
+		parts.push(`${value} ${value > 1 ? unit.plural : unit.label}`);
+		diff -= value * unit.seconds;
+	}
+
+	return parts.join(' ');
+}
+
+export function convertDateForDiscord(date: Date) {
+	const unix = Math.floor(date.getTime() / 1000);
+	return `<t:${unix}:F>`;
+}
+
+export function getDiscordjsVersion() {
+	const discordjsVersion = packageJson.dependencies['discord.js'];
+	return discordjsVersion.replace('^', '').replace('~', '').replace('>', '');
+}
+
+export function prettyNumber(number: number | string) {
+	return Number(number).toLocaleString('fr-FR');
 }
