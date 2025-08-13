@@ -65,7 +65,9 @@ export class BotInfosCommand extends Subcommand {
 				},
 				{
 					name: 'Uptime',
-					value: diffDate(client.readyAt!),
+					value: diffDate(client.readyAt, {
+						excludeZeroUnits: true,
+					}),
 				},
 				{
 					name: 'Prefix',
@@ -103,7 +105,7 @@ export class BotInfosCommand extends Subcommand {
 				},
 				{
 					name: 'Âge du serveur',
-					value: diffDate(guild.createdAt),
+					value: diffDate(guild.createdAt, { excludeZeroUnits: true }),
 					inline: true,
 				},
 				{

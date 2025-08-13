@@ -82,7 +82,15 @@ export async function closeGracefully(signal: string) {
 	process.exit(0);
 }
 
-export function diffDate(date: Date): string {
+export function diffDate(
+	date: Date | null,
+	{
+		excludeZeroUnits = false,
+		defaultMessage = "Moins d'une minute",
+	}: { excludeZeroUnits?: boolean; defaultMessage?: string } = {}
+): string {
+	if (!date) return defaultMessage;
+
 	const now = new Date();
 	let diff = Math.floor((now.getTime() - date.getTime()) / 1000);
 
@@ -90,11 +98,12 @@ export function diffDate(date: Date): string {
 
 	for (const unit of TIME_UNITS) {
 		const value = Math.floor(diff / unit.seconds);
+		if (excludeZeroUnits && value === 0) continue;
 		parts.push(`${value} ${value > 1 ? unit.plural : unit.label}`);
 		diff -= value * unit.seconds;
 	}
 
-	return parts.join(' ');
+	return parts.length > 0 ? parts.join(' ') : defaultMessage;
 }
 
 export function convertDateForDiscord(date: Date) {
