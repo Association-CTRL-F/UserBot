@@ -1,6 +1,5 @@
 import { isMessageInstance } from '@sapphire/discord.js-utilities';
 import { Command } from '@sapphire/framework';
-import { resolveKey } from '@sapphire/plugin-i18next';
 import type { Message } from 'discord.js';
 import { MessageFlags } from 'discord.js';
 
@@ -21,16 +20,11 @@ export class PingCommand extends Command {
 	}
 
 	public async messageRun(message: Message) {
-		const msg = await message.reply(
-			await resolveKey(message, 'commands/ping:success')
-		);
+		const msg = await message.reply('Pong !');
 		const latency = msg.createdTimestamp - message.createdTimestamp;
 		const ping = Math.round(this.container.client.ws.ping);
 		return msg.edit(
-			await resolveKey(message, 'commands/ping:success_with_args', {
-				ping,
-				latency,
-			})
+			`Pong ! (Modification d'un message: ${latency}ms. Heartbeat: ${ping}ms.)`
 		);
 	}
 
@@ -38,7 +32,7 @@ export class PingCommand extends Command {
 		interaction: Command.ChatInputCommandInteraction
 	) {
 		const callbackResponse = await interaction.reply({
-			content: await resolveKey(interaction, 'commands/ping:success'),
+			content: 'Pong !',
 			withResponse: true,
 			flags: MessageFlags.Ephemeral,
 		});
@@ -48,10 +42,7 @@ export class PingCommand extends Command {
 			const latency = msg.createdTimestamp - interaction.createdTimestamp;
 			const ping = Math.round(this.container.client.ws.ping);
 			return interaction.editReply(
-				await resolveKey(interaction, 'commands/ping:success_with_args', {
-					ping,
-					latency,
-				})
+				`Pong ! (Modification d'un message: ${latency}ms. Heartbeat: ${ping}ms.)`
 			);
 		}
 

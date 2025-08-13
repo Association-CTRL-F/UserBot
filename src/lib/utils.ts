@@ -1,5 +1,5 @@
 import { env } from '#app/setup';
-import { DEFAULT_LOCALE, TIME_UNITS } from '#lib/constants';
+import { TIME_UNITS } from '#lib/constants';
 import {
 	container,
 	type ChatInputCommandSuccessPayload,
@@ -7,9 +7,9 @@ import {
 	type ContextMenuCommandSuccessPayload,
 	type MessageCommandSuccessPayload,
 } from '@sapphire/framework';
-import { type InternationalizationContext } from '@sapphire/plugin-i18next';
 import { cyan } from 'colorette';
 import type { APIUser, Guild, User } from 'discord.js';
+import { GuildMFALevel } from 'discord.js';
 import packageJson from '../../package.json' with { type: 'json' };
 
 export function logSuccessCommand(
@@ -69,14 +69,6 @@ function getGuildInfo(guild: Guild | null) {
 	return `${guild.name}[${cyan(guild.id)}]`;
 }
 
-export function getLocale(context: InternationalizationContext) {
-	return (
-		context.interactionGuildLocale ??
-		context.interactionLocale ??
-		DEFAULT_LOCALE
-	);
-}
-
 export function getDatabaseUrl() {
 	return `postgresql://${env.DB_USER}:${env.DB_PASSWORD}@${env.DB_HOST}:${env.DB_PORT}/${env.DB_DATABASE}`;
 }
@@ -117,4 +109,8 @@ export function getDiscordjsVersion() {
 
 export function prettyNumber(number: number | string) {
 	return Number(number).toLocaleString('fr-FR');
+}
+
+export function getMfaLevel(mfaLevel: GuildMFALevel) {
+	return mfaLevel === GuildMFALevel.Elevated ? 'Activé' : 'Désactivé';
 }

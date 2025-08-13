@@ -1,5 +1,5 @@
 import { env } from '#app/setup';
-import { closeGracefully, getLocale } from '#lib/utils';
+import { closeGracefully } from '#lib/utils';
 import {
 	ApplicationCommandRegistries,
 	RegisterBehavior,
@@ -7,8 +7,6 @@ import {
 } from '@sapphire/framework';
 import { GatewayIntentBits, Partials } from 'discord.js';
 
-import '@sapphire/plugin-hmr/register';
-import '@sapphire/plugin-i18next/register';
 import '@sapphire/plugin-logger/register';
 import '@sapphire/plugin-subcommands/register';
 
@@ -27,12 +25,6 @@ const client = new SapphireClient({
 	caseInsensitiveCommands: true,
 	shards: 'auto',
 	partials: [Partials.Message, Partials.Channel, Partials.Reaction],
-	hmr: {
-		enabled: env.isDev,
-	},
-	i18n: {
-		fetchLanguage: getLocale,
-	},
 });
 
 const main = async () => {

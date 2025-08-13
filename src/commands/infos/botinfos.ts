@@ -1,13 +1,16 @@
-import { COLORS } from '#lib/constants';
+import {
+	COLORS,
+	PREMIUM_TIER_MAP,
+	VERIFICATION_LEVEL_MAP,
+} from '#lib/constants';
 import {
 	convertDateForDiscord,
 	diffDate,
 	getDiscordjsVersion,
 	prettyNumber,
 } from '#lib/utils';
-import { resolveKey } from '@sapphire/plugin-i18next';
 import { Subcommand } from '@sapphire/plugin-subcommands';
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, GuildMFALevel } from 'discord.js';
 import packageJson from '../../../package.json' with { type: 'json' };
 
 export class BotInfosCommand extends Subcommand {
@@ -57,26 +60,23 @@ export class BotInfosCommand extends Subcommand {
 			})
 			.addFields([
 				{
-					name: await resolveKey(interaction, 'commands/infos:bot.api_latency'),
+					name: 'Latence API',
 					value: `${client.ws.ping} ms`,
 				},
 				{
-					name: await resolveKey(interaction, 'commands/infos:bot.uptime'),
+					name: 'Uptime',
 					value: diffDate(client.readyAt!),
 				},
 				{
-					name: await resolveKey(interaction, 'commands/infos:bot.prefix'),
+					name: 'Prefix',
 					value: `\`${prefix}\``,
 				},
 				{
-					name: await resolveKey(interaction, 'commands/infos:bot.version'),
+					name: 'Version',
 					value: botVersion,
 				},
 				{
-					name: await resolveKey(
-						interaction,
-						'commands/infos:bot.discordjs_version'
-					),
+					name: 'Version Discord.js',
 					value: discordjsVersion,
 				},
 			]);
@@ -97,84 +97,49 @@ export class BotInfosCommand extends Subcommand {
 			})
 			.addFields([
 				{
-					name: await resolveKey(
-						interaction,
-						'commands/infos:server.created_at'
-					),
+					name: 'Date de création',
 					value: convertDateForDiscord(guild.createdAt),
 					inline: true,
 				},
 				{
-					name: await resolveKey(
-						interaction,
-						'commands/infos:server.server_age'
-					),
+					name: 'Âge du serveur',
 					value: diffDate(guild.createdAt),
 					inline: true,
 				},
 				{
-					name: await resolveKey(
-						interaction,
-						'commands/infos:server.highest_role'
-					),
+					name: 'Rôle le plus élevé',
 					value: guild.roles.highest.toString(),
 					inline: true,
 				},
 				{
-					name: await resolveKey(
-						interaction,
-						'commands/infos:server.member_count'
-					),
+					name: 'Nombre de membres',
 					value: `${prettyNumber(guild.memberCount)} / ${prettyNumber(guild.maximumMembers ?? '∞')}`,
 					inline: true,
 				},
 				{
-					name: await resolveKey(
-						interaction,
-						'commands/infos:server.emoji_count'
-					),
+					name: "Nombre d'émojis",
 					value: prettyNumber(guild.emojis.cache.size),
 					inline: true,
 				},
 				{
-					name: await resolveKey(
-						interaction,
-						'commands/infos:server.channel_count'
-					),
+					name: 'Nombre de salons',
 					value: prettyNumber(guild.channels.cache.size),
 					inline: true,
 				},
 				{
-					name: await resolveKey(
-						interaction,
-						'commands/infos:server.verification_level'
-					),
-					value: await resolveKey(
-						interaction,
-						`commands/infos:server.verification_level_map.${Number(guild.verificationLevel)}`
-					),
+					name: 'Niveau de vérification',
+					value: VERIFICATION_LEVEL_MAP[guild.verificationLevel],
 					inline: true,
 				},
 				{
-					name: await resolveKey(
-						interaction,
-						'commands/infos:server.mfa_level'
-					),
-					value: await resolveKey(
-						interaction,
-						`commands/infos:server.mfa_level_map.${Number(guild.mfaLevel)}`
-					),
+					name: 'A2F',
+					value:
+						guild.mfaLevel === GuildMFALevel.Elevated ? 'Activé' : 'Désactivé',
 					inline: true,
 				},
 				{
-					name: await resolveKey(
-						interaction,
-						'commands/infos:server.premium_tier'
-					),
-					value: await resolveKey(
-						interaction,
-						`commands/infos:server.premium_tier_map.${Number(guild.premiumTier)}`
-					),
+					name: 'Niveau Boost Nitro',
+					value: PREMIUM_TIER_MAP[guild.premiumTier],
 					inline: true,
 				},
 			]);

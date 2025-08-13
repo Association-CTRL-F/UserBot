@@ -16,12 +16,6 @@ importers:
       '@sapphire/pieces':
         specifier: ^4.4.1
         version: 4.4.1
-      '@sapphire/plugin-hmr':
-        specifier: ^3.0.2
-        version: 3.0.2
-      '@sapphire/plugin-i18next':
-        specifier: ^8.0.0
-        version: 8.0.0(typescript@5.9.2)
       '@sapphire/plugin-logger':
         specifier: ^4.1.0
         version: 4.1.0
@@ -88,13 +82,6 @@ importers:
         version: 5.9.2
 
 packages:
-  '@babel/runtime@7.28.2':
-    resolution:
-      {
-        integrity: sha512-KHp2IflsnGywDjBWDkR9iEqiWSpc8GIi0lgTT3mOElT0PP1tG26P4tmFI2YvAdzgq9RGyoHZQEIEdZy6Ec5xCA==,
-      }
-    engines: { node: '>=6.9.0' }
-
   '@discordjs/builders@1.11.2':
     resolution:
       {
@@ -562,20 +549,6 @@ packages:
       }
     engines: { node: '>=v14.0.0', npm: '>=7.0.0' }
 
-  '@sapphire/plugin-hmr@3.0.2':
-    resolution:
-      {
-        integrity: sha512-Rn1NV/ERUpMVgWQacDlASLbUPQvdzZOZykHlrlGCFMaSStf3t6Pv80gzuHMpd3rSJubo+SwHFyy+kY+Bxvnq6Q==,
-      }
-    engines: { node: '>=v18', npm: '>=7' }
-
-  '@sapphire/plugin-i18next@8.0.0':
-    resolution:
-      {
-        integrity: sha512-oZoQQGqcFLmPHFQ470lOG2tankvNyxaDP1SRBgdVzO+1PKUcs7oC23DWsA0zJiP/XsVe9Q12qSObAwpobANc3Q==,
-      }
-    engines: { node: '>=v18', npm: '>=7' }
-
   '@sapphire/plugin-logger@4.1.0':
     resolution:
       {
@@ -638,13 +611,6 @@ packages:
         integrity: sha512-QGLdC9+pT74Zd7aaObqn0EUfq40c4dyTL65pFnkM6WO1QYN7Yg/s4CdH+CXmx0Zcu6wcfCWILSftXPMosJHP5A==,
       }
     engines: { node: '>=v14.0.0' }
-
-  '@skyra/i18next-backend@2.0.6':
-    resolution:
-      {
-        integrity: sha512-emMWpgHVsycYUobAcylJhBrVAOg/C8huAflam3xGtFSzeVGtjQ1jcEbBzmzDj5c0E+AUcz/QDI1JCnKsXHL1HQ==,
-      }
-    engines: { node: '>=18' }
 
   '@types/estree@1.0.8':
     resolution:
@@ -1085,17 +1051,6 @@ packages:
         integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==,
       }
     engines: { node: '>=8' }
-
-  i18next@25.3.2:
-    resolution:
-      {
-        integrity: sha512-JSnbZDxRVbphc5jiptxr3o2zocy5dEqpVm9qCGdJwRNO+9saUJS0/u4LnM/13C23fUEWxAylPqKU/NpMV/IjqA==,
-      }
-    peerDependencies:
-      typescript: ^5
-    peerDependenciesMeta:
-      typescript:
-        optional: true
 
   ignore@5.3.2:
     resolution:
@@ -1652,8 +1607,6 @@ packages:
     engines: { node: '>=10' }
 
 snapshots:
-  '@babel/runtime@7.28.2': {}
-
   '@discordjs/builders@1.11.2':
     dependencies:
       '@discordjs/formatters': 0.6.1
@@ -1893,19 +1846,6 @@ snapshots:
       '@sapphire/utilities': 3.18.2
       tslib: 2.8.1
 
-  '@sapphire/plugin-hmr@3.0.2':
-    dependencies:
-      chokidar: 4.0.3
-
-  '@sapphire/plugin-i18next@8.0.0(typescript@5.9.2)':
-    dependencies:
-      '@sapphire/utilities': 3.18.2
-      '@skyra/i18next-backend': 2.0.6
-      chokidar: 4.0.3
-      i18next: 25.3.2(typescript@5.9.2)
-    transitivePeerDependencies:
-      - typescript
-
   '@sapphire/plugin-logger@4.1.0':
     dependencies:
       '@sapphire/timestamp': 1.0.5
@@ -1933,10 +1873,6 @@ snapshots:
   '@sapphire/timestamp@1.0.5': {}
 
   '@sapphire/utilities@3.18.2': {}
-
-  '@skyra/i18next-backend@2.0.6':
-    dependencies:
-      tslib: 2.8.1
 
   '@types/estree@1.0.8': {}
 
@@ -2235,12 +2171,6 @@ snapshots:
   globals@16.3.0: {}
 
   has-flag@4.0.0: {}
-
-  i18next@25.3.2(typescript@5.9.2):
-    dependencies:
-      '@babel/runtime': 7.28.2
-    optionalDependencies:
-      typescript: 5.9.2
 
   ignore@5.3.2: {}
 
