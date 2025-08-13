@@ -1,11 +1,11 @@
+import { env } from '#app/setup';
+import { LOG_LEVELS } from '#lib/log_levels';
 import { logSuccessCommand } from '#lib/utils';
 import {
 	Events,
 	Listener,
-	LogLevel,
 	type ChatInputCommandSuccessPayload,
 } from '@sapphire/framework';
-import type { Logger } from '@sapphire/plugin-logger';
 
 export class UserListener extends Listener {
 	public constructor(
@@ -23,7 +23,7 @@ export class UserListener extends Listener {
 	}
 
 	public override onLoad() {
-		this.enabled = (this.container.logger as Logger).level <= LogLevel.Debug;
+		this.enabled = env.LOG_LEVEL === LOG_LEVELS.Debug;
 		return super.onLoad();
 	}
 }

@@ -1,17 +1,12 @@
+import { app } from '#app/app';
 import {
 	COLORS,
 	PREMIUM_TIER_MAP,
 	VERIFICATION_LEVEL_MAP,
 } from '#lib/constants';
-import {
-	convertDateForDiscord,
-	diffDate,
-	getDiscordjsVersion,
-	prettyNumber,
-} from '#lib/utils';
+import { convertDateForDiscord, diffDate, prettyNumber } from '#lib/utils';
 import { Subcommand } from '@sapphire/plugin-subcommands';
 import { EmbedBuilder, GuildMFALevel } from 'discord.js';
-import packageJson from '../../../package.json' with { type: 'json' };
 
 export class BotInfosCommand extends Subcommand {
 	public constructor(
@@ -48,9 +43,7 @@ export class BotInfosCommand extends Subcommand {
 		interaction: Subcommand.ChatInputCommandInteraction
 	) {
 		const client = this.container.client;
-		const botVersion = packageJson.version;
 		const prefix = client.options.defaultPrefix;
-		const discordjsVersion = getDiscordjsVersion();
 
 		const embedBot = new EmbedBuilder()
 			.setColor(COLORS.DEFAULT)
@@ -75,11 +68,11 @@ export class BotInfosCommand extends Subcommand {
 				},
 				{
 					name: 'Version',
-					value: botVersion,
+					value: app.botVersion,
 				},
 				{
 					name: 'Version Discord.js',
-					value: discordjsVersion,
+					value: app.discordjsVersion,
 				},
 			]);
 
