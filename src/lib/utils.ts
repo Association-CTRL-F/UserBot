@@ -47,6 +47,16 @@ export function convertDateForDiscord(date: Date) {
 	return `<t:${unix}:F>`;
 }
 
+export function prettyDate(date: Date) {
+	return date.toLocaleString('fr-FR', {
+		year: 'numeric',
+		month: 'long',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+	});
+}
+
 export function getDiscordjsVersion() {
 	const discordjsVersion = packageJson.dependencies['discord.js'];
 	return discordjsVersion.replace('^', '').replace('~', '').replace('>', '');

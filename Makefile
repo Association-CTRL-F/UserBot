@@ -1,7 +1,7 @@
 install:
 	@pnpm install
 
-dev:
+dev: fresh
 	@docker compose down
 	@docker compose -f dev.compose.yml pull
 	@docker compose -f dev.compose.yml up -d --wait
