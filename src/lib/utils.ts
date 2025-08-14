@@ -1,73 +1,9 @@
 import { env } from '#app/setup';
 import { TIME_UNITS } from '#lib/constants';
-import {
-	container,
-	type ChatInputCommandSuccessPayload,
-	type Command,
-	type ContextMenuCommandSuccessPayload,
-	type MessageCommandSuccessPayload,
-} from '@sapphire/framework';
-import { cyan } from 'colorette';
-import type { APIUser, Guild, User } from 'discord.js';
+import { LOG_LEVELS, type LogLevel } from '#lib/log_levels';
+import { container, LogLevel as SapphireLogLevel } from '@sapphire/framework';
 import { GuildMFALevel } from 'discord.js';
 import packageJson from '../../package.json' with { type: 'json' };
-
-export function logSuccessCommand(
-	payload:
-		| ContextMenuCommandSuccessPayload
-		| ChatInputCommandSuccessPayload
-		| MessageCommandSuccessPayload
-): void {
-	let successLoggerData: ReturnType<typeof getSuccessLoggerData>;
-
-	if ('interaction' in payload) {
-		successLoggerData = getSuccessLoggerData(
-			payload.interaction.guild,
-			payload.interaction.user,
-			payload.command
-		);
-	} else {
-		successLoggerData = getSuccessLoggerData(
-			payload.message.guild,
-			payload.message.author,
-			payload.command
-		);
-	}
-
-	container.logger.debug(
-		`${successLoggerData.shard} - ${successLoggerData.commandName} ${successLoggerData.author} ${successLoggerData.sentAt}`
-	);
-}
-
-export function getSuccessLoggerData(
-	guild: Guild | null,
-	user: User,
-	command: Command
-) {
-	const shard = getShardInfo(guild?.shardId ?? 0);
-	const commandName = getCommandInfo(command);
-	const author = getAuthorInfo(user);
-	const sentAt = getGuildInfo(guild);
-
-	return { shard, commandName, author, sentAt };
-}
-
-function getShardInfo(id: number) {
-	return `[${cyan(id.toString())}]`;
-}
-
-function getCommandInfo(command: Command) {
-	return cyan(command.name);
-}
-
-function getAuthorInfo(author: User | APIUser) {
-	return `${author.username}[${cyan(author.id)}]`;
-}
-
-function getGuildInfo(guild: Guild | null) {
-	if (guild === null) return 'Direct Messages';
-	return `${guild.name}[${cyan(guild.id)}]`;
-}
 
 export function getDatabaseUrl() {
 	return `postgresql://${env.DB_USER}:${env.DB_PASSWORD}@${env.DB_HOST}:${env.DB_PORT}/${env.DB_DATABASE}`;
@@ -122,4 +58,23 @@ export function prettyNumber(number: number | string) {
 
 export function getMfaLevel(mfaLevel: GuildMFALevel) {
 	return mfaLevel === GuildMFALevel.Elevated ? 'Activé' : 'Désactivé';
+}
+
+export function mapLogLevelToSapphireLogLevel(
+	level: LogLevel
+): SapphireLogLevel {
+	switch (level) {
+		case LOG_LEVELS.Trace:
+			return SapphireLogLevel.Trace;
+		case LOG_LEVELS.Debug:
+			return SapphireLogLevel.Debug;
+		case LOG_LEVELS.Info:
+			return SapphireLogLevel.Info;
+		case LOG_LEVELS.Warn:
+			return SapphireLogLevel.Warn;
+		case LOG_LEVELS.Error:
+			return SapphireLogLevel.Error;
+		case LOG_LEVELS.Fatal:
+			return SapphireLogLevel.Fatal;
+	}
 }

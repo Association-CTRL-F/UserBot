@@ -1,5 +1,5 @@
 import { env } from '#app/setup';
-import { closeGracefully } from '#lib/utils';
+import { closeGracefully, mapLogLevelToSapphireLogLevel } from '#lib/utils';
 import {
 	ApplicationCommandRegistries,
 	RegisterBehavior,
@@ -25,6 +25,9 @@ const client = new SapphireClient({
 	caseInsensitiveCommands: true,
 	shards: 'auto',
 	partials: [Partials.Message, Partials.Channel, Partials.Reaction],
+	logger: {
+		level: mapLogLevelToSapphireLogLevel(env.LOG_LEVEL),
+	},
 });
 
 const main = async () => {

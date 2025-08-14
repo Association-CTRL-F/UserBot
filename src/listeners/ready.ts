@@ -10,6 +10,7 @@ import {
 	white,
 	yellow,
 } from 'colorette';
+import { ActivityType } from 'discord.js';
 
 const dev = process.env.NODE_ENV !== 'production';
 
@@ -30,6 +31,7 @@ export class UserEvent extends Listener {
 	public override run() {
 		this.printBanner();
 		this.printStoreDebugInformation();
+		this.updateRichPresence();
 	}
 
 	private printBanner() {
@@ -58,6 +60,7 @@ ${line01} ${pad}${blc(app.botVersion)}
 		const stores = [...client.stores.values()];
 		const last = stores.pop()!;
 
+		logger.info(gray('┌─'), 'Stores Loaded');
 		for (const store of stores) logger.info(this.styleStore(store, false));
 		logger.info(this.styleStore(last, true));
 	}
@@ -66,5 +69,16 @@ ${line01} ${pad}${blc(app.botVersion)}
 		return gray(
 			`${last ? '└─' : '├─'} Loaded ${this.style(store.size.toString().padEnd(3, ' '))} ${store.name}.`
 		);
+	}
+
+	private updateRichPresence() {
+		this.container.client.user?.setPresence({
+			activities: [
+				{
+					name: app.richPresence.description,
+					type: ActivityType.Custom,
+				},
+			],
+		});
 	}
 }

@@ -1,6 +1,6 @@
 import { env } from '#app/env';
 import { LOG_LEVELS } from '#lib/log_levels';
-import { logSuccessCommand } from '#lib/utils';
+import { CreateListenerLogger, getSuccessCommandText } from '#lib/logger';
 import {
 	Events,
 	Listener,
@@ -18,8 +18,10 @@ export class UserListener extends Listener {
 		});
 	}
 
+	#logger = CreateListenerLogger('Context Menu Command Success');
+
 	public override run(payload: ContextMenuCommandSuccessPayload) {
-		logSuccessCommand(payload);
+		this.#logger.debug(getSuccessCommandText(payload));
 	}
 
 	public override onLoad() {
