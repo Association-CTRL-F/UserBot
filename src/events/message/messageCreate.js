@@ -129,7 +129,11 @@ export default async (message, client) => {
 	}
 
 	alerts.forEach(alert => {
-		if (message.content.toLowerCase().includes(alert.text)) {
+		const hay = message.content.normalize('NFD').replace(/\p{M}/gu, '');
+		const needle = alert.text.normalize('NFD').replace(/\p{M}/gu, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		const re = new RegExp(`(?:^|[^\\p{L}\\p{N}_])${needle}(?=$|[^\\p{L}\\p{N}_])`, 'iu');
+		
+		if (re.test(message.content)) {
 			// Acquisition du membre
 			const member = message.guild.members.cache.get(alert.discordID)
 
