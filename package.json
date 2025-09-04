@@ -24,7 +24,7 @@
 		"pagination.djs": "^4.0.18"
 	},
 	"devDependencies": {
-		"dotenv": "^16.4.7",
+		"dotenv": "^17.2.2",
 		"eslint": "^9.34.0",
 		"eslint-config-prettier": "^10.1.5",
 		"eslint-plugin-prettier": "^5.5.4",
