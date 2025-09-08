@@ -129,10 +129,13 @@ export default async (message, client) => {
 	}
 
 	alerts.forEach(alert => {
-		const hay = message.content.normalize('NFD').replace(/\p{M}/gu, '');
-		const needle = alert.text.normalize('NFD').replace(/\p{M}/gu, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-		const re = new RegExp(`(?:^|[^\\p{L}\\p{N}_])${needle}(?=$|[^\\p{L}\\p{N}_])`, 'iu');
-		
+		const hay = message.content.normalize('NFD').replace(/\p{M}/gu, '')
+		const needle = alert.text
+			.normalize('NFD')
+			.replace(/\p{M}/gu, '')
+			.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+		const re = new RegExp(`(?:^|[^\\p{L}\\p{N}_])${needle}(?=$|[^\\p{L}\\p{N}_])`, 'iu')
+
 		if (re.test(message.content)) {
 			// Acquisition du membre
 			const member = message.guild.members.cache.get(alert.discordID)
@@ -304,7 +307,7 @@ export default async (message, client) => {
 				const chatgpt = new ChatGPTAPI({
 					apiKey: client.config.others.openAiKey,
 					completionParams: {
-						model: 'gpt-4o-mini',
+						model: 'gpt-5',
 					},
 				})
 
