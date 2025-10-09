@@ -1,11 +1,12 @@
 install:
 	@pnpm install
 
-dev: fresh
+dev:
 	@docker compose down
 	@docker compose -f dev.compose.yml pull
 	@docker compose -f dev.compose.yml up -d --wait
 	@pnpm run migrate
+	@pnpm run seed:run
 	@pnpm run dev
 
 prod:
