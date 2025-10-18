@@ -1,4 +1,4 @@
-FROM node:24.4-alpine3.22 AS base
+FROM node:24.10-alpine3.22 AS base
 
 RUN apk --no-cache add curl
 RUN corepack enable
