@@ -25,7 +25,8 @@
 		"#app/*": "./src/app/*.ts",
 		"#lib/*": "./src/lib/*.ts",
 		"#database/*": "./src/database/*.ts",
-		"#repository/*": "./src/repository/*.ts"
+		"#repository/*": "./src/repository/*.ts",
+		"#services/*": "./src/services/*.ts"
 	},
 	"dependencies": {
 		"@sapphire/discord.js-utilities": "^7.3.3",
