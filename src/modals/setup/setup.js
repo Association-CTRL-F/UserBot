@@ -205,15 +205,6 @@ export default {
 						ephemeral: true,
 					})
 				break
-
-			case 'FEUR_MANAGER_CHANNELS_IDS':
-				const matches_FEUR_MANAGER_CHANNELS_IDS = contenu.match(regexIds)
-				if (!matches_FEUR_MANAGER_CHANNELS_IDS)
-					return modal.reply({
-						content: "Tu n'as pas donné un / des ID(s) valide(s) 😕",
-						ephemeral: true,
-					})
-				break
 		}
 
 		if (contenu === '') contenu = null
@@ -329,10 +320,6 @@ export default {
 			case 'THREADS_MANAGER_CHANNELS_IDS':
 				client.config.guild.managers.THREADS_MANAGER_CHANNELS_IDS = contenu
 				break
-
-			case 'FEUR_MANAGER_CHANNELS_IDS':
-				client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS = contenu
-				break
 		}
 
 		const config = {
@@ -372,8 +359,6 @@ export default {
 						client.config.guild.managers.NOTEXT_MANAGER_CHANNELS_IDS,
 					THREADS_MANAGER_CHANNELS_IDS:
 						client.config.guild.managers.THREADS_MANAGER_CHANNELS_IDS,
-					FEUR_MANAGER_CHANNELS_IDS:
-						client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS,
 				},
 			},
 		}

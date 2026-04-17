@@ -202,51 +202,6 @@ export default async (messageReaction, user, client) => {
 			return messageReaction.remove()
 		}
 
-		// Si c'est une réaction feur
-		case 'feur': {
-			if (message.author.bot || !message.guild) return
-
-			let antifeurMessages = []
-			try {
-				const sql = 'SELECT * FROM antifeur'
-				const [result] = await bdd.execute(sql)
-				antifeurMessages = result
-			} catch (error) {
-				return console.error(error)
-			}
-
-			let block = 0
-			antifeurMessages.forEach(antifeurMessage => {
-				if (message.id === antifeurMessage.message_id) block += 1
-			})
-
-			// Si blocage anti-feur, on supprime la réaction
-			if (block > 0) return messageReaction.remove()
-
-			return
-		}
-
-		// Si c'est une réaction anti-feur
-		case 'antifeur': {
-			if (message.author.bot || !message.guild) return
-
-			// On ne peut pas anti-feur le message d'un autre
-			if (message.author !== user) return messageReaction.users.remove(user)
-
-			// Ajout des infos en base de données
-			try {
-				const sql = 'INSERT INTO antifeur (author_id, message_id) VALUES (?, ?)'
-
-				const data = [message.author.id, message.id]
-
-				await bdd.execute(sql, data)
-			} catch (error) {
-				console.error(error)
-			}
-
-			return messageReaction.remove()
-		}
-
 		default:
 			break
 	}

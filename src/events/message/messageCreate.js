@@ -15,13 +15,71 @@ import {
 	getFileInfos,
 	displayNameAndID,
 } from '../../util/util.js'
-import { setTimeout } from 'timers/promises'
+import { setTimeout as delay } from 'node:timers/promises'
 import { ChatGPTAPI, ChatGPTError } from 'chatgpt'
 
 export default async (message, client) => {
 	if (message.author.bot) return
 
 	if (message.partial) await message.fetch()
+
+	// Anti-spam : 3 messages identiques d'affilée = ban auto
+	if (message.guild && message.content?.trim()) {
+		if (!client.lastMessages) client.lastMessages = new Collection()
+
+		const userKey = `${message.guild.id}-${message.author.id}`
+
+		const normalizedContent = message.content
+			.trim()
+			.toLowerCase()
+			.replace(/\s+/g, ' ')
+
+		const history = client.lastMessages.get(userKey) || []
+
+		history.push(normalizedContent)
+
+		// On garde seulement les 3 derniers messages
+		if (history.length > 3) history.shift()
+
+		client.lastMessages.set(userKey, history)
+
+		// Si les 3 derniers messages sont identiques
+		if (
+			history.length === 3 &&
+			history[0] === history[1] &&
+			history[1] === history[2]
+		) {
+			try {
+				// On évite de retrigger
+				client.lastMessages.delete(userKey)
+
+				// Vérifie que le membre peut être banni
+				if (message.member?.bannable) {
+					await message.guild.members.ban(message.author.id, {
+						deleteMessageSeconds: banMessagesDays * 86400,
+						reason: 'Auto-ban : 3 messages identiques consécutifs',
+					})
+
+					console.log(
+						`[AUTO-BAN] ${message.author.tag} banni pour spam répété.`,
+					)
+					return
+				}
+
+				console.log(
+					`[AUTO-BAN] Impossible de bannir ${message.author.tag} (permissions / rôle trop haut).`,
+				)
+			} catch (error) {
+				console.error('Erreur auto-ban spam :', error)
+			}
+		}
+
+		// Nettoyage mémoire au bout de 10 minutes
+		globalThis.setTimeout(() => {
+			const current = client.lastMessages.get(userKey)
+			if (current === history) client.lastMessages.delete(userKey)
+		}, 10 * 60 * 1000)
+	}
 
 	// Si le message vient d'une guild, on vérifie
 	if (message.member) {
@@ -79,44 +137,6 @@ export default async (message, client) => {
 	const bdd = client.config.db.pools.userbot
 	if (!bdd)
 		return console.log('Une erreur est survenue lors de la connexion à la base de données')
-
-	// Répondre emoji :feur:
-	// const feurChannels = client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS
-	// 	? client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS.split(/, */)
-	// 	: []
-
-	// if (feurChannels.includes(message.channel.id)) {
-	// 	// Vérifications des messages anti-feur
-	// 	// Délai de 10 secondes afin de laisser le temps d'ajouter un anti-feur
-	// 	await setTimeout(10000)
-
-	// 	let antifeurMessages = []
-	// 	try {
-	// 		const sql = 'SELECT * FROM antifeur'
-	// 		const [result] = await bdd.execute(sql)
-	// 		antifeurMessages = result
-	// 	} catch (error) {
-	// 		return console.error(error)
-	// 	}
-
-	// 	let block = 0
-	// 	antifeurMessages.forEach(antifeurMessage => {
-	// 		if (message.id === antifeurMessage.message_id) block += 1
-	// 	})
-
-	// 	if (block > 0) return
-
-	// 	// Si pas de blocage anti-feur
-	// 	const random = Math.round(Math.random() * 100)
-
-	// 	// 10% de chances
-	// 	if (random >= 45 && random <= 55) {
-	// 		const regexFeur =
-	// 			/.*[qQ][uU][oO][iI]([^a-zA-Z]*|(<:[a-zA-Z0-9]+:[0-9]+>)|(:[a-zA-Z0-9]+:))*$/
-	// 		const feurEmoji = client.emojis.cache.find(emoji => emoji.name === 'feur')
-	// 		if (message.content.match(regexFeur)) message.react(feurEmoji)
-	// 	}
-	// }
 
 	// Alertes personnalisées
 	let alerts = []
@@ -247,12 +267,17 @@ export default async (message, client) => {
 		if (!command.active) return
 
 		// Partie cooldown
-		if (!client.cooldowns.has(commandName)) client.cooldowns.set(command.name, new Collection())
+		if (!client.cooldowns.has(command.name)) {
+			client.cooldowns.set(command.name, new Collection())
+		}
+
 		const now = Date.now()
 		const timestamps = client.cooldowns.get(command.name)
 		const cooldownAmount = (command.cooldown || 4) * 1000
+
 		if (timestamps.has(message.author.id)) {
 			const expirationTime = timestamps.get(message.author.id) + cooldownAmount
+
 			if (now < expirationTime) {
 				const timeLeft = expirationTime - now
 				const sentMessage = await message.reply({
@@ -261,12 +286,12 @@ export default async (message, client) => {
 					)} seconde(s) de plus avant de réutiliser la commande **${command.name}** 😬`,
 				})
 
-				// Suppression du message
 				return client.cache.deleteMessagesID.add(sentMessage.id)
 			}
 		}
+
 		timestamps.set(message.author.id, now)
-		setTimeout(() => timestamps.delete(message.author.id), cooldownAmount)
+		globalThis.setTimeout(() => { timestamps.delete(message.author.id) }, cooldownAmount)
 
 		// Si configuré, on prépare un embed avec un bouton de redirection
 		let button = []

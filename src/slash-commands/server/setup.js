@@ -83,9 +83,6 @@ const subCommands = {
 	'threads-channels': {
 		THREADS_MANAGER_CHANNELS_IDS: 'Salons threads auto',
 	},
-	'feur-channels': {
-		FEUR_MANAGER_CHANNELS_IDS: 'Salons avec réaction :feur: autorisée',
-	},
 }
 
 const command = new SlashCommandBuilder()
@@ -227,11 +224,6 @@ export default {
 				customId = 'THREADS_MANAGER_CHANNELS_IDS'
 				value = client.config.guild.managers.THREADS_MANAGER_CHANNELS_IDS
 				break
-
-			case 'feur-channels':
-				customId = 'FEUR_MANAGER_CHANNELS_IDS'
-				value = client.config.guild.managers.FEUR_MANAGER_CHANNELS_IDS
-				break
 		}
 
 		const modal = new ModalBuilder()
@@ -262,10 +254,6 @@ export default {
 				break
 
 			case 'THREADS_MANAGER_CHANNELS_IDS':
-				modal.components[0].components[0].data.required = false
-				break
-
-			case 'FEUR_MANAGER_CHANNELS_IDS':
 				modal.components[0].components[0].data.required = false
 				break
 		}
