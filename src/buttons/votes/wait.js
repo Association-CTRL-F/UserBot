@@ -1,4 +1,28 @@
-import { EmbedBuilder } from 'discord.js'
+import { EmbedBuilder, MessageFlags } from 'discord.js'
+
+const countVotes = async (bdd, messageId, voteName, alias) => {
+	const sql = `SELECT COUNT(*) AS ${alias} FROM votes WHERE messageId = ? AND vote = ?`
+	const data = [messageId, voteName]
+	const [result] = await bdd.execute(sql, data)
+	return result[0][alias]
+}
+
+const buildUpdatedEmbed = (interaction, nbYes, nbWait, nbNo) => {
+	const sourceEmbed = interaction.message.embeds[0]
+	const baseEmbed = sourceEmbed ? EmbedBuilder.from(sourceEmbed) : new EmbedBuilder()
+
+	const originalProposal =
+		sourceEmbed?.fields?.find((field) => field.name === 'Proposition')?.value ??
+		'```Aucune proposition```'
+
+	return baseEmbed
+		.setColor(0x00ff00)
+		.setDescription(`✅ : ${nbYes}\n⌛ : ${nbWait}\n❌ : ${nbNo}`)
+		.setFields({
+			name: 'Proposition',
+			value: originalProposal,
+		})
+}
 
 export default {
 	data: {
@@ -6,229 +30,112 @@ export default {
 	},
 	interaction: async (interaction, client) => {
 		// On diffère la réponse pour avoir plus de 3 secondes
-		await interaction.deferReply({ ephemeral: true })
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
-		if (!bdd)
+		if (!bdd) {
 			return interaction.editReply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
 			})
+		}
+
+		if (!interaction.message?.id) {
+			return interaction.editReply({
+				content: 'Impossible de retrouver le message du vote 😕',
+			})
+		}
+
+		if (!interaction.message.embeds?.length) {
+			return interaction.editReply({
+				content: "Impossible de retrouver l'embed du vote 😕",
+			})
+		}
 
 		// Vérification si le membre a déjà voté
-		let vote = {}
+		let vote = null
 		try {
 			const sql = 'SELECT * FROM votes WHERE memberId = ? AND messageId = ?'
 			const data = [interaction.user.id, interaction.message.id]
 			const [result] = await bdd.execute(sql, data)
-			vote = result[0]
+			vote = result[0] ?? null
 		} catch (error) {
+			console.error(error)
 			return interaction.editReply({
 				content: 'Une erreur est survenue lors de la vérification du vote du membre 😕',
-				ephemeral: true,
 			})
 		}
 
-		if (vote) {
-			// Modification du vote en base de données
-			try {
+		// Création ou modification du vote en base de données
+		try {
+			if (vote) {
 				const sql =
 					'UPDATE votes SET vote = ?, editedAt = ? WHERE messageId = ? AND memberId = ?'
-
 				const data = [
 					interaction.customId,
-					Math.round(new Date() / 1000),
+					Math.round(Date.now() / 1000),
 					interaction.message.id,
 					interaction.user.id,
 				]
 
 				await bdd.execute(sql, data)
-			} catch (error) {
-				return interaction.editReply({
-					content:
-						'Une erreur est survenue lors du ré-enregistrement de ton vote en base de données 😕',
-				})
+			} else {
+				const sql =
+					'INSERT INTO votes (messageId, memberId, vote, createdAt, editedAt) VALUES (?, ?, ?, ?, ?)'
+				const data = [
+					interaction.message.id,
+					interaction.user.id,
+					interaction.customId,
+					Math.round(Date.now() / 1000),
+					null,
+				]
+
+				await bdd.execute(sql, data)
 			}
-
-			// Comptage des voix
-
-			// yes
-			let nbYes = ''
-			try {
-				const sql = 'SELECT COUNT(*) AS nbYes FROM votes WHERE messageId = ? AND vote = ?'
-				const data = [interaction.message.id, 'yes']
-
-				const [result] = await bdd.execute(sql, data)
-				nbYes = [result][0][0].nbYes
-			} catch (error) {
-				return interaction.editReply({
-					content:
-						"Une erreur est survenue lors du comptage des voix 'yes' du vote en base de données 😕",
-				})
-			}
-
-			// wait
-			let nbWait = ''
-			try {
-				const sql = 'SELECT COUNT(*) AS nbWait FROM votes WHERE messageId = ? AND vote = ?'
-				const data = [interaction.message.id, 'wait']
-
-				const [result] = await bdd.execute(sql, data)
-				nbWait = [result][0][0].nbWait
-			} catch (error) {
-				return interaction.editReply({
-					content:
-						"Une erreur est survenue lors du comptage des voix 'wait' du vote en base de données 😕",
-				})
-			}
-
-			// no
-			let nbNo = ''
-			try {
-				const sql = 'SELECT COUNT(*) AS nbNo FROM votes WHERE messageId = ? AND vote = ?'
-				const data = [interaction.message.id, 'no']
-
-				const [result] = await bdd.execute(sql, data)
-				nbNo = [result][0][0].nbNo
-			} catch (error) {
-				return interaction.editReply({
-					content:
-						"Une erreur est survenue lors du comptage des voix 'no' du vote en base de données 😕",
-				})
-			}
-
-			// Modification du message
-			const embed = new EmbedBuilder()
-				.setColor('00FF00')
-				.setTitle(interaction.message.embeds[0].data.title)
-				.setDescription(`✅ : ${nbYes}\r⌛ : ${nbWait}\r❌ : ${nbNo}`)
-				.addFields([
-					{
-						name: 'Proposition',
-						value: `\`\`\`${interaction.message.embeds[0].data.fields[0].value.slice(
-							3,
-							-3,
-						)}\`\`\``,
-					},
-				])
-				.setAuthor({
-					name: interaction.message.embeds[0].data.author.name,
-				})
-				.setFooter({
-					text: interaction.message.embeds[0].data.footer.text,
-				})
-
-			embed.data.author.icon_url = interaction.message.embeds[0].data.author.icon_url
-			embed.data.author.proxy_icon_url =
-				interaction.message.embeds[0].data.author.proxy_icon_url
-
-			await interaction.message.edit({
-				embeds: [embed],
-			})
-
-			return interaction.editReply({
-				content: 'Vote ré-enregistré 👌',
-			})
-		}
-
-		// Création du vote en base de données
-		try {
-			const sql =
-				'INSERT INTO votes (messageId, memberId, vote, createdAt, editedAt) VALUES (?, ?, ?, ?, ?)'
-
-			const data = [
-				interaction.message.id,
-				interaction.user.id,
-				interaction.customId,
-				Math.round(new Date() / 1000),
-				null,
-			]
-
-			await bdd.execute(sql, data)
 		} catch (error) {
+			console.error(error)
 			return interaction.editReply({
-				content:
-					"Une erreur est survenue lors de l'enregistrement de ton vote en base de données 😕",
+				content: vote
+					? 'Une erreur est survenue lors du ré-enregistrement de ton vote en base de données 😕'
+					: "Une erreur est survenue lors de l'enregistrement de ton vote en base de données 😕",
 			})
 		}
 
 		// Comptage des voix
+		let nbYes = 0
+		let nbWait = 0
+		let nbNo = 0
 
-		// yes
-		let nbYes = ''
 		try {
-			const sql = 'SELECT COUNT(*) AS nbYes FROM votes WHERE messageId = ? AND vote = ?'
-			const data = [interaction.message.id, 'yes']
-
-			const [result] = await bdd.execute(sql, data)
-			nbYes = [result][0][0].nbYes
+			;[nbYes, nbWait, nbNo] = await Promise.all([
+				countVotes(bdd, interaction.message.id, 'yes', 'nbYes'),
+				countVotes(bdd, interaction.message.id, 'wait', 'nbWait'),
+				countVotes(bdd, interaction.message.id, 'no', 'nbNo'),
+			])
 		} catch (error) {
+			console.error(error)
 			return interaction.editReply({
 				content:
-					"Une erreur est survenue lors du comptage des voix 'yes' du vote en base de données 😕",
-			})
-		}
-
-		// wait
-		let nbWait = ''
-		try {
-			const sql = 'SELECT COUNT(*) AS nbWait FROM votes WHERE messageId = ? AND vote = ?'
-			const data = [interaction.message.id, 'wait']
-
-			const [result] = await bdd.execute(sql, data)
-			nbWait = [result][0][0].nbWait
-		} catch (error) {
-			return interaction.editReply({
-				content:
-					"Une erreur est survenue lors du comptage des voix 'wait' du vote en base de données 😕",
-			})
-		}
-
-		// no
-		let nbNo = ''
-		try {
-			const sql = 'SELECT COUNT(*) AS nbNo FROM votes WHERE messageId = ? AND vote = ?'
-			const data = [interaction.message.id, 'no']
-
-			const [result] = await bdd.execute(sql, data)
-			nbNo = [result][0][0].nbNo
-		} catch (error) {
-			return interaction.editReply({
-				content:
-					"Une erreur est survenue lors du comptage des voix 'no' du vote en base de données 😕",
+					'Une erreur est survenue lors du comptage des voix du vote en base de données 😕',
 			})
 		}
 
 		// Modification du message
-		const embed = new EmbedBuilder()
-			.setColor('00FF00')
-			.setTitle(interaction.message.embeds[0].data.title)
-			.setDescription(`✅ : ${nbYes}\r⌛ : ${nbWait}\r❌ : ${nbNo}`)
-			.addFields([
-				{
-					name: 'Proposition',
-					value: `\`\`\`${interaction.message.embeds[0].data.fields[0].value.slice(
-						3,
-						-3,
-					)}\`\`\``,
-				},
-			])
-			.setAuthor({
-				name: interaction.message.embeds[0].data.author.name,
-			})
-			.setFooter({
-				text: interaction.message.embeds[0].data.footer.text,
-			})
+		try {
+			const embed = buildUpdatedEmbed(interaction, nbYes, nbWait, nbNo)
 
-		embed.data.author.icon_url = interaction.message.embeds[0].data.author.icon_url
-		embed.data.author.proxy_icon_url = interaction.message.embeds[0].data.author.proxy_icon_url
-
-		await interaction.message.edit({
-			embeds: [embed],
-		})
+			await interaction.message.edit({
+				embeds: [embed],
+			})
+		} catch (error) {
+			console.error(error)
+			return interaction.editReply({
+				content: 'Une erreur est survenue lors de la mise à jour du message de vote 😕',
+			})
+		}
 
 		return interaction.editReply({
-			content: 'Vote enregistré 👌',
+			content: vote ? 'Vote ré-enregistré 👌' : 'Vote enregistré 👌',
 		})
 	},
 }

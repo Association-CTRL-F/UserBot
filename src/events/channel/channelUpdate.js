@@ -1,21 +1,17 @@
-import { GuildChannel, VoiceChannel } from 'discord.js'
+export default async (oldChannel, newChannel, client) => {
+	// On ne garde que les salons vocaux / stage
+	if (!oldChannel?.isVoiceBased() || !newChannel?.isVoiceBased()) return
 
-export default (oldChannel, newChannel, client) => {
-	// Si le salon n'est pas un salon de guild, return
-	if (!(oldChannel instanceof GuildChannel) || !(newChannel instanceof GuildChannel)) return
-
-	// Si le salon n'est pas un salon vocal, return
-	if (!(oldChannel instanceof VoiceChannel) || !(newChannel instanceof VoiceChannel)) return
+	// Sécurité supplémentaire : on ne traite que le même salon mis à jour
+	if (oldChannel.id !== newChannel.id) return
 
 	// Si son nom n'a pas changé, return
 	if (oldChannel.name === newChannel.name) return
 
-	const { id: voiceChannelID, name: voiceChannelName } = newChannel
-
 	// Acquisition du salon no-mic, et return s'il n'y en a pas
-	const noMicChannel = client.voiceManager.get(voiceChannelID)
+	const noMicChannel = client.voiceManager.get(newChannel.id)
 	if (!noMicChannel) return
 
-	// Rename du salon avec no-mic + le nouveau nom du vocal
-	return noMicChannel.edit({ name: `No-mic ${voiceChannelName}` })
+	// Rename du salon no-mic avec le nouveau nom du vocal
+	return noMicChannel.edit({ name: `No-mic ${newChannel.name}` }).catch(console.error)
 }

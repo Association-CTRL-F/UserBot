@@ -3,35 +3,58 @@ import {
 	ContextMenuCommandBuilder,
 	EmbedBuilder,
 	RESTJSONErrorCodes,
+	ApplicationCommandType,
+	MessageFlags
 } from 'discord.js'
 
 export default {
 	data: new SlashCommandBuilder()
 		.setName('upgrade')
 		.setDescription("Donne le formulaire d'upgrade")
-		.addUserOption(option => option.setName('membre').setDescription('Membre')),
-	contextMenu: new ContextMenuCommandBuilder().setName('upgrade').setType(2),
+		.addUserOption((option) => option.setName('membre').setDescription('Membre')),
+
+	contextMenu: new ContextMenuCommandBuilder()
+		.setName('upgrade')
+		.setType(ApplicationCommandType.User),
+
 	interaction: async (interaction, client) => {
-		// On diffère la réponse pour avoir plus de 3 secondes
-		await interaction.deferReply()
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+
+		if (!interaction.guild?.available) {
+			return interaction.editReply({
+				content: 'La guilde est indisponible pour le moment 😕',
+			})
+		}
+
+		// Acquisition de l'utilisateur ciblé
+		const user =
+			interaction.commandType === ApplicationCommandType.User
+				? interaction.targetUser
+				: (interaction.options.getUser('membre') ?? interaction.user)
+
+		if (!user) {
+			return interaction.editReply({
+				content: "Je n'ai pas trouvé cet utilisateur 😕",
+			})
+		}
 
 		// Acquisition du membre
-		let user = {}
-		if (interaction.commandType === 2) user = interaction.targetUser
-		else user = interaction.options.getUser('membre') || interaction.user
-
-		const member = interaction.guild.members.cache.get(user.id)
-		if (!member)
+		const member = await interaction.guild.members.fetch(user.id).catch(() => null)
+		if (!member) {
 			return interaction.editReply({
 				content: "Je n'ai pas trouvé cet utilisateur, vérifie la mention ou l'ID 😕",
 			})
+		}
 
-		if (client.cache.conseilsUsersID.has(`upgrade-${member.user.id}`)) {
-			if (member.user === interaction.user)
+		const cooldownKey = `upgrade-${member.user.id}`
+
+		if (client.cache.conseilsUsersID.has(cooldownKey)) {
+			if (member.user.id === interaction.user.id) {
 				return interaction.editReply({
 					content:
 						"Merci de patienter quelques instants avant d'effectuer à nouveau la commande 😕",
 				})
+			}
 
 			return interaction.editReply({
 				content:
@@ -41,34 +64,42 @@ export default {
 
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
-		if (!bdd)
+		if (!bdd) {
 			return interaction.editReply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
 			})
+		}
 
 		// Acquisition du formulaire
 		let upgrade = ''
 		let upgradeDescription = ''
+
 		try {
-			const sqlSelectUpgrade = 'SELECT * FROM forms WHERE name = ?'
-			const dataSelectUpgrade = ['upgrade']
-			const [resultSelectUpgrade] = await bdd.execute(sqlSelectUpgrade, dataSelectUpgrade)
+			const [[upgradeResult], [upgradeDescResult]] = await Promise.all([
+				bdd.execute('SELECT * FROM forms WHERE name = ?', ['upgrade']),
+				bdd.execute('SELECT * FROM forms WHERE name = ?', ['upgradeDescription']),
+			])
 
-			const sqlSelectUpgradeDesc = 'SELECT * FROM forms WHERE name = ?'
-			const dataSelectUpgradeDesc = ['upgradeDescription']
-			const [resultSelectUpgradeDesc] = await bdd.execute(
-				sqlSelectUpgradeDesc,
-				dataSelectUpgradeDesc,
-			)
-
-			upgrade = resultSelectUpgrade[0].content
-			upgradeDescription = resultSelectUpgradeDesc[0].content
-		} catch {
+			upgrade = upgradeResult?.[0]?.content ?? ''
+			upgradeDescription = upgradeDescResult?.[0]?.content ?? ''
+		} catch (error) {
+			console.error(error)
 			return interaction.editReply({
 				content:
 					'Une erreur est survenue lors de la récupération du formulaire en base de données 😬',
 			})
 		}
+
+		if (!upgrade) {
+			return interaction.editReply({
+				content: "Le formulaire d'upgrade est introuvable ou vide 😕",
+			})
+		}
+
+		// Acquisition du salon
+		const upgradeChannel = interaction.guild.channels.cache.get(
+			client.config.guild.channels.UPGRADE_CHANNEL_ID,
+		)
 
 		// Création de l'embed
 		const embed = new EmbedBuilder()
@@ -76,65 +107,70 @@ export default {
 			.setTitle("Formulaire d'upgrade")
 			.setAuthor({
 				name: interaction.guild.name,
-				iconURL: interaction.guild.iconURL({ dynamic: true }),
-				url: interaction.guild.vanityURL,
+				iconURL: interaction.guild.iconURL({ dynamic: true }) ?? undefined,
+				url: interaction.guild.vanityURL ?? undefined,
 			})
-			.addFields([
+			.setFields(
+				...(upgradeChannel
+					? [
+							{
+								name: 'Salon dans lequel renvoyer le formulaire complété',
+								value: upgradeChannel.toString(),
+							},
+						]
+					: []),
 				{
 					name: 'Précisions',
-					value: upgradeDescription,
+					value: upgradeDescription || 'Aucune précision fournie.',
 				},
-			])
+			)
 
-		// Acquisition du salon
-		const upgradeChannel = interaction.guild.channels.cache.get(
-			client.config.guild.channels.UPGRADE_CHANNEL_ID,
-		)
-
-		// Ajout salon du formulaire si le salon a été trouvé
-		if (upgradeChannel)
-			embed.data.fields.unshift({
-				name: 'Salon dans lequel renvoyer le formulaire complété',
-				value: upgradeChannel.toString(),
-			})
-
-		// Envoi du formulaire (en deux parties)
+		// Envoi du formulaire en DM
 		try {
 			await member.send({ embeds: [embed] })
 			await member.send(upgrade)
 
-			client.cache.conseilsUsersID.add(`upgrade-${member.user.id}`)
+			client.cache.conseilsUsersID.add(cooldownKey)
 
-			setTimeout(() => {
-				client.cache.conseilsUsersID.delete(`upgrade-${member.user.id}`)
-			}, 60000)
+			globalThis.setTimeout(() => {
+				client.cache.conseilsUsersID.delete(cooldownKey)
+			}, 60_000)
 		} catch (error) {
-			if (error.code !== RESTJSONErrorCodes.CannotSendMessagesToThisUser) throw error
+			if (error.code === RESTJSONErrorCodes.CannotSendMessagesToThisUser) {
+				if (member.user.id === interaction.user.id) {
+					return interaction.editReply({
+						content:
+							"Je n'ai pas réussi à envoyer le message privé, tu m'as sûrement bloqué / désactivé tes messages provenant du serveur 😬",
+					})
+				}
 
-			if (member.user === interaction.user)
 				return interaction.editReply({
 					content:
-						"Je n'ai pas réussi à envoyer le message privé, tu m'as sûrement bloqué / désactivé tes messages provenant du serveur 😬",
+						"Je n'ai pas réussi à envoyer le DM, l'utilisateur mentionné m'a sûrement bloqué / désactivé les messages provenant du serveur 😬",
 				})
+			}
 
+			console.error(error)
 			return interaction.editReply({
-				content:
-					"Je n'ai pas réussi à envoyer le DM, l'utilisateur mentionné m'a sûrement bloqué / désactivé les messages provenant du serveur 😬",
+				content: "Une erreur est survenue lors de l'envoi du formulaire 😬",
 			})
 		}
 
-		if (member.user === interaction.user)
+		if (member.user.id === interaction.user.id) {
 			return interaction.editReply({
 				content:
 					"Formulaire envoyé en message privé 👌\n\n⚠️ Si quelqu'un te MP suite à ta demande, **c'est une arnaque**, ne répond pas et contacte immédiatement un modérateur ⚠️",
 			})
+		}
 
-		return upgradeChannel
-			? interaction.editReply({
-					content: `${member}, remplis le formulaire reçu en message privé puis poste le dans ${upgradeChannel} 👌\n\n⚠️ Si quelqu'un te MP suite à ta demande, **c'est une arnaque**, ne répond pas et contacte immédiatement un modérateur ⚠️`,
-				})
-			: interaction.editReply({
-					content: `${member}, remplis le formulaire reçu en message privé 👌\n\n⚠️ Si quelqu'un te MP suite à ta demande, **c'est une arnaque**, ne répond pas et contacte immédiatement un modérateur ⚠️`,
-				})
+		if (upgradeChannel) {
+			return interaction.editReply({
+				content: `${member}, remplis le formulaire reçu en message privé puis poste le dans ${upgradeChannel} 👌\n\n⚠️ Si quelqu'un te MP suite à ta demande, **c'est une arnaque**, ne répond pas et contacte immédiatement un modérateur ⚠️`,
+			})
+		}
+
+		return interaction.editReply({
+			content: `${member}, remplis le formulaire reçu en message privé 👌\n\n⚠️ Si quelqu'un te MP suite à ta demande, **c'est une arnaque**, ne répond pas et contacte immédiatement un modérateur ⚠️`,
+		})
 	},
 }

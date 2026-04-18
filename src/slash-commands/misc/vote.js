@@ -1,5 +1,3 @@
-/* eslint-disable no-case-declarations */
-/* eslint-disable default-case */
 import {
 	SlashCommandBuilder,
 	EmbedBuilder,
@@ -7,208 +5,202 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	RESTJSONErrorCodes,
+	MessageFlags
 } from 'discord.js'
 import { convertDate, displayNameAndID } from '../../util/util.js'
+
+const buildVoteEmbed = ({
+	proposition,
+	member,
+	user,
+	description = null,
+	edited = false,
+	createdAt = new Date(),
+	editedAt = null,
+}) => {
+	const embed = new EmbedBuilder()
+		.setColor(0x00ff00)
+		.setTitle(edited ? 'Nouveau vote (modifié)' : 'Nouveau vote')
+		.setAuthor({
+			name: displayNameAndID(member, user),
+			iconURL: user.displayAvatarURL({ dynamic: true }),
+		})
+		.addFields({
+			name: 'Proposition',
+			value: `\`\`\`${proposition}\`\`\``,
+		})
+
+	if (description) {
+		embed.setDescription(description)
+	}
+
+	const footerLines = [`Vote posté le ${convertDate(createdAt)}`]
+	if (editedAt) {
+		footerLines.push(`Modifié le ${convertDate(editedAt)}`)
+	}
+
+	embed.setFooter({
+		text: footerLines.join('\n'),
+	})
+
+	return embed
+}
+
+const anonymousButtons = new ActionRowBuilder().addComponents(
+	new ButtonBuilder().setEmoji('✅').setCustomId('yes').setStyle(ButtonStyle.Secondary),
+	new ButtonBuilder().setEmoji('⌛').setCustomId('wait').setStyle(ButtonStyle.Secondary),
+	new ButtonBuilder().setEmoji('❌').setCustomId('no').setStyle(ButtonStyle.Secondary),
+)
 
 export default {
 	data: new SlashCommandBuilder()
 		.setName('vote')
 		.setDescription('Gère les votes')
-		.addSubcommand(subcommand =>
+		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('create')
 				.setDescription('Crée un embed avec la proposition et des émojis pour voter')
-				.addStringOption(option =>
+				.addStringOption((option) =>
 					option
 						.setName('proposition')
 						.setDescription('Proposition de vote')
 						.setRequired(true),
 				)
-				.addBooleanOption(option =>
+				.addBooleanOption((option) =>
 					option
 						.setName('anonyme')
 						.setDescription('Veux-tu que le vote soit anonyme ?')
 						.setRequired(true),
 				)
-				.addBooleanOption(option =>
+				.addBooleanOption((option) =>
 					option
 						.setName('thread')
 						.setDescription('Veux-tu créer un thread associé ?')
 						.setRequired(true),
 				),
 		)
-		.addSubcommand(subcommand =>
+		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('edit')
 				.setDescription('Modifie un message de vote avec la nouvelle proposition')
-				.addStringOption(option =>
+				.addStringOption((option) =>
 					option
 						.setName('id')
 						.setDescription('ID de la proposition à éditer')
 						.setRequired(true),
 				)
-				.addStringOption(option =>
+				.addStringOption((option) =>
 					option
 						.setName('proposition')
 						.setDescription('Nouvelle proposition de vote')
 						.setRequired(true),
 				),
 		),
-	interaction: async interaction => {
-		const proposition = interaction.options.getString('proposition')
-		const anonyme = interaction.options.getBoolean('anonyme')
-		const thread = interaction.options.getBoolean('thread')
 
+	interaction: async (interaction) => {
 		switch (interaction.options.getSubcommand()) {
-			// Nouveau vote
-			case 'create':
-				// Envoi du message de vote
-				const embed = new EmbedBuilder()
-					.setColor('00FF00')
-					.setTitle('Nouveau vote')
-					.addFields([
-						{
-							name: 'Proposition',
-							value: `\`\`\`${proposition}\`\`\``,
-						},
-					])
-					.setAuthor({
-						name: displayNameAndID(interaction.member),
-						iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
-					})
-					.setFooter({
-						text: `Vote posté le ${convertDate(new Date())}`,
-					})
+			case 'create': {
+				const proposition = interaction.options.getString('proposition').trim()
+				const anonyme = interaction.options.getBoolean('anonyme')
+				const thread = interaction.options.getBoolean('thread')
 
-				if (anonyme) {
-					const buttons = new ActionRowBuilder()
-						.addComponents(
-							new ButtonBuilder()
-								.setEmoji('✅')
-								.setCustomId('yes')
-								.setStyle(ButtonStyle.Secondary),
-						)
-						.addComponents(
-							new ButtonBuilder()
-								.setEmoji('⌛')
-								.setCustomId('wait')
-								.setStyle(ButtonStyle.Secondary),
-						)
-						.addComponents(
-							new ButtonBuilder()
-								.setEmoji('❌')
-								.setCustomId('no')
-								.setStyle(ButtonStyle.Secondary),
-						)
-
-					embed.data.description = `✅ : 0\r⌛ : 0\r❌ : 0`
-
-					const sentMessage = await interaction.reply({
-						embeds: [embed],
-						components: [buttons],
-						fetchReply: true,
-					})
-
-					// Création automatique du thread associé
-					if (thread) {
-						const threadCreate = await sentMessage.startThread({
-							name: `Vote de ${interaction.member.user.username}`,
-							// Archivage après 24H
-							autoArchiveDuration: 24 * 60,
-							reason: proposition,
-						})
-
-						return threadCreate.members.add(interaction.user.id)
-					}
-
-					return
-				}
+				const embed = buildVoteEmbed({
+					proposition,
+					member: interaction.member,
+					user: interaction.user,
+					description: anonyme ? '✅ : 0\n⌛ : 0\n❌ : 0' : null,
+				})
 
 				const sentMessage = await interaction.reply({
 					embeds: [embed],
+					components: anonyme ? [anonymousButtons] : [],
 					fetchReply: true,
 				})
 
-				// Création automatique du thread associé
 				if (thread) {
 					const threadCreate = await sentMessage.startThread({
-						name: `Vote de ${interaction.member.user.username}`,
-						// Archivage après 24H
+						name: `Vote de ${interaction.user.username}`,
 						autoArchiveDuration: 24 * 60,
 						reason: proposition,
 					})
 
-					await threadCreate.members.add(interaction.user.id)
+					await threadCreate.members.add(interaction.user.id).catch(() => null)
 				}
 
-				// Ajout des réactions pour voter si vote non anonyme
-				await sentMessage.react('✅')
-				await sentMessage.react('⌛')
-				return sentMessage.react('❌')
+				if (!anonyme) {
+					await sentMessage.react('✅')
+					await sentMessage.react('⌛')
+					await sentMessage.react('❌')
+				}
 
-			// Modification d'un vote
-			case 'edit':
+				return
+			}
+
+			case 'edit': {
+				const proposition = interaction.options.getString('proposition').trim()
 				const receivedID = interaction.options.getString('id')
-				const matchID = receivedID.match(/^(\d{17,19})$/)
-				if (!matchID)
+				const matchID = receivedID.match(/^\d{17,19}$/)
+
+				if (!matchID) {
 					return interaction.reply({
 						content: "Tu ne m'as pas donné un ID valide 😕",
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					})
+				}
 
-				// Fetch du message
 				const message = await interaction.channel.messages
 					.fetch(matchID[0])
-					.catch(error => {
+					.catch((error) => {
 						if (error.code === RESTJSONErrorCodes.UnknownMessage) {
-							interaction.reply({
-								content: "Je n'ai pas trouvé ce message dans ce salon 😕",
-								ephemeral: true,
-							})
-
-							return error
+							return null
 						}
 
 						throw error
 					})
 
-				// Handle des mauvais cas
-				if (message instanceof Error) return
-				if (!message.interaction || message.interaction.commandName !== 'vote create')
+				if (!message) {
+					return interaction.reply({
+						content: "Je n'ai pas trouvé ce message dans ce salon 😕",
+						flags: MessageFlags.Ephemeral,
+					})
+				}
+
+				const sourceEmbed = message.embeds?.[0]
+				const propositionField = sourceEmbed?.fields?.find(
+					(field) => field.name === 'Proposition',
+				)
+
+				if (
+					!sourceEmbed ||
+					!propositionField ||
+					!message.author ||
+					message.author.id !== interaction.client.user.id
+				) {
 					return interaction.reply({
 						content: "Le message initial n'est pas un vote 😕",
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					})
+				}
 
-				if (message.interaction.user !== interaction.member.user)
+				const originalUserId =
+					message.interactionMetadata?.user?.id ?? message.interaction?.user?.id ?? null
+
+				if (originalUserId && originalUserId !== interaction.user.id) {
 					return interaction.reply({
 						content: "Tu n'as pas initié ce vote 😕",
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					})
+				}
 
-				// Modification du message
-				const embedEdit = new EmbedBuilder()
-					.setColor('00FF00')
-					.setTitle('Nouveau vote (modifié)')
-					.addFields([
-						{
-							name: 'Proposition',
-							value: `\`\`\`${proposition}\`\`\``,
-						},
-					])
-					.setAuthor({
-						name: displayNameAndID(interaction.member),
-						iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
-					})
-					.setFooter({
-						text: `Vote posté le ${convertDate(
-							message.createdAt,
-						)}\nModifié le ${convertDate(new Date())}`,
-					})
-
-				// eslint-disable-next-line no-prototype-builtins
-				if (message.embeds[0].data.hasOwnProperty('description'))
-					embedEdit.data.description = message.embeds[0].data.description
+				const embedEdit = buildVoteEmbed({
+					proposition,
+					member: interaction.member,
+					user: interaction.user,
+					description: sourceEmbed.description ?? null,
+					edited: true,
+					createdAt: message.createdAt,
+					editedAt: new Date(),
+				})
 
 				await message.edit({
 					embeds: [embedEdit],
@@ -216,8 +208,9 @@ export default {
 
 				return interaction.reply({
 					content: 'Proposition de vote modifiée 👌',
-					ephemeral: true,
+					flags: MessageFlags.Ephemeral,
 				})
+			}
 		}
 	},
 }

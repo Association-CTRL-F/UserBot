@@ -1,26 +1,39 @@
 import { RESTJSONErrorCodes } from 'discord.js'
 import ms from 'ms'
 
-export default (client, guild) => {
-	const joinRole = client.config.guild.roles.JOIN_ROLE_ID
+export default async (client, guild) => {
+	const joinRoleId = client.config.guild.roles.JOIN_ROLE_ID
 	const timeoutJoin = client.config.guild.TIMEOUT_JOIN
 
-	guild.roles.cache.get(joinRole).members.map(async noblablaMember => {
-		const diff = new Date() - noblablaMember.joinedAt
-		const minutesPresence = Math.floor((diff / (1000 * 60 * 60 * 24 * 30.4375)) * 43800)
-		const msPresence = minutesPresence * 60000
+	if (!joinRoleId || !timeoutJoin) return
 
-		if (msPresence > ms(timeoutJoin))
-			await noblablaMember.roles.remove(joinRole).catch(error => {
-				if (error.code !== RESTJSONErrorCodes.UnknownMember) throw error
+	const joinRole = guild.roles.cache.get(joinRoleId)
+	if (!joinRole) return
+
+	const timeoutMs = ms(timeoutJoin)
+	if (typeof timeoutMs !== 'number') return
+
+	for (const [, noBlablaMember] of joinRole.members) {
+		if (!noBlablaMember.joinedAt) continue
+
+		const elapsedMs = Date.now() - noBlablaMember.joinedAt.getTime()
+		const remainingMs = timeoutMs - elapsedMs
+
+		if (remainingMs <= 0) {
+			await noBlablaMember.roles.remove(joinRoleId).catch((error) => {
+				if (error.code !== RESTJSONErrorCodes.UnknownMember) {
+					console.error(error)
+				}
 			})
+			continue
+		}
 
-		setTimeout(
-			() =>
-				noblablaMember.roles.remove(joinRole).catch(error => {
-					if (error.code !== RESTJSONErrorCodes.UnknownMember) throw error
-				}),
-			ms(timeoutJoin),
-		)
-	})
+		globalThis.setTimeout(() => {
+			noBlablaMember.roles.remove(joinRoleId).catch((error) => {
+				if (error.code !== RESTJSONErrorCodes.UnknownMember) {
+					console.error(error)
+				}
+			})
+		}, remainingMs)
+	}
 }

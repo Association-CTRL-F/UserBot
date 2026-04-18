@@ -1,4 +1,4 @@
-import { ModalBuilder, TextInputBuilder, ActionRowBuilder, TextInputStyle } from 'discord.js'
+import { ModalBuilder, TextInputBuilder, ActionRowBuilder, TextInputStyle, MessageFlags } from 'discord.js'
 
 export default {
 	data: {
@@ -7,33 +7,44 @@ export default {
 	interaction: async (menu, client) => {
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
-		if (!bdd)
+		if (!bdd) {
 			return menu.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			})
+		}
+
+		const formName = menu.values?.[0]?.trim()
+		if (!formName) {
+			return menu.reply({
+				content: 'Aucun formulaire sélectionné 😕',
+				flags: MessageFlags.Ephemeral,
+			})
+		}
 
 		// Vérification si le formulaire existe
-		let form = {}
+		let form = null
 		try {
 			const sql = 'SELECT * FROM forms WHERE name = ?'
-			const data = [menu.values[0]]
+			const data = [formName]
 			const [result] = await bdd.execute(sql, data)
-			form = result[0]
+			form = result[0] ?? null
 		} catch (error) {
+			console.error(error)
 			return menu.reply({
 				content:
 					'Une erreur est survenue lors de la récupération du formulaire en base de données 😕',
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			})
 		}
 
 		// Vérification si le formulaire existe bien
-		if (!form)
+		if (!form) {
 			return menu.reply({
-				content: `Le formulaire **${menu.values[0]}** n'existe pas 😕`,
-				ephemeral: true,
+				content: `Le formulaire **${formName}** n'existe pas 😕`,
+				flags: MessageFlags.Ephemeral,
 			})
+		}
 
 		const modal = new ModalBuilder()
 			.setCustomId('form-edit')
@@ -49,15 +60,13 @@ export default {
 						.setValue(form.name)
 						.setRequired(true),
 				),
-			)
-			.addComponents(
 				new ActionRowBuilder().addComponents(
 					new TextInputBuilder()
 						.setCustomId('form-edit-content')
 						.setLabel('Nouveau contenu du formulaire')
 						.setStyle(TextInputStyle.Paragraph)
 						.setMinLength(1)
-						.setValue(form.content)
+						.setValue(form.content ?? '')
 						.setRequired(true),
 				),
 			)

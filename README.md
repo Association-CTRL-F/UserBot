@@ -63,7 +63,6 @@ Cela s'effectue de la façon suivante avec la commande `/setup` :
 * `/setup no-logs-channels` : salons no-logs messages (facultatif)
 * `/setup no-text-channels` : salons no-text messages (facultatif)
 * `/setup threads-channels` : salons threads auto (facultatif)
-* `/setup feur-channels` : salons avec réaction :feur: autorisée (facultatif)
 
 Lorsqu'il est possible d'y entrer plusieurs IDs, ceux-ci doivent être séparés par des virgules, comme suit : `123456789012345678,123456789012345678,123456789012345678`
 

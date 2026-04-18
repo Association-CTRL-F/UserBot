@@ -1,20 +1,17 @@
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
+import { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } from 'discord.js'
 
 export default {
 	data: new SlashCommandBuilder().setName('dé').setDescription('Lancer de dé'),
-	interaction: async interaction => {
-		// On diffère la réponse pour avoir plus de 3 secondes
+	interaction: async (interaction) => {
 		await interaction.deferReply()
 
 		// Lancement du dé
 		const face = Math.floor(Math.random() * 6) + 1
 
-		// Surprise
-		const randomSurprise = Math.round(Math.random() * 100)
-		const randomTirage = Math.round(Math.random() * 100)
+		// Surprise (~1% de chance)
+		const isSurprise = Math.floor(Math.random() * 100) === 0
 
-		if (randomSurprise === randomTirage) {
-			// Création de l'embed surprise
+		if (isSurprise) {
 			const embed = new EmbedBuilder()
 				.setColor('#1ABC9C')
 				.setTitle('Lancer de dé')
@@ -23,11 +20,10 @@ export default {
 
 			return interaction.editReply({
 				embeds: [embed],
-				files: [`./config/commands/dé/rgb.png`],
+				files: [new AttachmentBuilder('./config/commands/dé/rgb.png')],
 			})
 		}
 
-		// Création de l'embed
 		const embed = new EmbedBuilder()
 			.setColor('#C27C0E')
 			.setTitle('Lancer de dé')
@@ -36,7 +32,7 @@ export default {
 
 		return interaction.editReply({
 			embeds: [embed],
-			files: [`./config/commands/dé/${face}.png`],
+			files: [new AttachmentBuilder(`./config/commands/dé/${face}.png`)],
 		})
 	},
 }

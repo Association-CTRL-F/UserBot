@@ -5,12 +5,16 @@ export default {
 		.setName('ping')
 		.setDescription("Donne le ping de l'API ainsi que du bot"),
 	interaction: async (interaction, client) => {
+		const replyStart = Date.now()
 		await interaction.reply({ content: '🏓 Pong ?' })
-		const start = new Date()
+		const replyLatency = Date.now() - replyStart
+
+		const editStart = Date.now()
 		await interaction.editReply({ content: '🏓 Pong ?' })
-		const editLatency = Math.round(new Date() - start)
+		const editLatency = Date.now() - editStart
+
 		return interaction.editReply({
-			content: `Modification d'un message : **${editLatency} ms**\nRéponse API : **${client.ws.ping} ms**`,
+			content: `Temps de réponse : **${replyLatency} ms**\nModification d'un message : **${editLatency} ms**\nRéponse API : **${client.ws.ping} ms**`,
 		})
 	},
 }

@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import {
 	Collection,
 	EmbedBuilder,
@@ -15,89 +14,299 @@ import {
 	getFileInfos,
 	displayNameAndID,
 } from '../../util/util.js'
-import { setTimeout as delay } from 'node:timers/promises'
-import { ChatGPTAPI, ChatGPTError } from 'chatgpt'
+import { ChatGPTAPI } from 'chatgpt'
+
+const SPAM_WINDOW_MS = 10 * 60 * 1000
+const SPAM_MIN_MESSAGES = 3
+const SPAM_MIN_CHANNELS = 3
+const SPAM_TRACK_LIMIT = 25
+const SPAM_TIMEOUT_MS = 12 * 60 * 60 * 1000
+
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+const truncateText = (value, max = 1000) => {
+	if (!value || !value.trim()) return '[Aucun contenu texte]'
+
+	const escaped = value.replace(/```/g, '\\`\\`\\`')
+	if (escaped.length <= max) return escaped
+
+	return `${escaped.slice(0, max - 6)} [...]`
+}
+
+const normalizeSpamContent = (value) => value.trim().toLowerCase().replace(/\s+/g, ' ')
+
+const getSpamImmuneRoleIds = (client) =>
+	[
+		client.config.guild.roles.STAFF_EDITEURS_ROLE_ID,
+		client.config.guild.roles.MODO_ROLE_ID,
+		client.config.guild.roles.CERTIF_ROLE_ID,
+	]
+		.filter(Boolean)
+		.map(String)
+
+const isSpamImmune = (member, client) => {
+	if (!member) return true
+
+	const immuneRoleIds = getSpamImmuneRoleIds(client)
+
+	if (
+		member.permissions.has(PermissionsBitField.Flags.Administrator) ||
+		member.permissions.has(PermissionsBitField.Flags.BanMembers) ||
+		member.permissions.has(PermissionsBitField.Flags.ModerateMembers) ||
+		member.permissions.has(PermissionsBitField.Flags.ManageMessages)
+	) {
+		return true
+	}
+
+	return member.roles.cache.some((role) => immuneRoleIds.includes(role.id))
+}
+
+const buildSpamActionRow = (reportId) =>
+	new ActionRowBuilder().addComponents(
+		new ButtonBuilder()
+			.setCustomId(`spam-action:ban:${reportId}`)
+			.setLabel('Ban')
+			.setStyle(ButtonStyle.Danger),
+		new ButtonBuilder()
+			.setCustomId(`spam-action:lift:${reportId}`)
+			.setLabel('Retirer la sanction')
+			.setStyle(ButtonStyle.Success),
+		new ButtonBuilder()
+			.setCustomId(`spam-action:keep:${reportId}`)
+			.setLabel('Conserver la sanction')
+			.setStyle(ButtonStyle.Secondary),
+	)
+
+const applySpamSanction = async (member, client) => {
+	if (!member) {
+		return {
+			ok: false,
+			type: 'none',
+			label: 'Aucune',
+			error: 'Membre introuvable',
+		}
+	}
+
+	if (member.moderatable) {
+		try {
+			await member.timeout(
+				SPAM_TIMEOUT_MS,
+				'Spam cross-salons détecté automatiquement par le bot',
+			)
+
+			return {
+				ok: true,
+				type: 'timeout',
+				label: 'Timeout 12 heures',
+			}
+		} catch (error) {
+			console.error(error)
+		}
+	}
+
+	const mutedRoleId = client.config.guild.roles.MUTED_ROLE_ID
+	if (mutedRoleId && member.manageable && !member.roles.cache.has(mutedRoleId)) {
+		try {
+			await member.roles.add(
+				mutedRoleId,
+				'Spam cross-salons détecté automatiquement par le bot',
+			)
+
+			return {
+				ok: true,
+				type: 'mute_role',
+				label: 'Rôle Muted',
+			}
+		} catch (error) {
+			console.error(error)
+		}
+	}
+
+	return {
+		ok: false,
+		type: 'none',
+		label: 'Aucune',
+		error: 'Impossible de timeout ni de mute ce membre',
+	}
+}
+
+const handleCrossChannelSpam = async (message, client) => {
+	if (!message.guild || !message.member) return false
+	if (!message.content?.trim()) return false
+	if (isSpamImmune(message.member, client)) return false
+
+	const bdd = client.config.db.pools.userbot
+	if (!bdd) {
+		console.log('Une erreur est survenue lors de la connexion à la base de données')
+		return false
+	}
+
+	if (!client.cache.crossChannelSpam) {
+		client.cache.crossChannelSpam = new Map()
+	}
+
+	const userKey = `${message.guild.id}-${message.author.id}`
+	const now = message.createdTimestamp
+	const normalizedContent = normalizeSpamContent(message.content)
+
+	const history = client.cache.crossChannelSpam.get(userKey) || []
+	const nextHistory = history
+		.filter((entry) => now - entry.createdTimestamp <= SPAM_WINDOW_MS)
+		.concat({
+			messageId: message.id,
+			channelId: message.channel.id,
+			createdTimestamp: now,
+			content: normalizedContent,
+			message,
+		})
+		.slice(-SPAM_TRACK_LIMIT)
+
+	client.cache.crossChannelSpam.set(userKey, nextHistory)
+
+	const identicalEntries = nextHistory.filter(
+		(entry) =>
+			entry.content === normalizedContent && now - entry.createdTimestamp <= SPAM_WINDOW_MS,
+	)
+
+	const distinctChannels = new Set(identicalEntries.map((entry) => entry.channelId))
+
+	if (identicalEntries.length < SPAM_MIN_MESSAGES || distinctChannels.size < SPAM_MIN_CHANNELS) {
+		return false
+	}
+
+	client.cache.crossChannelSpam.set(
+		userKey,
+		nextHistory.filter((entry) => entry.content !== normalizedContent),
+	)
+
+	const deletedMessages = []
+	for (const entry of identicalEntries) {
+		client.cache.deleteMessagesID.add(entry.messageId)
+
+		const deleted = await entry.message
+			.delete()
+			.then(() => true)
+			.catch(() => false)
+
+		if (deleted) {
+			deletedMessages.push(entry)
+		}
+	}
+
+	const sanction = await applySpamSanction(message.member, client)
+
+	const reportChannel = message.guild.channels.cache.get(
+		client.config.guild.channels.REPORT_CHANNEL_ID,
+	)
+
+	if (!reportChannel?.isTextBased()) {
+		return true
+	}
+
+	const channelsList = [...distinctChannels].map((channelId) => `<#${channelId}>`).join(', ')
+	const preview = truncateText(message.content, 1500)
+	const reportId = `${message.author.id}-${Date.now()}`
+
+	const reportEmbed = new EmbedBuilder()
+		.setColor('#FF3200')
+		.setTitle('Spam cross-salons détecté')
+		.setAuthor({
+			name: displayNameAndID(message.member, message.author),
+			iconURL: message.author.displayAvatarURL({ dynamic: true }),
+		})
+		.setDescription(`\`\`\`\n${preview}\n\`\`\``)
+		.addFields(
+			{
+				name: 'Utilisateur',
+				value: `${message.author} (ID : ${message.author.id})`,
+				inline: true,
+			},
+			{
+				name: 'Messages supprimés',
+				value: String(deletedMessages.length),
+				inline: true,
+			},
+			{
+				name: 'Salons concernés',
+				value: channelsList,
+				inline: false,
+			},
+			{
+				name: 'Sanction automatique',
+				value: sanction.ok ? sanction.label : `Échec : ${sanction.error}`,
+				inline: false,
+			},
+			{
+				name: 'Fenêtre de détection',
+				value: '10 minutes',
+				inline: true,
+			},
+			{
+				name: 'Critère',
+				value: '3 messages identiques dans 3 salons différents',
+				inline: true,
+			},
+		)
+		.setFooter({
+			text: 'Choisissez une action ci-dessous',
+		})
+		.setTimestamp(new Date())
+
+	const reportMessage = await reportChannel.send({
+		embeds: [reportEmbed],
+		components: [buildSpamActionRow(reportId)],
+	})
+
+	try {
+		const sql =
+			'INSERT INTO spam_reports (report_id, guild_id, user_id, report_message_id, sanction_type, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+		const data = [
+			reportId,
+			message.guild.id,
+			message.author.id,
+			reportMessage.id,
+			sanction.type,
+			'pending',
+			Math.round(Date.now() / 1000),
+		]
+		await bdd.execute(sql, data)
+	} catch (error) {
+		console.error(error)
+	}
+
+	return true
+}
 
 export default async (message, client) => {
 	if (message.author.bot) return
 
-	if (message.partial) await message.fetch()
-
-	// Anti-spam : 3 messages identiques d'affilée = ban auto
-	if (message.guild && message.content?.trim()) {
-		if (!client.lastMessages) client.lastMessages = new Collection()
-
-		const userKey = `${message.guild.id}-${message.author.id}`
-
-		const normalizedContent = message.content
-			.trim()
-			.toLowerCase()
-			.replace(/\s+/g, ' ')
-
-		const history = client.lastMessages.get(userKey) || []
-
-		history.push(normalizedContent)
-
-		// On garde seulement les 3 derniers messages
-		if (history.length > 3) history.shift()
-
-		client.lastMessages.set(userKey, history)
-
-		// Si les 3 derniers messages sont identiques
-		if (
-			history.length === 3 &&
-			history[0] === history[1] &&
-			history[1] === history[2]
-		) {
-			try {
-				// On évite de retrigger
-				client.lastMessages.delete(userKey)
-
-				// Vérifie que le membre peut être banni
-				if (message.member?.bannable) {
-					await message.guild.members.ban(message.author.id, {
-						deleteMessageSeconds: banMessagesDays * 86400,
-						reason: 'Auto-ban : 3 messages identiques consécutifs',
-					})
-
-					console.log(
-						`[AUTO-BAN] ${message.author.tag} banni pour spam répété.`,
-					)
-					return
-				}
-
-				console.log(
-					`[AUTO-BAN] Impossible de bannir ${message.author.tag} (permissions / rôle trop haut).`,
-				)
-			} catch (error) {
-				console.error('Erreur auto-ban spam :', error)
-			}
-		}
-
-		// Nettoyage mémoire au bout de 10 minutes
-		globalThis.setTimeout(() => {
-			const current = client.lastMessages.get(userKey)
-			if (current === history) client.lastMessages.delete(userKey)
-		}, 10 * 60 * 1000)
+	if (message.partial) {
+		await message.fetch().catch(() => null)
+		if (message.partial) return
 	}
+
+	if (!message.guild) return
+
+	const messageContent = message.content ?? ''
+
+	// Anti-spam cross-salons
+	const spamHandled = await handleCrossChannelSpam(message, client)
+	if (spamHandled) return
 
 	// Si le message vient d'une guild, on vérifie
 	if (message.member) {
-		// Si le pseudo respecte bien les règles
 		modifyWrongUsernames(message.member).catch(() => null)
 
 		if (
 			client.config.guild.channels.BLABLA_CHANNEL_ID &&
-			client.config.guild.roles.JOIN_ROLE_ID
-		)
-			if (
-				message.channel.id !== client.config.guild.channels.BLABLA_CHANNEL_ID &&
-				message.member.roles.cache.has(client.config.guild.roles.JOIN_ROLE_ID)
-			)
-				// Si c'est un salon autre que blabla
-				message.member.roles.remove(client.config.guild.roles.JOIN_ROLE_ID).catch(error => {
-					if (error.code !== RESTJSONErrorCodes.UnknownMember) throw error
-				})
+			client.config.guild.roles.JOIN_ROLE_ID &&
+			message.channel.id !== client.config.guild.channels.BLABLA_CHANNEL_ID &&
+			message.member.roles.cache.has(client.config.guild.roles.JOIN_ROLE_ID)
+		) {
+			message.member.roles.remove(client.config.guild.roles.JOIN_ROLE_ID).catch((error) => {
+				if (error.code !== RESTJSONErrorCodes.UnknownMember) throw error
+			})
+		}
 	}
 
 	// Si c'est un salon no-text
@@ -109,17 +318,16 @@ export default async (message, client) => {
 		const sentMessage = await message.channel.send(
 			`<@${message.author.id}>, tu dois mettre une image / vidéo 😕`,
 		)
-		return Promise.all([
-			await message.delete().catch(() => false),
-			setTimeout(
-				() =>
-					sentMessage.delete().catch(error => {
-						if (error.code !== RESTJSONErrorCodes.UnknownMessage) console.error(error)
-					}),
-				// Suppression après 7 secondes
-				7 * 1000,
-			),
-		])
+
+		await message.delete().catch(() => false)
+
+		globalThis.setTimeout(() => {
+			sentMessage.delete().catch((error) => {
+				if (error.code !== RESTJSONErrorCodes.UnknownMessage) console.error(error)
+			})
+		}, 7 * 1000)
+
+		return
 	}
 
 	// Si c'est un salon auto-thread
@@ -128,15 +336,19 @@ export default async (message, client) => {
 		: []
 
 	if (THREADS.includes(message.channel.id)) {
-		await message.react('⬆️')
-		await message.react('⬇️')
-		await message.react('💬')
+		await Promise.all([
+			message.react('⬆️').catch(() => null),
+			message.react('⬇️').catch(() => null),
+			message.react('💬').catch(() => null),
+		])
 	}
 
 	// Acquisition de la base de données
 	const bdd = client.config.db.pools.userbot
-	if (!bdd)
-		return console.log('Une erreur est survenue lors de la connexion à la base de données')
+	if (!bdd) {
+		console.log('Une erreur est survenue lors de la connexion à la base de données')
+		return
+	}
 
 	// Alertes personnalisées
 	let alerts = []
@@ -145,128 +357,117 @@ export default async (message, client) => {
 		const [result] = await bdd.execute(sql)
 		alerts = result
 	} catch (error) {
-		return console.error(error)
+		console.error(error)
+		return
 	}
 
-	alerts.forEach(alert => {
-		const hay = message.content.normalize('NFD').replace(/\p{M}/gu, '')
+	const hay = messageContent.normalize('NFD').replace(/\p{M}/gu, '')
+
+	for (const alert of alerts) {
 		const needle = alert.text
 			.normalize('NFD')
 			.replace(/\p{M}/gu, '')
 			.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
 		const re = new RegExp(`(?:^|[^\\p{L}\\p{N}_])${needle}(?=$|[^\\p{L}\\p{N}_])`, 'iu')
+		if (!re.test(hay)) continue
 
-		if (re.test(message.content)) {
-			// Acquisition du membre
-			const member = message.guild.members.cache.get(alert.discordID)
+		const member = await message.guild.members.fetch(alert.discordID).catch(() => null)
+		if (!member) continue
 
-			// Si c'est son propre message on envoi pas d'alerte
-			if (message.author.id === alert.discordID) return
+		if (message.author.id === alert.discordID) continue
 
-			// Vérification si le membre à accès au salon
-			// dans lequel le message a été envoyé
-			const permissionsMember = member.permissionsIn(message.channel)
-			if (!permissionsMember.has(PermissionsBitField.Flags.ViewChannel)) return
+		const permissionsMember = member.permissionsIn(message.channel)
+		if (!permissionsMember.has(PermissionsBitField.Flags.ViewChannel)) continue
 
-			// Cut + escape message content
-			let textCut = ''
-			let alertTextCut = ''
+		const textCut =
+			messageContent.length < 200
+				? messageContent.slice(0, 200)
+				: `${messageContent.slice(0, 200)} [...]`
 
-			if (message.content.length < 200) textCut = `${message.content.substr(0, 200)}`
-			else textCut = `${message.content.substr(0, 200)} [...]`
+		const alertTextCut =
+			alert.text.length < 200 ? alert.text.slice(0, 200) : `${alert.text.slice(0, 200)} [...]`
 
-			if (alert.text.length < 200) alertTextCut = `${alert.text.substr(0, 200)}`
-			else alertTextCut = `${alert.text.substr(0, 200)} [...]`
+		const escapedcontentText = textCut.replace(/```/g, '\\`\\`\\`')
+		const escapedcontentAlertText = alertTextCut.replace(/```/g, '\\`\\`\\`')
 
-			const escapedcontentText = textCut.replace(/```/g, '\\`\\`\\`')
-			const escapedcontentAlertText = alertTextCut.replace(/```/g, '\\`\\`\\`')
-
-			// Envoi du message d'alerte en message privé
-			const embedAlert = new EmbedBuilder()
-				.setColor('#C27C0E')
-				.setTitle('Alerte message')
-				.setDescription('Un message envoyé correspond à votre alerte.')
-				.setAuthor({
-					name: message.guild.name,
-					iconURL: message.guild.iconURL({ dynamic: true }),
-					url: message.guild.vanityURL,
-				})
-				.addFields([
-					{
-						name: 'Alerte définie',
-						value: `\`\`\`\n${escapedcontentAlertText}\`\`\``,
-					},
-					{
-						name: 'Message envoyé',
-						value: `\`\`\`\n${escapedcontentText}\`\`\``,
-					},
-					{
-						name: 'Salon',
-						value: message.channel.toString(),
-						inline: true,
-					},
-					{
-						name: 'Auteur',
-						value: `${message.author.toString()} (ID : ${message.author.id})`,
-						inline: true,
-					},
-				])
-
-			const buttonMessage = new ActionRowBuilder().addComponents(
-				new ButtonBuilder()
-					.setLabel('Aller au message')
-					.setStyle(ButtonStyle.Link)
-					.setURL(
-						`https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id}`,
-					),
+		const embedAlert = new EmbedBuilder()
+			.setColor('#C27C0E')
+			.setTitle('Alerte message')
+			.setDescription('Un message envoyé correspond à votre alerte.')
+			.setAuthor({
+				name: message.guild.name,
+				iconURL: message.guild.iconURL({ dynamic: true }),
+				url: message.guild.vanityURL ?? undefined,
+			})
+			.addFields(
+				{
+					name: 'Alerte définie',
+					value: `\`\`\`\n${escapedcontentAlertText}\`\`\``,
+				},
+				{
+					name: 'Message envoyé',
+					value: `\`\`\`\n${escapedcontentText}\`\`\``,
+				},
+				{
+					name: 'Salon',
+					value: message.channel.toString(),
+					inline: true,
+				},
+				{
+					name: 'Auteur',
+					value: `${message.author.toString()} (ID : ${message.author.id})`,
+					inline: true,
+				},
 			)
 
-			const DMMessage = member
-				.send({
-					embeds: [embedAlert],
-					components: [buttonMessage],
-				})
-				.catch(error => {
-					if (error.code !== RESTJSONErrorCodes.CannotSendMessagesToThisUser) throw error
-					return console.error(error)
-				})
+		const buttonMessage = new ActionRowBuilder().addComponents(
+			new ButtonBuilder()
+				.setLabel('Aller au message')
+				.setStyle(ButtonStyle.Link)
+				.setURL(
+					`https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id}`,
+				),
+		)
 
-			// Si au moins une erreur, throw
-			if (DMMessage instanceof Error)
-				throw new Error(
-					"L'envoi d'un message a échoué. Voir les logs précédents pour plus d'informations.",
-				)
-		}
-	})
+		await member
+			.send({
+				embeds: [embedAlert],
+				components: [buttonMessage],
+			})
+			.catch((error) => {
+				if (error.code !== RESTJSONErrorCodes.CannotSendMessagesToThisUser) {
+					console.error(error)
+				}
+			})
+	}
 
 	// Command handler
-	if (message.content.startsWith(client.config.guild.COMMANDS_PREFIX)) {
-		const regexCommands = `^${client.config.guild.COMMANDS_PREFIX}{${client.config.guild.COMMANDS_PREFIX.length}}([a-zA-Z0-9]+)(?: .*|$)`
+	if (messageContent.startsWith(client.config.guild.COMMANDS_PREFIX)) {
+		const escapedPrefix = escapeRegex(client.config.guild.COMMANDS_PREFIX)
+		const regexCommands = new RegExp(`^${escapedPrefix}([a-zA-Z0-9]+)(?:\\s.*|$)`)
 
-		const args = message.content.match(regexCommands)
+		const args = messageContent.match(regexCommands)
 		if (!args) return
 
 		const commandName = args[1].toLowerCase()
 		if (!commandName) return
 
-		// Vérification si la commande existe et est activée
-		let command = ''
+		let command = null
 		try {
 			const sql = 'SELECT * FROM commands WHERE name = ? OR aliases REGEXP ?'
 			const data = [commandName, `(?:^|,)(${commandName})(?:,|$)`]
 			const [result] = await bdd.execute(sql, data)
 
-			command = result[0]
+			command = result[0] ?? null
 		} catch (error) {
 			console.error(error)
-			message.reply({ content: 'Il y a eu une erreur en exécutant la commande 😬' })
+			await message.reply({ content: 'Il y a eu une erreur en exécutant la commande 😬' })
+			return
 		}
 
-		if (!command) return
+		if (!command || !command.active) return
 
-		if (!command.active) return
-
-		// Partie cooldown
 		if (!client.cooldowns.has(command.name)) {
 			client.cooldowns.set(command.name, new Collection())
 		}
@@ -286,150 +487,147 @@ export default async (message, client) => {
 					)} seconde(s) de plus avant de réutiliser la commande **${command.name}** 😬`,
 				})
 
-				return client.cache.deleteMessagesID.add(sentMessage.id)
+				client.cache.deleteMessagesID.add(sentMessage.id)
+				return
 			}
 		}
 
 		timestamps.set(message.author.id, now)
-		globalThis.setTimeout(() => { timestamps.delete(message.author.id) }, cooldownAmount)
+		globalThis.setTimeout(() => {
+			timestamps.delete(message.author.id)
+		}, cooldownAmount)
 
-		// Si configuré, on prépare un embed avec un bouton de redirection
-		let button = []
-		if (command.textLinkButton !== null && command.linkButton !== null)
+		let button = null
+		if (command.textLinkButton && command.linkButton) {
 			button = new ActionRowBuilder().addComponents(
 				new ButtonBuilder()
 					.setLabel(command.textLinkButton)
 					.setURL(command.linkButton)
 					.setStyle(ButtonStyle.Link),
 			)
+		}
 
-		// Exécution de la commande
 		try {
 			const sql = 'UPDATE commands SET numberOfUses = numberOfUses + 1 WHERE name = ?'
 			const data = [commandName]
 			await bdd.execute(sql, data)
 
-			if (button.length === 0)
+			if (!button) {
 				return message.channel.send({
 					content: command.content,
 				})
+			}
 
 			return message.channel.send({
 				content: command.content,
 				components: [button],
 			})
 		} catch (error) {
-			message.reply({ content: 'Il y a eu une erreur en exécutant la commande 😬' })
+			console.error(error)
+			return message.reply({ content: 'Il y a eu une erreur en exécutant la commande 😬' })
 		}
 	}
 
-	// Partie citation
-	if (message.guild) {
-		// Répondre aux messages avec mention en utilisant ChatGPT
-		// Répondre émoji si @bot
-		if (message.mentions.users.has(client.user.id) && !message.mentions.repliedUser) {
-			if (client.config.others.openAiKey !== '') {
-				const chatgpt = new ChatGPTAPI({
-					apiKey: client.config.others.openAiKey,
-					completionParams: {
-						model: 'gpt-5',
-					},
-				})
+	// Mention bot
+	if (message.mentions.users.has(client.user.id) && !message.mentions.repliedUser) {
+		if (client.config.others.openAiKey !== '') {
+			const chatgpt = new ChatGPTAPI({
+				apiKey: client.config.others.openAiKey,
+				completionParams: {
+					model: 'gpt-5',
+				},
+			})
 
-				try {
-					const chatgptResponse = await chatgpt.sendMessage(message.content)
-					if (
-						chatgptResponse.text.includes('@everyone') ||
-						chatgptResponse.text.includes('@here')
-					)
-						return message.reply({
-							content: `Désolé, je ne peux pas mentionner ${message.guild.memberCount} personnes 😬`,
-						})
+			try {
+				const chatgptResponse = await chatgpt.sendMessage(messageContent)
 
-					if (chatgptResponse.text.length > 1960)
-						return message.reply({
-							content: `**[Réponse partielle]**\n\n${chatgptResponse.text.substr(
-								0,
-								1960,
-							)} [...]`,
-						})
-
-					return message.reply({ content: chatgptResponse.text })
-				} catch (error) {
-					console.error(error)
-
-					return message.reply({ content: 'Une erreur est survenue 😬' })
+				if (
+					chatgptResponse.text.includes('@everyone') ||
+					chatgptResponse.text.includes('@here')
+				) {
+					return message.reply({
+						content: `Désolé, je ne peux pas mentionner ${message.guild.memberCount} personnes 😬`,
+					})
 				}
+
+				if (chatgptResponse.text.length > 1960) {
+					return message.reply({
+						content: `**[Réponse partielle]**\n\n${chatgptResponse.text.slice(
+							0,
+							1960,
+						)} [...]`,
+					})
+				}
+
+				return message.reply({ content: chatgptResponse.text })
+			} catch (error) {
+				console.error(error)
+				return message.reply({ content: 'Une erreur est survenue 😬' })
 			}
 		}
+	}
 
-		// Regex pour match les liens Discord
-		const regexGlobal =
-			/<?https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})>?/g
-		const regex =
-			/<?https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})>?/
+	// Citations Discord
+	const regexGlobal =
+		/<?https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})>?/g
+	const regex =
+		/<?https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})>?/
 
-		// Suppression des lignes en citations, pour ne pas afficher la citation
-		const matches = message.content.match(regexGlobal)
-		if (!matches) return
+	const matches = messageContent.match(regexGlobal)
+	if (!matches) return
 
-		const validMessages = (
-			await Promise.all(
-				// Filtre les liens mennant vers une autre guild
-				// ou sur un salon n'existant pas sur la guild
-				matches
-					.reduce((acc, match) => {
-						const [, guildId, channelId, messageId] = regex.exec(match)
-						if (guildId !== message.guild.id) return acc
+	const validMessages = (
+		await Promise.all(
+			matches
+				.reduce((acc, match) => {
+					const result = regex.exec(match)
+					if (!result) return acc
 
-						const foundChannel = message.guild.channels.cache.get(channelId)
-						if (!foundChannel) return acc
+					const [, guildId, channelId, messageId] = result
+					if (guildId !== message.guild.id) return acc
 
-						// Ignore la citation si le lien est entouré de <>
-						if (match.startsWith('<') && match.endsWith('>')) return acc
-
-						acc.push({ messageId, foundChannel })
-
+					const foundChannel = message.guild.channels.cache.get(channelId)
+					if (!foundChannel || typeof foundChannel.messages?.fetch !== 'function') {
 						return acc
-					}, [])
-					// Fetch du message et retourne de celui-ci s'il existe
-					.map(async ({ messageId, foundChannel }) => {
-						const foundMessage = await foundChannel.messages
-							.fetch(messageId)
-							.catch(() => null)
-						// On ne fait pas la citation si le
-						// message n'a ni contenu écrit ni attachments
-						if (
-							!foundMessage ||
-							(!foundMessage.content && !foundMessage.attachments.size)
-						)
-							return
+					}
 
-						return foundMessage
-					}),
-			)
+					if (match.startsWith('<') && match.endsWith('>')) return acc
+
+					acc.push({ messageId, foundChannel })
+					return acc
+				}, [])
+				.map(async ({ messageId, foundChannel }) => {
+					const foundMessage = await foundChannel.messages
+						.fetch(messageId)
+						.catch(() => null)
+
+					if (
+						!foundMessage ||
+						(!foundMessage.content && !foundMessage.attachments.size)
+					) {
+						return null
+					}
+
+					return foundMessage
+				}),
 		)
-			// Suppression des messages invalides
-			.filter(Boolean)
+	).filter(Boolean)
 
-		const sentMessages = validMessages.map(validMessage => {
-			const embed = new EmbedBuilder()
-				.setColor('2F3136')
-				.setAuthor({
-					name: `${displayNameAndID(validMessage.member, validMessage.author)}`,
-					iconURL: validMessage.author.displayAvatarURL({ dynamic: true }),
-				})
-				.setFooter({
-					text: `Message posté le ${convertDate(validMessage.createdAt)}`,
-				})
+	const sentMessages = await Promise.all(
+		validMessages.map(async (validMessage) => {
+			const embed = new EmbedBuilder().setColor(0x2f3136).setAuthor({
+				name: displayNameAndID(validMessage.member, validMessage.author),
+				iconURL: validMessage.author.displayAvatarURL({ dynamic: true }),
+			})
+
+			const footerLines = [`Message posté le ${convertDate(validMessage.createdAt)}`]
+			let footerIconURL
 
 			const description = `${validMessage.content}\n[Aller au message](${validMessage.url}) - ${validMessage.channel}`
 
-			// Si la description dépasse la limite
-			// autorisée, les liens sont contenus dans des fields
 			if (description.length > 4096) {
-				embed.data.description = validMessage.content
-				embed.addFields([
+				embed.setDescription(validMessage.content)
+				embed.addFields(
 					{
 						name: 'Message',
 						value: `[Aller au message](${validMessage.url})`,
@@ -440,50 +638,55 @@ export default async (message, client) => {
 						value: validMessage.channel.toString(),
 						inline: true,
 					},
-				])
+				)
 			} else {
-				embed.data.description = description
+				embed.setDescription(description)
 			}
 
-			if (validMessage.editedAt)
-				embed.data.footer.text += `\nModifié le ${convertDate(validMessage.editedAt)}`
-
-			if (message.author !== validMessage.author) {
-				embed.data.footer.icon_url = message.author.displayAvatarURL({ dynamic: true })
-				embed.data.footer.text += `\nCité par ${displayNameAndID(
-					message.member,
-					message.author,
-				)} le ${convertDate(message.createdAt)}`
+			if (validMessage.editedAt) {
+				footerLines.push(`Modifié le ${convertDate(validMessage.editedAt)}`)
 			}
 
-			// Partie pour gérer les attachments
+			if (message.author.id !== validMessage.author.id) {
+				footerIconURL = message.author.displayAvatarURL({ dynamic: true })
+				footerLines.push(
+					`Cité par ${displayNameAndID(message.member, message.author)} le ${convertDate(
+						message.createdAt,
+					)}`,
+				)
+			}
+
+			embed.setFooter({
+				text: footerLines.join('\n'),
+				iconURL: footerIconURL,
+			})
+
 			const attachments = validMessage.attachments
-			if (attachments.size === 1 && isImage(attachments.first().name))
-				embed.data.image = { url: attachments.first().url }
-			else
-				attachments.forEach(attachment => {
+			if (attachments.size === 1 && isImage(attachments.first().name)) {
+				embed.setImage(attachments.first().url)
+			} else {
+				attachments.forEach((attachment) => {
 					const { name, type } = getFileInfos(attachment.name)
-					embed.addFields([
-						{
-							name: `Fichier ${type}`,
-							value: `[${name}](${attachment.url})`,
-							inline: true,
-						},
-					])
+					embed.addFields({
+						name: `Fichier ${type}`,
+						value: `[${name}](${attachment.url})`,
+						inline: true,
+					})
 				})
+			}
 
-			return message.channel.send({ embeds: [embed] })
-		})
+			return message.channel.send({ embeds: [embed] }).catch(() => null)
+		}),
+	)
 
-		// Si le message ne contient que un(des) lien(s),
-		// on supprime le message, ne laissant que les embeds
-		if (
-			!message.content.replace(regexGlobal, '').trim() &&
-			sentMessages.length === matches.length &&
-			!message.mentions.repliedUser
-		) {
-			client.cache.deleteMessagesID.add(message.id)
-			return message.delete()
-		}
+	const successfulSentMessages = sentMessages.filter(Boolean)
+
+	if (
+		!messageContent.replace(regexGlobal, '').trim() &&
+		successfulSentMessages.length === matches.length &&
+		!message.mentions.repliedUser
+	) {
+		client.cache.deleteMessagesID.add(message.id)
+		return message.delete().catch(() => null)
 	}
 }

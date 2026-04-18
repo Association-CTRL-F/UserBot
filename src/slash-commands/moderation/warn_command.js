@@ -1,56 +1,105 @@
-import { EmbedBuilder, ContextMenuCommandBuilder } from 'discord.js'
+import {
+	EmbedBuilder,
+	ContextMenuCommandBuilder,
+	ApplicationCommandType,
+	RESTJSONErrorCodes,
+	MessageFlags
+} from 'discord.js'
 
 export default {
-	contextMenu: new ContextMenuCommandBuilder().setName('warn_command').setType(3),
+	contextMenu: new ContextMenuCommandBuilder()
+		.setName('warn_command')
+		.setType(ApplicationCommandType.Message),
+
 	interaction: async (interaction, client) => {
-		if (!interaction.commandType === 2) return
+		if (interaction.commandType !== ApplicationCommandType.Message) return
 
-		// On diffère la réponse pour avoir plus de 3 secondes
-		await interaction.deferReply()
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
-		// Acquisition du membre
-		const member = interaction.guild.members.cache.get(interaction.targetMessage.author.id)
-		if (!member)
+		if (!interaction.guild?.available) {
 			return interaction.editReply({
-				content: "Je n'ai pas trouvé cet utilisateur, vérifie la mention ou l'ID 😕",
+				content: 'La guilde est indisponible pour le moment 😕',
 			})
+		}
+
+		const targetMessage = interaction.targetMessage
+		if (!targetMessage || !targetMessage.guild) {
+			return interaction.editReply({
+				content: "Je n'ai pas trouvé le message ciblé 😕",
+			})
+		}
+
+		// On ne peut pas warn un bot
+		if (targetMessage.author.bot) {
+			return interaction.editReply({
+				content: 'Tu ne peux pas avertir un bot 😕',
+			})
+		}
+
+		// Récupération du membre
+		const member = await interaction.guild.members
+			.fetch(targetMessage.author.id)
+			.catch(() => null)
+		if (!member) {
+			return interaction.editReply({
+				content:
+					"Je n'ai pas trouvé cet utilisateur, il n'est sans doute plus présent sur le serveur 😕",
+			})
+		}
 
 		// On ne peut pas se warn soi-même
-		if (member.user === interaction.user)
+		if (member.user.id === interaction.user.id) {
 			return interaction.editReply({
 				content: 'Tu ne peux pas te donner un avertissement 😕',
 			})
+		}
 
-		// Acquisition des bases de données
+		// Bases de données
 		const bdd = client.config.db.pools.userbot
-		if (!bdd)
-			return interaction.reply({
+		if (!bdd) {
+			return interaction.editReply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
-				ephemeral: true,
 			})
+		}
 
 		const bddModeration = client.config.db.pools.moderation
-		if (!bddModeration)
+		if (!bddModeration) {
 			return interaction.editReply({
 				content:
 					'Une erreur est survenue lors de la connexion à la base de données Moderation 😕',
-				ephemeral: true,
 			})
+		}
 
-		// Acquisition du salon de logs
-		const logsChannel = interaction.guild.channels.cache.get(
-			client.config.guild.channels.LOGS_BANS_CHANNEL_ID,
-		)
-		if (!logsChannel) return
+		// Lecture du message d'avertissement
+		let warnDM = ''
+		try {
+			const sqlSelectWarn = 'SELECT * FROM forms WHERE name = ?'
+			const dataSelectWarn = ['warn']
+			const [resultSelectWarn] = await bdd.execute(sqlSelectWarn, dataSelectWarn)
+
+			warnDM = resultSelectWarn?.[0]?.content ?? ''
+		} catch (error) {
+			console.error(error)
+			return interaction.editReply({
+				content:
+					"Une erreur est survenue lors de la récupération du message d'avertissement en base de données 😕",
+			})
+		}
+
+		if (!warnDM) {
+			return interaction.editReply({
+				content: "Le message d'avertissement est introuvable ou vide 😕",
+			})
+		}
 
 		// Création de l'avertissement en base de données
 		try {
 			const sqlCreate =
 				'INSERT INTO warnings_logs (discord_id, username, avatar, executor_id, executor_username, reason, preuve, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
 			const dataCreate = [
-				member ? member.user.id : interaction.targetUser,
-				member ? member.user.username : interaction.targetUser,
-				member ? member.user.avatar : null,
+				member.user.id,
+				member.user.username,
+				member.user.avatar ?? null,
 				interaction.user.id,
 				interaction.user.username,
 				'Salon commande-bot non respecté',
@@ -60,71 +109,51 @@ export default {
 
 			await bddModeration.execute(sqlCreate, dataCreate)
 		} catch (error) {
-			return interaction.reply({
+			console.error(error)
+			return interaction.editReply({
 				content:
 					"Une erreur est survenue lors de la création de l'avertissement en base de données 😕",
-				ephemeral: true,
 			})
 		}
 
-		if (member) {
-			// Lecture du message d'avertissement
-			let warnDM = ''
-			try {
-				const sqlSelectWarn = 'SELECT * FROM forms WHERE name = ?'
-				const dataSelectWarn = ['warn']
-				const [resultSelectWarn] = await bdd.execute(sqlSelectWarn, dataSelectWarn)
-				warnDM = resultSelectWarn[0].content
-			} catch (error) {
-				return interaction.reply({
-					content:
-						"Une erreur est survenue lors de la récupération du message d'avertissement en base de données 😕",
-					ephemeral: true,
-				})
+		// Envoi du message d'avertissement en message privé
+		const embedWarn = new EmbedBuilder()
+			.setColor('#C27C0E')
+			.setTitle('Avertissement')
+			.setDescription(warnDM)
+			.setAuthor({
+				name: interaction.guild.name,
+				iconURL: interaction.guild.iconURL({ dynamic: true }) ?? undefined,
+				url: interaction.guild.vanityURL ?? undefined,
+			})
+			.addFields({
+				name: 'Raison',
+				value: 'Les commandes relatives au bot doivent être utilisées dans le salon dédié sauf si elles sont nécessaires à la discussion en cours.',
+			})
+
+		let errorDM = ''
+		try {
+			await member.send({
+				embeds: [embedWarn],
+			})
+		} catch (error) {
+			if (error.code === RESTJSONErrorCodes.CannotSendMessagesToThisUser) {
+				errorDM = "\n\nℹ️ Le message privé n'a pas été envoyé car le membre les a bloqués"
+			} else {
+				console.error(error)
+				errorDM = "\n\nℹ️ Une erreur est survenue lors de l'envoi du message privé"
 			}
-
-			// Envoi du message d'avertissement en message privé
-			const embedWarn = new EmbedBuilder()
-				.setColor('#C27C0E')
-				.setTitle('Avertissement')
-				.setDescription(warnDM)
-				.setAuthor({
-					name: interaction.guild.name,
-					iconURL: interaction.guild.iconURL({ dynamic: true }),
-					url: interaction.guild.vanityURL,
-				})
-				.addFields([
-					{
-						name: 'Raison',
-						value: 'Les commandes relatives au bot doivent être utilisées dans le salon dédié sauf si elles sont nécessaires à la discussion en cours.',
-					},
-				])
-
-			let errorDM = ''
-			const DMMessage = await member
-				.send({
-					embeds: [embedWarn],
-				})
-				.catch(error => {
-					console.error(error)
-					errorDM =
-						"\n\nℹ️ Le message privé n'a pas été envoyé car le membre les a bloqué"
-				})
-
-			// Si au moins une erreur, throw
-			if (DMMessage instanceof Error)
-				throw new Error(
-					"L'envoi d'un message a échoué. Voir les logs précédents pour plus d'informations.",
-				)
-
-			interaction.targetMessage.delete()
-
-			// Message de confirmation
-			return interaction.editReply({
-				content: `⚠️ \`${
-					member ? member.user.tag : interaction.targetMessage.author.id
-				}\` a reçu un avertissement\n\nRaison : Salon commande-bot non respecté${errorDM}`,
-			})
 		}
+
+		// Suppression du message ciblé
+		await targetMessage.delete().catch((error) => {
+			if (error.code !== RESTJSONErrorCodes.UnknownMessage) {
+				console.error(error)
+			}
+		})
+
+		return interaction.editReply({
+			content: `⚠️ \`${member.user.tag}\` a reçu un avertissement\n\nRaison : Salon commande-bot non respecté${errorDM}`,
+		})
 	},
 }

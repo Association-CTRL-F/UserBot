@@ -1,19 +1,29 @@
-import { ActionRowBuilder, EmbedBuilder } from 'discord.js'
+import { EmbedBuilder, ChannelType, MessageFlags } from 'discord.js'
 
 export default {
 	data: {
 		name: 'bp',
 	},
 	interaction: async (modal, client) => {
+		await modal.deferReply({ flags: MessageFlags.Ephemeral })
+
 		// Acquisition du titre, de la description et du lien
 		const titre = modal.fields.getTextInputValue('bp-titre').trim()
 		const description = modal.fields.getTextInputValue('bp-description').trim()
 		const lien = modal.fields.getTextInputValue('bp-lien').trim()
 
 		// Acquisition du salon
-		const bpChannel = modal.guild.channels.cache.get(client.config.guild.channels.BP_CHANNEL_ID)
+		const bpChannel = modal.guild?.channels.cache.get(
+			client.config.guild.channels.BP_CHANNEL_ID,
+		)
 
-		// On prépare un embed avec un bouton de redirection
+		if (!bpChannel || !bpChannel.isTextBased()) {
+			return modal.editReply({
+				content: 'Impossible de trouver le salon des bons plans 😕',
+			})
+		}
+
+		// Préparation de l'embed
 		const embed = new EmbedBuilder()
 			.setColor('#1ABC9C')
 			.setTitle(titre)
@@ -24,12 +34,23 @@ export default {
 				text: `Bon-plan proposé par ${modal.user.tag}`,
 			})
 
-		const bpPosted = await bpChannel.send({ embeds: [embed] })
-		await bpPosted.crosspost()
+		try {
+			const bpPosted = await bpChannel.send({ embeds: [embed] })
 
-		return modal.reply({
-			content: 'Le bon-plan a bien été envoyé ! 👌',
-			ephemeral: true,
-		})
+			// Crosspost uniquement si c'est un salon d'annonces
+			if (bpChannel.type === ChannelType.GuildAnnouncement) {
+				await bpPosted.crosspost().catch(() => null)
+			}
+
+			return modal.editReply({
+				content: 'Le bon-plan a bien été envoyé ! 👌',
+			})
+		} catch (error) {
+			console.error(error)
+
+			return modal.editReply({
+				content: "Une erreur est survenue lors de l'envoi du bon-plan 😕",
+			})
+		}
 	},
 }

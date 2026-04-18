@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
 -- Host: 172.32.32.1:3306
--- Generation Time: Sep 02, 2023 at 07:05 PM
--- Server version: 11.0.3-MariaDB-1:11.0.3+maria~ubu2204
--- PHP Version: 8.2.9
+-- Generation Time: Apr 18, 2026 at 03:03 AM
+-- Server version: 12.0.2-MariaDB-ubu2404
+-- PHP Version: 8.2.29
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -131,6 +131,25 @@ CREATE TABLE `reminders` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `spam_reports`
+--
+
+CREATE TABLE `spam_reports` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `report_id` varchar(64) NOT NULL,
+  `guild_id` varchar(32) NOT NULL,
+  `user_id` varchar(32) NOT NULL,
+  `report_message_id` varchar(32) DEFAULT NULL,
+  `sanction_type` varchar(32) NOT NULL DEFAULT 'none',
+  `status` varchar(32) NOT NULL DEFAULT 'pending',
+  `created_at` int(10) UNSIGNED NOT NULL,
+  `handled_by` varchar(32) DEFAULT NULL,
+  `handled_at` int(10) UNSIGNED DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `vocal`
 --
 
@@ -152,21 +171,6 @@ CREATE TABLE `votes` (
   `vote` varchar(255) NOT NULL,
   `createdAt` varchar(255) NOT NULL,
   `editedAt` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `warnings`
---
-
-CREATE TABLE `warnings` (
-  `id` int(11) NOT NULL,
-  `discordID` varchar(255) NOT NULL,
-  `warnedBy` varchar(255) NOT NULL,
-  `warnReason` text NOT NULL,
-  `warnPreuve` text DEFAULT NULL,
-  `warnedAt` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -218,6 +222,13 @@ ALTER TABLE `reminders`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `spam_reports`
+--
+ALTER TABLE `spam_reports`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_spam_reports_report_id` (`report_id`);
+
+--
 -- Indexes for table `vocal`
 --
 ALTER TABLE `vocal`
@@ -227,12 +238,6 @@ ALTER TABLE `vocal`
 -- Indexes for table `votes`
 --
 ALTER TABLE `votes`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `warnings`
---
-ALTER TABLE `warnings`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -282,6 +287,12 @@ ALTER TABLE `reminders`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `spam_reports`
+--
+ALTER TABLE `spam_reports`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `vocal`
 --
 ALTER TABLE `vocal`
@@ -291,12 +302,6 @@ ALTER TABLE `vocal`
 -- AUTO_INCREMENT for table `votes`
 --
 ALTER TABLE `votes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `warnings`
---
-ALTER TABLE `warnings`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 

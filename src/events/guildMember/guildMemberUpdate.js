@@ -4,22 +4,33 @@ import ms from 'ms'
 
 export default async (oldGuildMember, newGuildMember, client) => {
 	const isBot = oldGuildMember.user.bot || newGuildMember.user.bot
-	if (isBot) return
+	if (isBot || !newGuildMember.guild.available) return
 
 	if (oldGuildMember.pending === true && newGuildMember.pending === false) {
 		const memberRole = client.config.guild.roles.MEMBER_ROLE_ID
 		const joinRole = client.config.guild.roles.JOIN_ROLE_ID
 
-		await newGuildMember.roles.add(memberRole)
-		await newGuildMember.roles.add(joinRole)
+		if (!memberRole || !joinRole) return
 
-		setTimeout(
-			() =>
-				newGuildMember.roles.remove(joinRole).catch(error => {
-					if (error.code !== RESTJSONErrorCodes.UnknownMember) throw error
-				}),
-			ms(client.config.guild.TIMEOUT_JOIN),
-		)
+		try {
+			await Promise.all([
+				newGuildMember.roles.add(memberRole),
+				newGuildMember.roles.add(joinRole),
+			])
+		} catch (error) {
+			if (error.code !== RESTJSONErrorCodes.UnknownMember) {
+				console.error(error)
+			}
+			return
+		}
+
+		globalThis.setTimeout(() => {
+			newGuildMember.roles.remove(joinRole).catch((error) => {
+				if (error.code !== RESTJSONErrorCodes.UnknownMember) {
+					console.error(error)
+				}
+			})
+		}, ms(client.config.guild.TIMEOUT_JOIN))
 	}
 
 	modifyWrongUsernames(newGuildMember).catch(() => null)

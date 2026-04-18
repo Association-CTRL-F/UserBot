@@ -1,5 +1,3 @@
-/* eslint-disable no-case-declarations */
-/* eslint-disable default-case */
 import {
 	SlashCommandBuilder,
 	ModalBuilder,
@@ -8,171 +6,184 @@ import {
 	TextInputStyle,
 	EmbedBuilder,
 	RESTJSONErrorCodes,
+	ChannelType,
+	MessageFlags
 } from 'discord.js'
-import fetch from 'node-fetch'
 
 export default {
 	data: new SlashCommandBuilder()
 		.setName('bp')
 		.setDescription('Crée un bon-plan')
-		.addSubcommand(subcommand =>
+		.addSubcommand((subcommand) =>
 			subcommand.setName('create').setDescription('Crée un nouveau bon-plan'),
 		)
-		.addSubcommand(subcommand =>
+		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('end')
 				.setDescription('Clôture un bon-plan')
-				.addStringOption(option =>
+				.addStringOption((option) =>
 					option
 						.setName('id')
 						.setDescription('ID du bon-plan à clôturer')
 						.setRequired(true),
 				),
 		)
-		.addSubcommand(subcommand =>
+		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('del')
 				.setDescription('Supprime un bon-plan')
-				.addStringOption(option =>
+				.addStringOption((option) =>
 					option
 						.setName('id')
 						.setDescription('ID du bon-plan à supprimer')
 						.setRequired(true),
 				),
 		),
+
 	interaction: async (interaction, client) => {
+		const subcommand = interaction.options.getSubcommand()
+
+		// Create : on affiche juste la modal
+		if (subcommand === 'create') {
+			const modalCreate = new ModalBuilder()
+				.setCustomId('bp')
+				.setTitle('Création de bon-plan')
+				.addComponents(
+					new ActionRowBuilder().addComponents(
+						new TextInputBuilder()
+							.setCustomId('bp-titre')
+							.setLabel('Donnez un titre à votre bon-plan')
+							.setStyle(TextInputStyle.Short)
+							.setMinLength(1)
+							.setRequired(true),
+					),
+					new ActionRowBuilder().addComponents(
+						new TextInputBuilder()
+							.setCustomId('bp-description')
+							.setLabel('Donnez une description courte du bon-plan')
+							.setStyle(TextInputStyle.Short)
+							.setMinLength(1)
+							.setRequired(true),
+					),
+					new ActionRowBuilder().addComponents(
+						new TextInputBuilder()
+							.setCustomId('bp-lien')
+							.setLabel('Donnez le lien du bon-plan')
+							.setStyle(TextInputStyle.Short)
+							.setMinLength(1)
+							.setRequired(true),
+					),
+				)
+
+			return interaction.showModal(modalCreate)
+		}
+
+		// End / Del : on diffère la réponse
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+
+		if (!interaction.guild?.available) {
+			return interaction.editReply({
+				content: 'La guilde est indisponible pour le moment 😕',
+			})
+		}
+
 		// Acquisition du salon
 		const bpChannel = interaction.guild.channels.cache.get(
 			client.config.guild.channels.BP_CHANNEL_ID,
 		)
 
-		switch (interaction.options.getSubcommand()) {
-			// Créer un bon-plan
-			case 'create':
-				const modalCreate = new ModalBuilder()
-					.setCustomId('bp')
-					.setTitle('Création de bon-plan')
-					.addComponents(
-						new ActionRowBuilder().addComponents(
-							new TextInputBuilder()
-								.setCustomId('bp-titre')
-								.setLabel('Donnez un titre à votre bon-plan')
-								.setStyle(TextInputStyle.Short)
-								.setMinLength(1)
-								.setRequired(true),
-						),
-					)
-					.addComponents(
-						new ActionRowBuilder().addComponents(
-							new TextInputBuilder()
-								.setCustomId('bp-description')
-								.setLabel('Donnez une description courte du bon-plan')
-								.setStyle(TextInputStyle.Short)
-								.setMinLength(1)
-								.setRequired(true),
-						),
-					)
-					.addComponents(
-						new ActionRowBuilder().addComponents(
-							new TextInputBuilder()
-								.setCustomId('bp-lien')
-								.setLabel('Donnez le lien du bon-plan')
-								.setStyle(TextInputStyle.Short)
-								.setMinLength(1)
-								.setRequired(true),
-						),
-					)
+		if (!bpChannel || !bpChannel.isTextBased()) {
+			return interaction.editReply({
+				content: 'Impossible de trouver le salon des bons plans 😕',
+			})
+		}
 
-				return interaction.showModal(modalCreate)
+		const receivedId = interaction.options.getString('id')
+		const matchId = receivedId?.match(/^\d{17,19}$/)
 
+		if (!matchId) {
+			return interaction.editReply({
+				content: "Tu ne m'as pas donné un ID valide 😕",
+			})
+		}
+
+		// Fetch du message
+		const targetMessage = await bpChannel.messages.fetch(matchId[0]).catch((error) => {
+			if (error.code === RESTJSONErrorCodes.UnknownMessage) {
+				return null
+			}
+
+			throw error
+		})
+
+		if (!targetMessage) {
+			return interaction.editReply({
+				content: `Je n'ai pas trouvé ce message dans le salon <#${bpChannel.id}> 😕`,
+			})
+		}
+
+		switch (subcommand) {
 			// Clôturer un bon-plan
-			case 'end':
-				const receivedIDEnd = interaction.options.getString('id')
-				const matchIDEnd = receivedIDEnd.match(/^(\d{17,19})$/)
-				if (!matchIDEnd)
-					return interaction.reply({
-						content: "Tu ne m'as pas donné un ID valide 😕",
-						ephemeral: true,
-					})
+			case 'end': {
+				const sourceEmbed = targetMessage.embeds?.[0]
 
-				// Fetch du message
-				const messageEnd = await bpChannel.messages.fetch(matchIDEnd[0]).catch(error => {
-					if (error.code === RESTJSONErrorCodes.UnknownMessage) {
-						interaction.reply({
-							content: `Je n'ai pas trouvé ce message dans le salon <#${bpChannel.id}> 😕`,
-							ephemeral: true,
-						})
-
-						return error
-					}
-
-					throw error
-				})
-
-				// Handle des mauvais cas
-				if (messageEnd instanceof Error) return
-				if (
-					!messageEnd.embeds[0] ||
-					!messageEnd.embeds[0].data.footer.text.startsWith('Bon-plan')
-				)
-					return interaction.reply({
+				if (!sourceEmbed?.footer?.text?.startsWith('Bon-plan')) {
+					return interaction.editReply({
 						content: "Le message initial n'est pas un bon-plan 😕",
-						ephemeral: true,
 					})
+				}
 
-				// Clôture du bon-plan
+				const endedTitle = sourceEmbed.title?.startsWith('[TERMINÉ] ')
+					? sourceEmbed.title
+					: `[TERMINÉ] ${sourceEmbed.title ?? 'Bon-plan'}`
+
 				const embedEdit = new EmbedBuilder()
 					.setColor('#8DA1AC')
-					.setTitle('[TERMINÉ] ' + messageEnd.embeds[0].data.title)
-					.setURL(messageEnd.embeds[0].data.url)
-					.setDescription(messageEnd.embeds[0].data.description)
+					.setTitle(endedTitle)
+					.setURL(sourceEmbed.url ?? null)
+					.setDescription(sourceEmbed.description ?? null)
 					.setFooter({
 						iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
-						text: `Bon-plan proposé par ${interaction.user.tag}`,
+						text: `Bon-plan clôturé par ${interaction.user.tag}`,
 					})
 
-				await messageEnd.edit({
+				if (sourceEmbed.author) {
+					embedEdit.setAuthor({
+						name: sourceEmbed.author.name,
+						iconURL: sourceEmbed.author.iconURL ?? undefined,
+						url: sourceEmbed.author.url ?? undefined,
+					})
+				}
+
+				if (sourceEmbed.thumbnail?.url) {
+					embedEdit.setThumbnail(sourceEmbed.thumbnail.url)
+				}
+
+				if (sourceEmbed.image?.url) {
+					embedEdit.setImage(sourceEmbed.image.url)
+				}
+
+				if (sourceEmbed.fields?.length) {
+					embedEdit.addFields(sourceEmbed.fields)
+				}
+
+				await targetMessage.edit({
 					embeds: [embedEdit],
 				})
 
-				return interaction.reply({
+				return interaction.editReply({
 					content: 'Le bon-plan a bien été clôturé 👌',
-					ephemeral: true,
 				})
+			}
 
 			// Supprimer un bon-plan
-			case 'del':
-				const receivedIDDel = interaction.options.getString('id')
-				const matchIDDel = receivedIDDel.match(/^(\d{17,19})$/)
-				if (!matchIDDel)
-					return interaction.reply({
-						content: "Tu ne m'as pas donné un ID valide 😕",
-						ephemeral: true,
-					})
+			case 'del': {
+				await targetMessage.delete()
 
-				// Fetch du message
-				const messageDel = await bpChannel.messages.fetch(matchIDDel[0]).catch(error => {
-					if (error.code === RESTJSONErrorCodes.UnknownMessage) {
-						interaction.reply({
-							content: `Je n'ai pas trouvé ce message dans le salon <#${bpChannel.id}> 😕`,
-							ephemeral: true,
-						})
-
-						return error
-					}
-
-					throw error
-				})
-
-				// Handle des mauvais cas
-				if (messageDel instanceof Error) return
-
-				await messageDel.delete()
-
-				return interaction.reply({
+				return interaction.editReply({
 					content: 'Le bon-plan a bien été supprimé 👌',
-					ephemeral: true,
 				})
+			}
 		}
 	},
 }

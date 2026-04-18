@@ -1,26 +1,45 @@
 import { readdir } from 'fs/promises'
 import { removeFileExtension } from '../util/util.js'
 
-export default async client => {
-	// Dossier des events
-	const eventsDir = (await readdir('./src/events')).filter(dir => !dir.endsWith('.js'))
+export default async (client) => {
+	// Dossier des catégories d'events
+	const eventEntries = await readdir('./src/events', { withFileTypes: true })
 
-	// Pour chaque catégorie d'events
-	eventsDir.forEach(async eventCategory => {
-		// Acquisition des events
-		const events = await readdir(`./src/events/${eventCategory}`)
+	const eventCategories = eventEntries
+		.filter((entry) => entry.isDirectory())
+		.map((entry) => entry.name)
 
-		// Pour chaque event, on l'acquérit et on le charge
-		Promise.all(
-			events.map(async eventFile => {
-				const { default: execute, once } = await import(
-					`../events/${eventCategory}/${eventFile}`
-				)
-				const eventName = removeFileExtension(eventFile)
+	await Promise.all(
+		eventCategories.map(async (eventCategory) => {
+			// Acquisition des fichiers d'events de la catégorie
+			const eventFileEntries = await readdir(`./src/events/${eventCategory}`, {
+				withFileTypes: true,
+			})
 
-				if (once) return client.once(eventName, (...args) => execute(...args, client))
-				return client.on(eventName, (...args) => execute(...args, client))
-			}),
-		)
-	})
+			const eventFiles = eventFileEntries
+				.filter((entry) => entry.isFile() && entry.name.endsWith('.js'))
+				.map((entry) => entry.name)
+
+			await Promise.all(
+				eventFiles.map(async (eventFile) => {
+					const eventModule = await import(`../events/${eventCategory}/${eventFile}`)
+					const execute = eventModule.default
+					const once = eventModule.once
+					const eventName = removeFileExtension(eventFile)
+
+					if (typeof execute !== 'function') {
+						throw new Error(
+							`L'event "${eventFile}" dans "${eventCategory}" n'exporte pas de fonction par défaut.`,
+						)
+					}
+
+					if (once) {
+						client.once(eventName, (...args) => execute(...args, client))
+					} else {
+						client.on(eventName, (...args) => execute(...args, client))
+					}
+				}),
+			)
+		}),
+	)
 }

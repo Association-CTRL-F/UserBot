@@ -1,11 +1,10 @@
 import { Client, Collection, GatewayIntentBits, Partials } from 'discord.js'
 import { pool } from './util.js'
-import { readFileSync } from 'fs'
-import { readFile } from 'fs/promises'
+import { readFileSync } from 'node:fs'
+import { readFile } from 'node:fs/promises'
 
-const { version } = JSON.parse(readFileSync('./package.json'))
+const { version } = JSON.parse(readFileSync('./package.json', 'utf8'))
 
-// Création du client et de ses propriétés
 export default async () => {
 	const client = new Client({
 		partials: [Partials.GuildMember, Partials.Message, Partials.Reaction, Partials.Channel],
@@ -30,8 +29,15 @@ export default async () => {
 	client.cooldowns = new Collection()
 
 	// Lire le fichier config.json
-	let configGuild = await readFile('./config/env/config.json', (err, data) => data)
-	configGuild = JSON.parse(configGuild)
+	let configGuild = null
+	try {
+		const configRaw = await readFile('./config/env/config.json', 'utf8')
+		configGuild = JSON.parse(configRaw)
+	} catch (error) {
+		console.error('Erreur lors de la lecture de ./config/env/config.json')
+		console.error(error)
+		throw error
+	}
 
 	client.config = {
 		timezone: configGuild.timezone,
@@ -43,7 +49,7 @@ export default async () => {
 		bot: {
 			token: process.env.DISCORD_TOKEN,
 			richPresenceText: configGuild.richPresenceText,
-			version: version,
+			version,
 		},
 		guild: configGuild.guild,
 		others: {
@@ -53,18 +59,20 @@ export default async () => {
 
 	// Création des pools
 	try {
-		const POOL_urlsAPI = await pool({
-			...client.config.db,
-			dbName: process.env.DB_NAME_URLS_API,
-		})
-		const POOL_moderation = await pool({
-			...client.config.db,
-			dbName: process.env.DB_NAME_MODERATION,
-		})
-		const POOL_userbot = await pool({
-			...client.config.db,
-			dbName: process.env.DB_NAME_USERBOT,
-		})
+		const [POOL_urlsAPI, POOL_moderation, POOL_userbot] = await Promise.all([
+			pool({
+				...client.config.db,
+				dbName: process.env.DB_NAME_URLS_API,
+			}),
+			pool({
+				...client.config.db,
+				dbName: process.env.DB_NAME_MODERATION,
+			}),
+			pool({
+				...client.config.db,
+				dbName: process.env.DB_NAME_USERBOT,
+			}),
+		])
 
 		client.config.db.pools = {
 			urlsAPI: POOL_urlsAPI,
@@ -72,7 +80,9 @@ export default async () => {
 			userbot: POOL_userbot,
 		}
 	} catch (error) {
+		console.error('Erreur lors de la création des pools de base de données')
 		console.error(error)
+		throw error
 	}
 
 	client.cache = {
@@ -83,7 +93,7 @@ export default async () => {
 		conseilsUsersID: new Set(),
 		// Domaines blacklistés
 		blacklistedDomains: new Set(),
-		// Raison de mddification de rôles staff
+		// Raison de modification de rôles staff
 		staffRolesReason: new Set(),
 	}
 

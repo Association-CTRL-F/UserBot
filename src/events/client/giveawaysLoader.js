@@ -1,150 +1,172 @@
-/* eslint-disable no-await-in-loop */
-import { EmbedBuilder } from 'discord.js'
+import { EmbedBuilder, Collection } from 'discord.js'
 import { pluralize } from '../../util/util.js'
 
 export default async (bdd, guild) => {
 	// Acquisition des giveaways depuis la base de données
 	let giveaways = []
+
 	try {
 		const sql = 'SELECT * FROM giveaways'
 		const [result] = await bdd.execute(sql)
-		giveaways = result
+		giveaways = result ?? []
 	} catch (error) {
-		return console.error(error)
+		console.error(error)
+		return
 	}
 
-	if (giveaways)
-		giveaways.forEach(async giveaway => {
-			// Vérification si le tirage est déjà lancé
-			if (giveaway.started === 0 || giveaway.ended === 1) return
+	if (!giveaways.length) return
 
-			const sentMessage = await guild.channels.cache
-				.get(giveaway.channel)
-				.messages.fetch(giveaway.messageId)
-				.catch(() => false)
+	for (const giveaway of giveaways) {
+		// Vérification si le tirage est déjà lancé
+		if (giveaway.started === 0 || giveaway.ended === 1) continue
 
-			if (!sentMessage) {
-				try {
-					const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
-					const data = [1, giveaway.id]
-					await bdd.execute(sql, data)
-				} catch (error) {
-					return console.log(error)
-				}
+		const giveawayChannel = guild.channels.cache.get(giveaway.channel)
+		if (!giveawayChannel || !giveawayChannel.isTextBased()) {
+			try {
+				const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
+				const data = [1, giveaway.id]
+				await bdd.execute(sql, data)
+			} catch (error) {
+				console.error(error)
+			}
+			continue
+		}
+
+		const sentMessage = await giveawayChannel.messages
+			.fetch(giveaway.messageId)
+			.catch(() => null)
+
+		if (!sentMessage) {
+			try {
+				const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
+				const data = [1, giveaway.id]
+				await bdd.execute(sql, data)
+			} catch (error) {
+				console.error(error)
+			}
+			continue
+		}
+
+		const organisator = await guild.members.fetch(giveaway.hostedBy).catch(() => null)
+
+		const delayMs = Math.max(0, (giveaway.timestampEnd - Math.round(Date.now() / 1000)) * 1000)
+
+		const timeout = globalThis.setTimeout(async () => {
+			let excludedIds = giveaway.excludedIds ?? ''
+			let winnersTirageString = ''
+
+			const excludedIdsArray = excludedIds
+				.split(',')
+				.map((id) => id.trim())
+				.filter(Boolean)
+
+			const reaction = sentMessage.reactions.cache.get('🎉')
+
+			let usersReactions = new Collection()
+			if (reaction) {
+				usersReactions = await reaction.users.fetch().catch((error) => {
+					console.error(error)
+					return new Collection()
+				})
+			}
+
+			const eligibleUsers = usersReactions.filter(
+				(user) => !user.bot && !excludedIdsArray.includes(user.id),
+			)
+
+			const winners = []
+			let winnersCount = 0
+
+			while (winnersCount < giveaway.winnersCount) {
+				const winnerTirage = eligibleUsers.random()
+				if (!winnerTirage) break
+
+				winners.push(winnerTirage)
+				excludedIdsArray.push(winnerTirage.id)
+				eligibleUsers.delete(winnerTirage.id)
+				winnersCount += 1
+			}
+
+			excludedIds = excludedIdsArray.join(',')
+			winnersTirageString = winners.map((winner) => `${winner}`).join(', ')
+
+			try {
+				const sql = 'UPDATE giveaways SET excludedIds = ?, ended = ? WHERE id = ?'
+				const data = [excludedIds, 1, giveaway.id]
+				await bdd.execute(sql, data)
+			} catch (error) {
+				console.error(error)
+				return
+			}
+
+			// Modification de l'embed
+			const embedWin = new EmbedBuilder()
+				.setColor(0xbb2528)
+				.setTitle('🎁 GIVEAWAY 🎁')
+				.addFields(
+					{
+						name: 'Organisateur',
+						value: organisator
+							? organisator.user.toString()
+							: `<@${giveaway.hostedBy}>`,
+					},
+					{
+						name: 'Prix',
+						value: giveaway.prize,
+					},
+				)
+
+			if (!winners.length) {
+				embedWin.addFields({
+					name: '0 gagnant',
+					value: 'Pas de participants',
+				})
+
+				await sentMessage.edit({ embeds: [embedWin] }).catch(console.error)
+
+				await sentMessage
+					.reply({
+						content: '🎉 Giveaway terminé, aucun participant enregistré !',
+					})
+					.catch(console.error)
 
 				return
 			}
 
-			const organisator = await guild.members.fetch(giveaway.hostedBy)
+			embedWin.addFields({
+				name: pluralize('gagnant', winnersCount),
+				value: winnersTirageString,
+			})
 
-			const timeout = setTimeout(
-				async () => {
-					let excludedIds = giveaway.excludedIds
-					let winnersTirageString = ''
-					let usersReactions = {}
-
-					try {
-						usersReactions = await sentMessage.reactions.cache.get('🎉').users.fetch()
-					} catch (error) {
-						return console.log(error)
-					}
-
-					const excludedIdsArray = giveaway.excludedIds.split(',')
-
-					let i = 0
-					if (usersReactions.size > 0) {
-						while (i < giveaway.winnersCount) {
-							const winnerTirage = await usersReactions
-								.filter(user => !user.bot && !excludedIdsArray.includes(user.id))
-								.random()
-
-							if (!winnerTirage) break
-
-							winnersTirageString = winnersTirageString.concat(
-								' ',
-								`${winnerTirage},`,
-							)
-							excludedIds = excludedIds.concat(',', winnerTirage.id)
-							usersReactions.sweep(user => user.id === winnerTirage.id)
-
-							try {
-								const sql = 'UPDATE giveaways SET excludedIds = ? WHERE id = ?'
-								const data = [excludedIds, giveaway.id]
-								await bdd.execute(sql, data)
-							} catch (error) {
-								return console.log(error)
-							}
-
-							i += 1
-						}
-
-						winnersTirageString = winnersTirageString.trim().slice(0, -1)
-					}
-
-					// Modification de l'embed
-					const embedWin = new EmbedBuilder()
-						.setColor('#BB2528')
-						.setTitle('🎁 GIVEAWAY 🎁')
-						.addFields([
-							{
-								name: 'Organisateur',
-								value: organisator.user.toString(),
-							},
-							{
-								name: 'Prix',
-								value: giveaway.prize,
-							},
-						])
-
-					try {
-						const sql = 'UPDATE giveaways SET ended = ? WHERE id = ?'
-						const data = [1, giveaway.id]
-						await bdd.execute(sql, data)
-					} catch (error) {
-						return console.log(error)
-					}
-
-					if (winnersTirageString === '' || !usersReactions) {
-						embedWin.fields.push({
-							name: '0 gagnant',
-							value: 'Pas de participants',
-						})
-
-						await sentMessage.edit({ embeds: [embedWin] })
-
-						return sentMessage.reply({
-							content: `🎉 Giveaway terminé, aucun participant enregistré !`,
-						})
-					}
-
-					embedWin.fields.push({
-						name: pluralize('gagnant', i),
-						value: winnersTirageString,
-					})
-
-					if (i < giveaway.winnersCount)
-						embedWin.description =
-							'Le nombre de participants était inférieur au nombre de gagnants défini.'
-
-					await sentMessage.edit({ embeds: [embedWin] })
-
-					return i > 1
-						? sentMessage.reply({
-								content: `🎉 Félicitations à nos gagnants : ${winnersTirageString} !`,
-						  })
-						: sentMessage.reply({
-								content: `🎉 Félicitations à notre gagnant : ${winnersTirageString} !`,
-						  })
-				},
-				(giveaway.timestampEnd - Math.round(Date.now() / 1000)) * 1000,
-			)
-
-			try {
-				const sql = 'UPDATE giveaways SET timeoutId = ? WHERE id = ?'
-				const data = [Number(timeout), giveaway.id]
-				await bdd.execute(sql, data)
-			} catch (error) {
-				return console.log(error)
+			if (winnersCount < giveaway.winnersCount) {
+				embedWin.setDescription(
+					'Le nombre de participants était inférieur au nombre de gagnants défini.',
+				)
 			}
-		})
+
+			await sentMessage.edit({ embeds: [embedWin] }).catch(console.error)
+
+			if (winnersCount > 1) {
+				await sentMessage
+					.reply({
+						content: `🎉 Félicitations à nos gagnants : ${winnersTirageString} !`,
+					})
+					.catch(console.error)
+			} else {
+				await sentMessage
+					.reply({
+						content: `🎉 Félicitations à notre gagnant : ${winnersTirageString} !`,
+					})
+					.catch(console.error)
+			}
+		}, delayMs)
+
+		try {
+			const sql = 'UPDATE giveaways SET timeoutId = ? WHERE id = ?'
+			const data = [Number(timeout), giveaway.id]
+			await bdd.execute(sql, data)
+		} catch (error) {
+			console.error(error)
+		}
+	}
 }

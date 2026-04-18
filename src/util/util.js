@@ -1,185 +1,155 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable max-len */
+import mysql from 'mysql2/promise'
 
-import { GuildMember, verifyString, Client, User } from 'discord.js'
-import mysql from 'mysql2'
+const DEFAULT_TIMEZONE = process.env.TIMEZONE || 'Europe/Paris'
+
+const ensureString = (value) => {
+	if (typeof value !== 'string') {
+		throw new TypeError('Expected a string')
+	}
+
+	return value
+}
+
+const formatDuration = (totalSeconds, { withSeconds = true } = {}) => {
+	const safeSeconds = Math.max(0, Math.floor(totalSeconds))
+
+	const days = Math.floor(safeSeconds / 86400)
+	const hours = Math.floor((safeSeconds % 86400) / 3600)
+	const minutes = Math.floor((safeSeconds % 3600) / 60)
+	const seconds = safeSeconds % 60
+
+	const parts = []
+
+	if (days) parts.push(pluralize('jour', days))
+	if (hours) parts.push(pluralize('heure', hours))
+	if (minutes) parts.push(pluralize('minute', minutes))
+	if (withSeconds && seconds) parts.push(pluralize('seconde', seconds))
+
+	return parts.join(' ')
+}
 
 /**
  * Gère l'ajout de "s" à la fin d'un mot en fonction de la quantité
- * @param {string} word mot
- * @param {number} quantity quantité
- * @param {boolean} isAlwaysPlural si le mot est toujours au pluriel ou non
- * @returns un string vide si la quantité est nulle, sinon le mot avec la quantité
- * @example pluralize(année, 4) => '4 années'
- * 			pluralize(année, 1) => '1 année'
- * 			pluralize(pomme, 0) => ''
- * 			pluralize(mois, 4, true) => '4 mois'
+ * @param {string} word
+ * @param {number} quantity
+ * @param {boolean} isAlwaysPlural
+ * @returns {string}
  */
 export const pluralize = (word, quantity, isAlwaysPlural = false) => {
 	if (quantity === 0) return ''
-	else if (isAlwaysPlural) return `${quantity} ${word}`
+
+	if (isAlwaysPlural) return `${quantity} ${word}`
+
 	return `${quantity} ${word}${quantity > 1 ? 's' : ''}`
 }
 
 /**
  * Gère l'ajout de "s" à la fin d'un mot en fonction de la quantité
- * @param {string} word mot
- * @param {number} quantity quantité
- * @param {boolean} isAlwaysPlural si le mot est toujours au pluriel ou non
- * @returns un string vide si la quantité est nulle, sinon le mot sans la quantité
- * @example pluralize(année, 4) => 'années'
- * 			pluralize(année, 1) => 'année'
- * 			pluralize(pomme, 0) => ''
- * 			pluralize(mois, 4, true) => 'mois'
+ * sans inclure la quantité dans le résultat
+ * @param {string} word
+ * @param {number} quantity
+ * @param {boolean} isAlwaysPlural
+ * @returns {string}
  */
 export const pluralizeWithoutQuantity = (word, quantity, isAlwaysPlural = false) => {
 	if (quantity === 0) return ''
-	else if (isAlwaysPlural) return `${quantity} ${word}s`
+
+	if (isAlwaysPlural) return word
+
 	return `${word}${quantity > 1 ? 's' : ''}`
 }
 
 /**
- * Converti la date sous un format DD/MM/YYYY HH:MM:SS
- * @param {Date} date
- * @returns date sous un format DD/MM/YYYY HH:MM:SS
- * @example convertDate(new Date('15 Nov 2020 14:24:39')) => '15/11/2020 14:24:39'
+ * Convertit la date au format lisible FR
+ * @param {Date | number | string} date
+ * @returns {string}
  */
-export const convertDate = date =>
+export const convertDate = (date) =>
 	new Intl.DateTimeFormat('fr-FR', {
-		timeZone: process.env.TIMEZONE,
+		timeZone: DEFAULT_TIMEZONE,
 		year: 'numeric',
 		month: 'long',
 		day: '2-digit',
 		hour: '2-digit',
 		minute: '2-digit',
-	}).format(date)
+		second: '2-digit',
+	}).format(new Date(date))
 
 /**
- * Converti la date sous un format Y années M mois D jours H heures M minutes
- * @param {Date} date
- * @returns date sous un format Y années M mois D jours H heures M minutes ou "Il y a moins d'une minute"
- * @example diffDate(new Date('26 Oct 2015 12:24:29')) => '5 années 20 jours 2 heures 19 minutes'
+ * Retourne le temps écoulé depuis une date
+ * @param {Date | number | string} date
+ * @returns {string}
  */
-export const diffDate = date => {
-	const diff = new Date() - date
+export const diffDate = (date) => {
+	const diff = Date.now() - new Date(date).getTime()
+
 	const years = Math.floor(diff / (1000 * 60 * 60 * 24 * 30.4375 * 12))
 	const months = Math.floor((diff / (1000 * 60 * 60 * 24 * 30.4375)) % 12)
 	const days = Math.floor(((diff / (1000 * 60 * 60 * 24)) % 365.25) % 30.4375)
 	const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
 	const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
 
-	const total = []
-	if (years) total.push(pluralize('année', years))
-	if (months) total.push(pluralize('mois', months, true))
-	if (days) total.push(pluralize('jour', days))
-	if (hours) total.push(pluralize('heure', hours))
-	if (minutes) total.push(pluralize('minute', minutes))
+	const parts = []
 
-	if (!total.length) return "Il y a moins d'une minute"
+	if (years) parts.push(pluralize('année', years))
+	if (months) parts.push(pluralize('mois', months, true))
+	if (days) parts.push(pluralize('jour', days))
+	if (hours) parts.push(pluralize('heure', hours))
+	if (minutes) parts.push(pluralize('minute', minutes))
 
-	return total.join(' ')
+	return parts.length ? parts.join(' ') : "Il y a moins d'une minute"
 }
 
 /**
- * Converti un nombre de millisecondes au format J jours H heures M minutes
- * @param {Number} msInput nombre de millisecondes à convertir
- * @returns nombre de millisecondes au format J jours H heures M minutes
- * @example convertMsToString(123) => '2 heures 3 minutes'
+ * Convertit des millisecondes au format lisible
+ * @param {number} msInput
+ * @returns {string}
  */
-export const convertMsToString = msInput => {
-	const date = new Date(0, 0, 0, 0, 0, 0, msInput)
-	const days = date.getDay()
-	const hours = date.getHours()
-	const minutes = date.getMinutes()
-	const seconds = date.getSeconds()
-
-	const total = []
-	if (days) total.push(pluralize('jour', days))
-	if (hours) total.push(pluralize('heure', hours))
-	if (minutes) total.push(pluralize('minute', minutes))
-	if (seconds) total.push(pluralize('seconde', seconds))
-
-	return total.join(' ')
-}
+export const convertMsToString = (msInput) => formatDuration(msInput / 1000)
 
 /**
- * Converti un nombre de secondes au format J jours H heures M minutes S secondes
- * @param {Number} secondsInput nombre de secondes à convertir
- * @returns nombre de secondes au format J jours H heures M minutes S secondes
- * @example convertSecondsToString(8590) => '2 heures 23 minutes 10 secondes'
+ * Convertit des secondes au format lisible
+ * @param {number} secondsInput
+ * @returns {string}
  */
-export const convertSecondsToString = secondsInput => {
-	const date = new Date(0, 0, 0, 0, 0, secondsInput, 0)
-	const days = date.getDay()
-	const hours = date.getHours()
-	const minutes = date.getMinutes()
-	const seconds = date.getSeconds()
-
-	const total = []
-	if (days) total.push(pluralize('jour', days))
-	if (hours) total.push(pluralize('heure', hours))
-	if (minutes) total.push(pluralize('minute', minutes))
-	if (seconds) total.push(pluralize('seconde', seconds))
-
-	return total.join(' ')
-}
+export const convertSecondsToString = (secondsInput) => formatDuration(secondsInput)
 
 /**
- * Converti un nombre de minutes au format J jours H heures M minutes
- * @param {Number} minutesInput nombre de minutes à convertir
- * @returns nombre de minutes au format J jours H heures M minutes
- * @example convertMinutesToString(123) => '2 heures 3 minutes'
+ * Convertit des minutes au format lisible
+ * @param {number} minutesInput
+ * @returns {string}
  */
-export const convertMinutesToString = minutesInput => {
-	const date = new Date(0, 0, 0, 0, minutesInput, 0, 0)
-	const days = date.getDay()
-	const hours = date.getHours()
-	const minutes = date.getMinutes()
-
-	const total = []
-	if (days) total.push(pluralize('jour', days))
-	if (hours) total.push(pluralize('heure', hours))
-	if (minutes) total.push(pluralize('minute', minutes))
-
-	return total.join(' ')
-}
+export const convertMinutesToString = (minutesInput) =>
+	formatDuration(minutesInput * 60, { withSeconds: false })
 
 /**
- * Check si le fichier est une image (extensions de type png, jpeg, jpg, gif, webp)
- * @param {string} fileName nom du fichier
- * @returns true si le fichier est une image, sinon false
- * @example isImage('image.png') => true
- * 			isImage('document.pdf') => false
+ * Vérifie si un fichier est une image
+ * @param {string} fileName
+ * @returns {boolean}
  */
-export const isImage = fileName => {
-	const format = fileName.split('.').pop().toLowerCase()
-	return Boolean(format.match(/png|jpeg|jpg|gif|webp/))
-}
+export const isImage = (fileName) => /\.(png|jpe?g|gif|webp)$/i.test(fileName)
 
 /**
- * Renomme l'utilisateur si son pseudo contient par un caractère spécial
- * @param {GuildMember} guildMember
- * @returns promesse de la modification du pseudo ou une promesse résolue
+ * Renomme l'utilisateur si son pseudo contient des caractères indésirables
+ * @param {import('discord.js').GuildMember} guildMember
+ * @returns {Promise<import('discord.js').GuildMember | void>}
  */
-export const modifyWrongUsernames = guildMember => {
-	// Trigger
-	const triggerRegex = /^[ -~à-âç-öù-ÿÀ-ÂÈ-ÖÙ-Ü]+$/
+export const modifyWrongUsernames = (guildMember) => {
+	const triggerRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ0-9 _-]+$/u
 
-	// Si son nom de compte ou son pseudo est incorrect
-	if (!guildMember.displayName.match(triggerRegex))
-		// On le renomme avec son pseudo classique
+	if (!triggerRegex.test(guildMember.displayName)) {
 		return guildMember.setNickname(guildMember.user.username)
+	}
 
 	return Promise.resolve()
 }
 
 /**
  * Enlève l'extension d'un fichier
- * @param {string} fileName nom du fichier
- * @returns le nom du fichier sans son extension
- * @example removeFileExtension('document.pdf') => 'document'
+ * @param {string} fileName
+ * @returns {string}
  */
-export const removeFileExtension = fileName => {
+export const removeFileExtension = (fileName) => {
 	const fileArray = fileName.split('.')
 	fileArray.pop()
 	return fileArray.join('.')
@@ -187,76 +157,94 @@ export const removeFileExtension = fileName => {
 
 /**
  * Retourne le type du fichier et son nom
- * @param {string} file nom du fichier
- * @returns nom et type du fichier
- * @example getFileInfos(fichier.exemple.pdf) => { name: 'fichier.exemple', type: 'pdf'}
+ * @param {string} file
+ * @returns {{ name: string, type: string }}
  */
-export const getFileInfos = file => {
-	const fileNameSplited = file.split('.')
-	const filetType = fileNameSplited.pop()
+export const getFileInfos = (file) => {
+	const fileNameSplitted = file.split('.')
+	const fileType = fileNameSplitted.pop() || ''
+
 	return {
-		name: fileNameSplited.join('.'),
-		type: filetType,
+		name: fileNameSplitted.join('.'),
+		type: fileType,
 	}
 }
 
 /**
- * Divise une chaîne en plusieurs morceaux à un caractère désigné qui ne dépassent pas une longueur spécifique.
- * @param {string} text Message à diviser
- * @param {SplitOptions} [options] Options contrôlant le comportement du fractionnement
+ * Divise une chaîne en plusieurs morceaux qui ne dépassent pas maxLength
+ * @param {string} text
+ * @param {{ maxLength?: number, char?: string | RegExp | Array<string | RegExp>, prepend?: string, append?: string }} [options]
  * @returns {string[]}
  */
 export const splitMessage = (
 	text,
 	{ maxLength = 2000, char = '\n', prepend = '', append = '' } = {},
 ) => {
-	// eslint-disable-next-line no-param-reassign
-	text = verifyString(text)
-	if (text.length <= maxLength) return [text]
-	let splitText = [text]
-	if (Array.isArray(char))
-		while (char.length > 0 && splitText.some(elem => elem.length > maxLength)) {
-			const currentChar = char.shift()
-			if (currentChar instanceof RegExp)
-				splitText = splitText.flatMap(chunk => chunk.match(currentChar))
-			else splitText = splitText.flatMap(chunk => chunk.split(currentChar))
-		}
-	else splitText = text.split(char)
+	text = ensureString(text)
 
-	if (splitText.some(elem => elem.length > maxLength)) throw new RangeError('SPLIT_MAX_LEN')
-	const messages = []
-	let msg = ''
-	for (const chunk of splitText) {
-		if (msg && (msg + char + chunk + append).length > maxLength) {
-			messages.push(msg + append)
-			msg = prepend
+	if (text.length <= maxLength) return [text]
+
+	let splitText = [text]
+
+	if (Array.isArray(char)) {
+		const charStack = [...char]
+
+		while (charStack.length > 0 && splitText.some((element) => element.length > maxLength)) {
+			const currentChar = charStack.shift()
+
+			if (currentChar instanceof RegExp) {
+				splitText = splitText.flatMap((chunk) => chunk.match(currentChar) ?? [chunk])
+			} else {
+				splitText = splitText.flatMap((chunk) => chunk.split(currentChar))
+			}
 		}
-		msg += (msg && msg !== prepend ? char : '') + chunk
+	} else if (char instanceof RegExp) {
+		splitText = text.match(char) ?? [text]
+	} else {
+		splitText = text.split(char)
 	}
-	// eslint-disable-next-line id-length
-	return messages.concat(msg).filter(m => m)
+
+	if (splitText.some((element) => element.length > maxLength)) {
+		throw new RangeError('SPLIT_MAX_LEN')
+	}
+
+	const messages = []
+	let message = ''
+
+	for (const chunk of splitText) {
+		if (message && (message + char + chunk + append).length > maxLength) {
+			messages.push(message + append)
+			message = prepend
+		}
+
+		message += `${message && message !== prepend ? char : ''}${chunk}`
+	}
+
+	return messages.concat(message).filter(Boolean)
 }
 
 /**
- * Formate le pseudo et l'ID de l'utilisateur sous la forme "Pseudo (ID : 123456789123456789)"
- * !!! A mettre à jour !!!
- * @param {GuildMember} guildMember
- * @param {User} user
- * @returns le pseudo du guildMember ou le tag de l'user
+ * Formate le pseudo et l'ID de l'utilisateur
+ * @param {import('discord.js').GuildMember | null | undefined} guildMember
+ * @param {import('discord.js').User | null | undefined} [user]
+ * @returns {string}
  */
-export const displayNameAndID = (guildMember, user) => {
-	if (guildMember && guildMember.user)
-		return `${guildMember.user.username} (ID : ${guildMember.user.id})`
+export const displayNameAndID = (guildMember, user = guildMember?.user) => {
+	if (guildMember?.user) {
+		return `${guildMember.displayName} (ID : ${guildMember.user.id})`
+	}
 
-	if (user && user.username) return `${user.username} (ID : ${user.id})`
+	if (user?.username) {
+		return `${user.username} (ID : ${user.id})`
+	}
 
 	return '?'
 }
 
 /**
  * Ferme proprement l'application
- * @param {'SIGINT' | 'SIGTERM'} signal received
- * @param {Client} client Discord.js
+ * @param {'SIGINT' | 'SIGTERM'} signal
+ * @param {import('discord.js').Client} client
  */
 export const closeGracefully = (signal, client) => {
 	console.log(`Received signal to terminate : ${signal}`)
@@ -268,29 +256,28 @@ export const closeGracefully = (signal, client) => {
 }
 
 /**
- * Converti la date dans un format utilisé par Discord pour afficher une date
- * @param {Date} date
- * @param {Boolean} relative
+ * Convertit une date au format timestamp Discord
+ * @param {Date | number | string} date
+ * @param {boolean} relative
+ * @returns {string}
  */
 export const convertDateForDiscord = (date, relative = false) => {
-	if (relative) return `<t:${Math.round(new Date(date) / 1000)}:R>`
-	return `<t:${Math.round(new Date(date) / 1000)}>`
+	const timestamp = Math.round(new Date(date).getTime() / 1000)
+	return relative ? `<t:${timestamp}:R>` : `<t:${timestamp}>`
 }
 
 /**
- * Crée une chaine alpanumérique aléatoire
- * @param length Longueur de chaine souhaitée
- * @returns Chaine alpanumérique de longueur $length
+ * Crée une chaîne alphanumérique aléatoire
+ * @param {number} length
+ * @returns {string}
  */
-export const randomString = length => {
+export const randomString = (length) => {
 	let string = ''
 	const characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 	const charactersLength = characters.length
 
-	let counter = 0
-	while (counter < length) {
+	for (let index = 0; index < length; index += 1) {
 		string += characters.charAt(Math.floor(Math.random() * charactersLength))
-		counter += 1
 	}
 
 	return string
@@ -298,25 +285,22 @@ export const randomString = length => {
 
 /**
  * Crée un pool de connexion à la base de données
- * @param {Client} client Discord.js
+ * @param {{ dbHost: string, dbUser: string, dbPass: string, dbName: string }} config
+ * @returns {Promise<import('mysql2/promise').Pool>}
  */
-export const pool = client => {
-	try {
-		const createPool = mysql.createPool({
-			host: client.dbHost,
-			user: client.dbUser,
-			password: client.dbPass,
-			database: client.dbName,
-			waitForConnections: true,
-			connectionLimit: 10,
-			queueLimit: 0,
-		})
+export const pool = async ({ dbHost, dbUser, dbPass, dbName }) => {
+	const createdPool = mysql.createPool({
+		host: dbHost,
+		user: dbUser,
+		password: dbPass,
+		database: dbName,
+		waitForConnections: true,
+		connectionLimit: 10,
+		queueLimit: 0,
+	})
 
-		const promisePool = createPool.promise()
+	const connection = await createdPool.getConnection()
+	connection.release()
 
-		return promisePool
-	} catch (error) {
-		console.error(error)
-		return false
-	}
+	return createdPool
 }

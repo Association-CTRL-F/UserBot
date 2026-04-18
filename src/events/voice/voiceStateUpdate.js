@@ -1,57 +1,65 @@
 import { PermissionsBitField, ChannelType } from 'discord.js'
 
-const handleLeave = (oldState, newState, client) => {
+const handleLeave = async (oldState, client) => {
 	// Acquisition de la base de données
 	const bdd = client.config.db.pools.userbot
-	if (!bdd)
-		return console.log('Une erreur est survenue lors de la connexion à la base de données')
+	if (!bdd) {
+		console.log('Une erreur est survenue lors de la connexion à la base de données')
+		return
+	}
 
 	// S'il quitte un salon non personnalisé, on return
 	if (!client.voiceManager.has(oldState.channelId)) return
 
-	// S'il le salon qu'il a quitté est vide
-	if (oldState.channel.members.size === 0) {
+	const oldChannel = oldState.channel
+	if (!oldChannel?.isVoiceBased()) return
+
+	// S'il quitte et que le salon est vide
+	if (oldChannel.members.size === 0) {
 		// Acquisition du salon no-mic
 		const noMicChannel = client.voiceManager.get(oldState.channelId)
-		// S'il existe
-		if (noMicChannel)
-			// On supprime le salon no-mic
-			noMicChannel.delete()
+
+		// S'il existe, on supprime le salon no-mic
+		if (noMicChannel) {
+			await noMicChannel.delete().catch(() => null)
+		}
 
 		// On supprime le salon de la map
 		client.voiceManager.delete(oldState.channelId)
 
 		try {
 			const sql = 'DELETE FROM vocal WHERE channelId = ?'
-			const data = [oldState.channel.id]
-			bdd.execute(sql, data)
-		} catch {
+			const data = [oldChannel.id]
+			await bdd.execute(sql, data)
+		} catch (error) {
 			console.log(
 				'Une erreur est survenue lors de la suppression du salon vocal en base de données',
 			)
+			console.error(error)
 		}
 
 		// Suppression du salon vocal
-		// Catch si le salon est déjà supprimé
-		return oldState.channel.delete().catch(() => null)
+		return oldChannel.delete().catch(() => null)
 	}
 
 	// S'il n'est pas vide et qu'il quitte un salon avec un no-mic
-	if (client.voiceManager.get(oldState.channelId))
+	const noMicChannel = client.voiceManager.get(oldState.channelId)
+	if (noMicChannel) {
 		// Suppression des permissions du membre pour le salon no-mic
-		return client.voiceManager
-			.get(oldState.channelId)
-			.permissionOverwrites.cache.get(newState.id)
-			.delete()
+		return noMicChannel.permissionOverwrites.delete(oldState.id).catch(() => null)
+	}
 }
 
-const handleJoin = async (newState, client) => {
+const handleJoin = async (newState) => {
 	// Acquisition de la base de données
-	const bdd = client.config.db.pools.userbot
-	if (!bdd)
-		return console.log('Une erreur est survenue lors de la connexion à la base de données')
+	const bdd = newState.client.config.db.pools.userbot
+	if (!bdd) {
+		console.log('Une erreur est survenue lors de la connexion à la base de données')
+		return
+	}
 
 	const member = newState.member
+	const client = newState.client
 
 	// S'il rejoint un salon qui doit créer un nouveau salon
 	const VOICE = client.config.guild.managers.VOICE_MANAGER_CHANNELS_IDS
@@ -59,31 +67,39 @@ const handleJoin = async (newState, client) => {
 		: []
 
 	if (VOICE.includes(newState.channelId)) {
-		const permissions = newState.channel.permissionOverwrites.cache.clone().set(member, {
-			id: member,
-			type: 'member',
-			allow: [
-				PermissionsBitField.Flags.ViewChannel,
-				PermissionsBitField.Flags.Connect,
-				PermissionsBitField.Flags.ManageChannels,
-				PermissionsBitField.Flags.MoveMembers,
-			],
-		})
-
 		// Création du salon vocal
-		const createdChannel = await newState.guild.channels.create({
-			name: `Vocal de ${member.displayName}`,
-			type: ChannelType.GuildVoice,
-			parent: newState.channel.parent,
-			permissionOverwrites: permissions,
-		})
+		const createdChannel = await newState.guild.channels
+			.create({
+				name: `Vocal de ${member.displayName}`,
+				type: ChannelType.GuildVoice,
+				parent: newState.channel.parent ?? undefined,
+			})
+			.catch((error) => {
+				console.error(error)
+				return null
+			})
+
+		if (!createdChannel) return
+
+		// Donne les permissions de gestion au propriétaire du vocal
+		await createdChannel.permissionOverwrites
+			.edit(member.id, {
+				ViewChannel: true,
+				Connect: true,
+				ManageChannels: true,
+				MoveMembers: true,
+			})
+			.catch(console.error)
 
 		// Déplacement du membre dans son nouveau salon vocal
 		const moveAction = await member.voice.setChannel(createdChannel).catch(() => null)
 
 		// Si l'utilisateur ne peut pas être move dans le salon créé,
 		// on supprime le salon créé
-		if (!moveAction) return createdChannel.delete()
+		if (!moveAction) {
+			await createdChannel.delete().catch(() => null)
+			return
+		}
 
 		try {
 			const sql = 'INSERT INTO vocal (channelId) VALUES (?)'
@@ -93,31 +109,40 @@ const handleJoin = async (newState, client) => {
 			console.log(
 				'Une erreur est survenue lors de la création du salon vocal en base de données',
 			)
+			console.error(error)
 		}
 
 		// Ajout de l'id du salon vocal perso dans la liste
-		return client.voiceManager.set(createdChannel.id, null)
+		client.voiceManager.set(createdChannel.id, null)
+		return
 	}
 
 	// S'il rejoint un salon perso qui a un no-mic
 	const noMicChannel = client.voiceManager.get(newState.channelId)
-	if (noMicChannel)
+	if (noMicChannel) {
 		// On lui donne la permission de voir le salon
-		return noMicChannel.permissionOverwrites.edit(newState.id, {
-			CREATE_INSTANT_INVITE: false,
-			VIEW_CHANNEL: true,
-			SEND_MESSAGES: true,
-			READ_MESSAGE_HISTORY: true,
-		})
+		return noMicChannel.permissionOverwrites
+			.edit(newState.id, {
+				ViewChannel: true,
+				SendMessages: true,
+				ReadMessageHistory: true,
+				CreateInstantInvite: false,
+			})
+			.catch(console.error)
+	}
 }
 
-export default (oldState, newState, client) => {
+export default async (oldState, newState, client) => {
 	// Pour uniquement garder les changements de salon et non d'état
 	if (oldState.channelId === newState.channelId) return
 
 	// Si l'utilisateur quitte un salon
-	if (oldState.channel) handleLeave(oldState, newState, client)
+	if (oldState.channel) {
+		await handleLeave(oldState, client)
+	}
 
 	// Si l'utilisateur rejoint un salon
-	if (newState.channel) handleJoin(newState, client)
+	if (newState.channel) {
+		await handleJoin(newState)
+	}
 }

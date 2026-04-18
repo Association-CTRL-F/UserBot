@@ -1,5 +1,5 @@
-import { convertDateForDiscord, diffDate, displayNameAndID } from '../../util/util.js'
-import { AuditLogEvent, EmbedBuilder } from 'discord.js'
+import { convertDateForDiscord, diffDate } from '../../util/util.js'
+import { AuditLogEvent, EmbedBuilder, PermissionFlagsBits } from 'discord.js'
 
 export default async (ban, client) => {
 	if (ban.user.bot || !ban.guild.available) return
@@ -10,55 +10,75 @@ export default async (ban, client) => {
 	)
 	if (!logsChannel) return
 
-	// Fetch de l'event d'unban
-	const fetchedLog = (
-		await ban.guild.fetchAuditLogs({
-			type: AuditLogEvent.MemberBanRemove,
-			limit: 1,
-		})
-	).entries.first()
-	if (!fetchedLog) return
+	// Récupération complète du ban si possible
+	const unbannedUser = await ban.fetch().catch(() => ban)
+	if (!unbannedUser?.user) return
+
+	// Récupération éventuelle du log d'audit
+	let fetchedLog = null
+	const me = ban.guild.members.me
+
+	if (me?.permissions.has(PermissionFlagsBits.ViewAuditLog)) {
+		// Petit délai pour laisser le temps au log d'apparaître
+		await new Promise((resolve) => globalThis.setTimeout(resolve, 1200))
+
+		const auditLogs = await ban.guild
+			.fetchAuditLogs({
+				type: AuditLogEvent.MemberBanRemove,
+				limit: 6,
+			})
+			.catch(() => null)
+
+		if (auditLogs) {
+			fetchedLog =
+				auditLogs.entries.find((entry) => {
+					const sameTarget = entry.target?.id === unbannedUser.user.id
+					const recentEnough = Date.now() - entry.createdTimestamp < 10_000
+					return sameTarget && recentEnough
+				}) ?? null
+		}
+	}
+
+	// Ignore les débannissements effectués par le bot lui-même
+	if (fetchedLog?.executor?.id === client.user.id) return
 
 	// Création de l'embed
 	const logEmbed = new EmbedBuilder()
-		.setColor('57C92A')
+		.setColor(0x57c92a)
 		.setAuthor({
-			name: displayNameAndID(ban.member, ban.user),
-			iconURL: ban.user.displayAvatarURL({ dynamic: true }),
+			name: `${unbannedUser.user.tag} (ID : ${unbannedUser.user.id})`,
+			iconURL: unbannedUser.user.displayAvatarURL({ dynamic: true }),
 		})
-		.addFields([
+		.addFields(
 			{
 				name: 'Mention',
-				value: ban.user.toString(),
+				value: unbannedUser.user.toString(),
 				inline: true,
 			},
 			{
 				name: 'Date de création du compte',
-				value: convertDateForDiscord(ban.user.createdAt),
+				value: convertDateForDiscord(unbannedUser.user.createdAt),
 				inline: true,
 			},
 			{
 				name: 'Âge du compte',
-				value: diffDate(ban.user.createdAt),
+				value: diffDate(unbannedUser.user.createdAt),
 				inline: true,
 			},
-		])
+		)
 		.setTimestamp(new Date())
 
-	const { executor, target } = fetchedLog
-
-	if (executor.id === client.user.id) return
-
 	// Détermination du modérateur ayant effectué le débannissement
-	if (target.id === ban.user.id && fetchedLog.createdTimestamp > Date.now() - 5000)
-		logEmbed.data.footer = {
-			icon_url: executor.displayAvatarURL({ dynamic: true }),
-			text: `Membre débanni par ${executor.tag}`,
-		}
-	else
-		logEmbed.data.footer = {
+	if (fetchedLog?.executor && fetchedLog?.target?.id === unbannedUser.user.id) {
+		logEmbed.setFooter({
+			iconURL: fetchedLog.executor.displayAvatarURL({ dynamic: true }),
+			text: `Membre débanni par ${fetchedLog.executor.tag}`,
+		})
+	} else {
+		logEmbed.setFooter({
 			text: 'Membre débanni',
-		}
+		})
+	}
 
 	return logsChannel.send({ embeds: [logEmbed] })
 }

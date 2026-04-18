@@ -1,5 +1,5 @@
-import { convertDateForDiscord, diffDate, displayNameAndID } from '../../util/util.js'
-import { AuditLogEvent, EmbedBuilder } from 'discord.js'
+import { convertDateForDiscord, diffDate } from '../../util/util.js'
+import { AuditLogEvent, EmbedBuilder, PermissionFlagsBits } from 'discord.js'
 
 export default async (ban, client) => {
 	if (ban.user.bot || !ban.guild.available) return
@@ -10,26 +10,46 @@ export default async (ban, client) => {
 	)
 	if (!logsChannel) return
 
-	// Fetch de l'event de ban
-	const fetchedLog = (
-		await ban.guild.fetchAuditLogs({
-			type: AuditLogEvent.MemberBanAdd,
-			limit: 1,
-		})
-	).entries.first()
-	if (!fetchedLog) return
+	// Récupération complète du ban si possible
+	const bannedUser = await ban.fetch().catch(() => ban)
+	if (!bannedUser?.user) return
 
-	// Fetch du ban
-	const bannedUser = await ban.fetch()
+	// Récupération éventuelle du log d'audit
+	let fetchedLog = null
+	const me = ban.guild.members.me
+
+	if (me?.permissions.has(PermissionFlagsBits.ViewAuditLog)) {
+		// Petit délai pour laisser le temps au log d'apparaître
+		await new Promise((resolve) => globalThis.setTimeout(resolve, 1200))
+
+		const auditLogs = await ban.guild
+			.fetchAuditLogs({
+				type: AuditLogEvent.MemberBanAdd,
+				limit: 6,
+			})
+			.catch(() => null)
+
+		if (auditLogs) {
+			fetchedLog =
+				auditLogs.entries.find((entry) => {
+					const sameTarget = entry.target?.id === bannedUser.user.id
+					const recentEnough = Date.now() - entry.createdTimestamp < 10_000
+					return sameTarget && recentEnough
+				}) ?? null
+		}
+	}
+
+	// Ignore les bans effectués par le bot lui-même
+	if (fetchedLog?.executor?.id === client.user.id) return
 
 	// Création de l'embed
 	const logEmbed = new EmbedBuilder()
-		.setColor('C9572A')
+		.setColor(0xc9572a)
 		.setAuthor({
-			name: displayNameAndID(bannedUser.member, bannedUser.user),
+			name: `${bannedUser.user.tag} (ID : ${bannedUser.user.id})`,
 			iconURL: bannedUser.user.displayAvatarURL({ dynamic: true }),
 		})
-		.addFields([
+		.addFields(
 			{
 				name: 'Mention',
 				value: bannedUser.user.toString(),
@@ -45,28 +65,29 @@ export default async (ban, client) => {
 				value: diffDate(bannedUser.user.createdAt),
 				inline: true,
 			},
-		])
+		)
 		.setTimestamp(new Date())
 
-	const { executor, target } = fetchedLog
-
-	if (executor.id === client.user.id) return
-
 	// Détermination du modérateur ayant effectué le bannissement
-	if (target.id === bannedUser.user.id && fetchedLog.createdTimestamp > Date.now() - 5000)
-		logEmbed.data.footer = {
-			icon_url: executor.displayAvatarURL({ dynamic: true }),
-			text: `Membre banni par ${executor.tag}`,
-		}
-	else
-		logEmbed.data.footer = {
+	if (fetchedLog?.executor && fetchedLog?.target?.id === bannedUser.user.id) {
+		logEmbed.setFooter({
+			iconURL: fetchedLog.executor.displayAvatarURL({ dynamic: true }),
+			text: `Membre banni par ${fetchedLog.executor.tag}`,
+		})
+	} else {
+		logEmbed.setFooter({
 			text: 'Membre banni',
-		}
+		})
+	}
 
 	// Raison du bannissement
-	if (bannedUser.reason) {
-		const escapedcontent = bannedUser.reason.replace(/```/g, '\\`\\`\\`')
-		logEmbed.data.description = `\`\`\`\n${escapedcontent}\`\`\``
+	const reason = bannedUser.reason ?? fetchedLog?.reason
+	if (reason) {
+		const escapedContent = reason.replace(/```/g, '\\`\\`\\`')
+		const contentCut =
+			escapedContent.length > 4000 ? `${escapedContent.slice(0, 4000)} [...]` : escapedContent
+
+		logEmbed.setDescription(`\`\`\`\n${contentCut}\n\`\`\``)
 	}
 
 	return logsChannel.send({ embeds: [logEmbed] })

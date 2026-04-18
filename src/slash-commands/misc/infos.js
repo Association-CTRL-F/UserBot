@@ -1,46 +1,39 @@
-/* eslint-disable default-case */
-/* eslint-disable no-case-declarations */
 import { convertDateForDiscord, diffDate } from '../../util/util.js'
-import discordjs, { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
-import { ChatGPTAPI } from 'chatgpt'
+import { SlashCommandBuilder, EmbedBuilder, version as discordVersion, MessageFlags } from 'discord.js'
+import { readFileSync } from 'node:fs'
 
-// import nodePackage from '../../../package.json'
-import { readFileSync } from 'fs'
-const { version } = JSON.parse(readFileSync('./package.json'))
+const { version } = JSON.parse(readFileSync('./package.json', 'utf8'))
 
 export default {
 	data: new SlashCommandBuilder()
 		.setName('infos')
 		.setDescription('Donne quelques infos sur le serveur et le bot')
-		.addSubcommand(subcommand => subcommand.setName('bot').setDescription('Infos du bot'))
-		.addSubcommand(subcommand =>
+		.addSubcommand((subcommand) => subcommand.setName('bot').setDescription('Infos du bot'))
+		.addSubcommand((subcommand) =>
 			subcommand.setName('server').setDescription('Infos du serveur'),
 		),
-	interaction: (interaction, client) => {
-		const chatgpt = new ChatGPTAPI({
-			apiKey: client.config.others.openAiKey,
-		})
 
+	interaction: async (interaction) => {
 		switch (interaction.options.getSubcommand()) {
 			case 'bot':
 				const embedBot = new EmbedBuilder()
-					.setColor('#3366FF')
+					.setColor(0x3366ff)
 					.setAuthor({
-						name: `${client.user.username} (ID : ${client.user.id})`,
-						iconURL: client.user.displayAvatarURL({ dynamic: true }),
+						name: `${interaction.client.user.username} (ID : ${interaction.client.user.id})`,
+						iconURL: interaction.client.user.displayAvatarURL({ dynamic: true }),
 					})
-					.addFields([
+					.addFields(
 						{
 							name: 'Latence API',
-							value: `${client.ws.ping} ms`,
+							value: `${interaction.client.ws.ping} ms`,
 						},
 						{
 							name: 'Uptime',
-							value: diffDate(client.readyAt),
+							value: diffDate(interaction.client.readyAt),
 						},
 						{
 							name: 'Préfixe',
-							value: `\`${client.config.guild.COMMANDS_PREFIX}\``,
+							value: `\`${interaction.client.config.guild.COMMANDS_PREFIX}\``,
 						},
 						{
 							name: 'Version',
@@ -48,18 +41,20 @@ export default {
 						},
 						{
 							name: 'Version Discord.js',
-							value: discordjs.version,
+							value: discordVersion,
 						},
-						// {
-						// 	name: 'Modèle OpenAI ChatGPT',
-						// 	// eslint-disable-next-line no-underscore-dangle
-						// 	value: chatgpt._completionParams.model,
-						// },
-					])
+					)
 
 				return interaction.reply({ embeds: [embedBot] })
 
 			case 'server':
+				if (!interaction.guild) {
+					return interaction.reply({
+						content: 'Cette commande doit être utilisée dans un serveur 😕',
+						flags: MessageFlags.Ephemeral,
+					})
+				}
+
 				const premiumTier = {
 					0: 'Aucun Boost',
 					1: 'Niveau 1',
@@ -67,7 +62,10 @@ export default {
 					3: 'Niveau 3',
 				}
 
-				const mfaLevel = { 0: 'Désactivé', 1: 'Activé' }
+				const mfaLevel = {
+					0: 'Désactivé',
+					1: 'Activé',
+				}
 
 				const verificationLevel = {
 					0: 'Non spécifié',
@@ -78,58 +76,63 @@ export default {
 				}
 
 				const embedServer = new EmbedBuilder()
-					.setColor('#3366FF')
+					.setColor(0x3366ff)
 					.setAuthor({
 						name: `${interaction.guild.name} (ID : ${interaction.guild.id})`,
-						iconURL: interaction.guild.iconURL({ dynamic: true }),
+						iconURL: interaction.guild.iconURL({ dynamic: true }) ?? undefined,
 					})
-					.addFields([
+					.addFields(
 						{
-							name: '**Date de création**',
+							name: 'Date de création',
 							value: convertDateForDiscord(interaction.guild.createdAt),
 							inline: true,
 						},
 						{
-							name: '**Âge du serveur**',
-							value: `${diffDate(interaction.guild.createdAt)}`,
+							name: 'Âge du serveur',
+							value: diffDate(interaction.guild.createdAt),
 							inline: true,
 						},
 						{
-							name: '**Rôle le plus élevé**',
+							name: 'Rôle le plus élevé',
 							value: `${interaction.guild.roles.highest}`,
 							inline: true,
 						},
 						{
-							name: '**Nombre de membres**',
-							value: `${interaction.guild.memberCount}/${interaction.guild.maximumMembers}`,
+							name: 'Nombre de membres',
+							value: `${interaction.guild.memberCount}${
+								interaction.guild.maximumMembers
+									? `/${interaction.guild.maximumMembers}`
+									: ''
+							}`,
 							inline: true,
 						},
 						{
-							name: "**Nombre d'émojis**",
+							name: "Nombre d'émojis",
 							value: `${interaction.guild.emojis.cache.size}`,
 							inline: true,
 						},
 						{
-							name: '**Nombre de salons**',
+							name: 'Nombre de salons',
 							value: `${interaction.guild.channels.cache.size}`,
 							inline: true,
 						},
 						{
-							name: '**Niveau de vérification**',
-							value: `${verificationLevel[interaction.guild.verificationLevel]}`,
+							name: 'Niveau de vérification',
+							value:
+								verificationLevel[interaction.guild.verificationLevel] ?? 'Inconnu',
 							inline: true,
 						},
 						{
-							name: '**A2F**',
-							value: `${mfaLevel[interaction.guild.mfaLevel]}`,
+							name: 'A2F',
+							value: mfaLevel[interaction.guild.mfaLevel] ?? 'Inconnu',
 							inline: true,
 						},
 						{
-							name: '**Niveau Boost Nitro**',
-							value: `${premiumTier[interaction.guild.premiumTier]}`,
+							name: 'Niveau Boost Nitro',
+							value: premiumTier[interaction.guild.premiumTier] ?? 'Inconnu',
 							inline: true,
 						},
-					])
+					)
 
 				return interaction.reply({ embeds: [embedServer] })
 		}

@@ -7,8 +7,12 @@ export default async (guildMember, client) => {
 
 	// Acquisition de la base de données
 	const bdd = client.config.db.pools.userbot
+	if (!bdd) {
+		console.log('Une erreur est survenue lors de la connexion à la base de données')
+		return
+	}
 
-	// Vérification si le membre a des alertes
+	// Suppression des alertes du membre s'il en avait
 	try {
 		const sqlDelete = 'DELETE FROM alerts WHERE discordID = ?'
 		const dataDelete = [guildMember.user.id]
@@ -24,12 +28,12 @@ export default async (guildMember, client) => {
 	if (!leaveJoinChannel) return
 
 	const embedLeave = new EmbedBuilder()
-		.setColor('C9572A')
+		.setColor(0xc9572a)
 		.setAuthor({
-			name: displayNameAndID(guildMember),
+			name: displayNameAndID(guildMember, guildMember.user),
 			iconURL: guildMember.user.displayAvatarURL({ dynamic: true }),
 		})
-		.addFields([
+		.addFields(
 			{
 				name: 'Mention',
 				value: guildMember.toString(),
@@ -45,14 +49,14 @@ export default async (guildMember, client) => {
 				value: diffDate(guildMember.user.createdAt),
 				inline: true,
 			},
-		])
+		)
 		.setFooter({
 			text: 'Un utilisateur a quitté le serveur',
 		})
 		.setTimestamp(new Date())
 
-	if (guildMember.joinedAt)
-		embedLeave.data.fields.push(
+	if (guildMember.joinedAt) {
+		embedLeave.addFields(
 			{
 				name: 'Serveur rejoint le',
 				value: convertDateForDiscord(guildMember.joinedAt),
@@ -64,6 +68,7 @@ export default async (guildMember, client) => {
 				inline: true,
 			},
 		)
+	}
 
 	return leaveJoinChannel.send({ embeds: [embedLeave] })
 }

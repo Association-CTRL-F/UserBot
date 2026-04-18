@@ -1,59 +1,55 @@
-/* eslint-disable no-case-declarations */
-/* eslint-disable default-case */
-
-import { SlashCommandBuilder, ButtonStyle } from 'discord.js'
+import { SlashCommandBuilder, ButtonStyle, MessageFlags } from 'discord.js'
 import { Pagination } from 'pagination.djs'
 
 export default {
 	data: new SlashCommandBuilder()
 		.setName('stats')
 		.setDescription('Affiche les stats')
-		.addSubcommand(subcommand =>
+		.addSubcommand((subcommand) =>
 			subcommand.setName('commands').setDescription('Affiche les stats des commandes'),
 		),
+
 	interaction: async (interaction, client) => {
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
-		if (!bdd)
+		if (!bdd) {
 			return interaction.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			})
+		}
 
 		switch (interaction.options.getSubcommand()) {
-			case 'commands':
+			case 'commands': {
 				let commands = []
+
 				try {
 					const sql = 'SELECT * FROM commands ORDER BY numberOfUses DESC'
 					const [result] = await bdd.execute(sql)
-					commands = result
+					commands = result ?? []
 				} catch (error) {
+					console.error(error)
 					return interaction.reply({
 						content:
 							'Une erreur est survenue lors de la récupération des commandes en base de données 😕',
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					})
 				}
 
-				if (commands.length === 0)
+				const activeCommands = commands.filter((command) => command.active === 1)
+
+				if (!activeCommands.length) {
 					return interaction.reply({
-						content: "Aucune commande n'a été créée 😕",
-						ephemeral: true,
+						content: "Aucune commande active n'a été créée 😕",
+						flags: MessageFlags.Ephemeral,
 					})
+				}
 
 				// Boucle d'ajout des champs
-				const fieldsEmbedView = []
-				let count = 1
-				commands.forEach(command => {
-					if (command.active === 0) return
-
-					fieldsEmbedView.push({
-						name: `${count}. ${command.name}`,
-						value: `Utilisée ${command.numberOfUses} fois`,
-					})
-
-					count += 1
-				})
+				const fieldsEmbedView = activeCommands.map((command, index) => ({
+					name: `${index + 1}. ${command.name}`,
+					value: `Utilisée ${command.numberOfUses} fois`,
+				}))
 
 				// Configuration de l'embed
 				const paginationView = new Pagination(interaction, {
@@ -71,13 +67,20 @@ export default {
 				})
 
 				paginationView.setTitle('Classement des commandes')
+				paginationView.setDescription(`**Total : ${activeCommands.length}**`)
 				paginationView.setColor('#C27C0E')
 				paginationView.setFields(fieldsEmbedView)
 				paginationView.setFooter({ text: 'Page : {pageNumber} / {totalPages}' })
 				paginationView.paginateFields(true)
 
-				// Envoi de l'embed
 				return paginationView.render()
+			}
+
+			default:
+				return interaction.reply({
+					content: 'Sous-commande inconnue 😕',
+					flags: MessageFlags.Ephemeral,
+				})
 		}
 	},
 }

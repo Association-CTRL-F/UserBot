@@ -1,53 +1,61 @@
-/* eslint-disable no-case-declarations */
-/* eslint-disable default-case */
-import { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'
+import { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, MessageFlags } from 'discord.js'
 
 export default {
 	data: new SlashCommandBuilder()
 		.setName('staff')
 		.setDescription('Commandes staff')
-		.addSubcommand(subcommand =>
+		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('roles')
 				.setDescription('Choisir ses rôles staff')
-				.addStringOption(option =>
+				.addStringOption((option) =>
 					option
 						.setName('raison')
 						.setDescription('Raison de la modification des rôles')
 						.setRequired(true),
 				),
 		),
-	interaction: async (interaction, client) => {
-		// Acquisition du membre
-		const member = interaction.guild.members.cache.get(interaction.user.id)
 
+	interaction: async (interaction, client) => {
 		switch (interaction.options.getSubcommand()) {
-			case 'roles':
+			case 'roles': {
+				// Acquisition du membre
+				const member = await interaction.guild.members
+					.fetch(interaction.user.id)
+					.catch(() => null)
+
+				if (!member) {
+					return interaction.reply({
+						content: "Je n'ai pas trouvé ton profil sur le serveur 😕",
+						flags: MessageFlags.Ephemeral,
+					})
+				}
+
 				// Acquisition de la raison
-				const reason = interaction.options.getString('raison')
+				const reason = interaction.options.getString('raison').trim()
 
 				// Acquisition des rôles à proposer
-				const staffEditeurs = await interaction.guild.roles.fetch(
-					client.config.guild.roles.STAFF_EDITEURS_ROLE_ID,
-				)
-				const modo = await interaction.guild.roles.fetch(
-					client.config.guild.roles.MODO_ROLE_ID,
-				)
-				const certifie = await interaction.guild.roles.fetch(
-					client.config.guild.roles.CERTIF_ROLE_ID,
-				)
+				const [staffEditeurs, modo, certifie] = await Promise.all([
+					interaction.guild.roles.fetch(client.config.guild.roles.STAFF_EDITEURS_ROLE_ID),
+					interaction.guild.roles.fetch(client.config.guild.roles.MODO_ROLE_ID),
+					interaction.guild.roles.fetch(client.config.guild.roles.CERTIF_ROLE_ID),
+				])
+
+				if (!staffEditeurs || !modo || !certifie) {
+					return interaction.reply({
+						content: 'Impossible de récupérer un ou plusieurs rôles staff 😕',
+						flags: MessageFlags.Ephemeral,
+					})
+				}
 
 				const rolesArray = [staffEditeurs, modo, certifie]
 
-				// Valeur par défaut du menu
-				const rolesArrayDefault = []
-				rolesArray.forEach(role => {
-					rolesArrayDefault.push({
-						label: role.name,
-						value: role.id,
-						default: member.roles.cache.has(role.id),
-					})
-				})
+				// Valeurs par défaut du menu
+				const rolesArrayDefault = rolesArray.map((role) => ({
+					label: role.name,
+					value: role.id,
+					default: member.roles.cache.has(role.id),
+				}))
 
 				// Création du menu
 				const roles = new ActionRowBuilder().addComponents(
@@ -61,15 +69,18 @@ export default {
 
 				const message = await interaction.reply({
 					components: [roles],
-					ephemeral: true,
-					fetch: true,
+					flags: MessageFlags.Ephemeral,
+					fetchReply: true,
 				})
 
-				return client.cache.staffRolesReason.add({
+				client.cache.staffRolesReason.add({
 					memberId: interaction.user.id,
-					reason: reason,
-					message: message,
+					reason,
+					message,
 				})
+
+				return
+			}
 		}
 	},
 }

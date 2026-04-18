@@ -1,81 +1,81 @@
-/* eslint-disable no-case-declarations */
-/* eslint-disable default-case */
-import { SlashCommandBuilder, ButtonStyle } from 'discord.js'
+import { SlashCommandBuilder, ButtonStyle, MessageFlags } from 'discord.js'
 import { Pagination } from 'pagination.djs'
 
 export default {
 	data: new SlashCommandBuilder()
 		.setName('alertme')
-		.setDescription('Gère les rappels')
-		.addSubcommand(subcommand =>
+		.setDescription('Gère les alertes')
+		.addSubcommand((subcommand) =>
 			subcommand.setName('view').setDescription('Voir la liste de ses alertes'),
 		)
-		.addSubcommand(subcommand =>
+		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('create')
 				.setDescription('Crée une alerte')
-				.addStringOption(option =>
+				.addStringOption((option) =>
 					option
 						.setName('texte')
 						.setDescription('Texte sur lequel vous voulez être alerté')
 						.setRequired(true),
 				),
 		)
-		.addSubcommand(subcommand =>
+		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('del')
 				.setDescription('Supprime une alerte')
-				.addStringOption(option =>
+				.addStringOption((option) =>
 					option.setName('id').setDescription("ID de l'alerte").setRequired(true),
 				),
 		),
+
 	interaction: async (interaction, client) => {
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
-		if (!bdd)
+		if (!bdd) {
 			return interaction.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			})
+		}
 
 		switch (interaction.options.getSubcommand()) {
 			// Visualisation des alertes
-			case 'view':
+			case 'view': {
 				let alerts = []
+
 				try {
-					const sql = 'SELECT * FROM alerts WHERE discordID = ?'
+					const sql = 'SELECT * FROM alerts WHERE discordID = ? ORDER BY id ASC'
 					const data = [interaction.user.id]
 					const [result] = await bdd.execute(sql, data)
-					alerts = result
+					alerts = result ?? []
 				} catch (error) {
+					console.error(error)
 					return interaction.reply({
 						content:
 							'Une erreur est survenue lors de la récupération des alertes en base de données 😕',
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					})
 				}
 
-				if (alerts.length === 0)
+				if (!alerts.length) {
 					return interaction.reply({
 						content: "Aucune alerte n'a été créée 😕",
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					})
+				}
 
-				// Boucle d'ajout des champs
-				const fieldsEmbedView = []
-				alerts.forEach(alert => {
-					let textCut = ''
+				const fieldsEmbedView = alerts.map((alert) => {
+					const textCut =
+						alert.text.length < 50
+							? alert.text.slice(0, 50)
+							: `${alert.text.slice(0, 50)} [...]`
 
-					if (alert.text.length < 50) textCut = `${alert.text.substr(0, 50)}`
-					else textCut = `${alert.text.substr(0, 50)} [...]`
-
-					fieldsEmbedView.push({
+					return {
 						name: `Alerte #${alert.id}`,
 						value: `Texte : ${textCut}`,
-					})
+					}
 				})
 
-				// Configuration de l'embed
 				const paginationView = new Pagination(interaction, {
 					firstEmoji: '⏮',
 					prevEmoji: '◀️',
@@ -97,86 +97,97 @@ export default {
 				paginationView.setFooter({ text: 'Page : {pageNumber} / {totalPages}' })
 				paginationView.paginateFields(true)
 
-				// Envoi de l'embed
 				return paginationView.render()
+			}
 
 			// Création d'une alerte
-			case 'create':
+			case 'create': {
 				const text = interaction.options.getString('texte').trim().toLowerCase()
 
-				// Insertion de l'alerte en base de données
+				if (!text) {
+					return interaction.reply({
+						content: "Le texte de l'alerte est vide 😕",
+						flags: MessageFlags.Ephemeral,
+					})
+				}
+
 				try {
 					const sql = 'INSERT INTO alerts (discordID, text) VALUES (?, ?)'
 					const data = [interaction.user.id, text]
 					await bdd.execute(sql, data)
 				} catch (error) {
-					console.log(error)
+					console.error(error)
 					return interaction.reply({
 						content:
 							"Une erreur est survenue lors de la création de l'alerte en base de données 😬",
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					})
 				}
 
 				return interaction.reply({
 					content: `Alerte créée 👌\nTexte : ${text}`,
-					ephemeral: true,
+					flags: MessageFlags.Ephemeral,
 				})
+			}
 
 			// Suppression d'une alerte
-			case 'del':
-				// Acquisition de l'id du rappel
-				// Fetch de l'alerte
-				let fetchAlert = {}
+			case 'del': {
+				const id = interaction.options.getString('id')
+
+				let fetchAlert = null
 				try {
-					const id = interaction.options.getString('id')
 					const sql = 'SELECT * FROM alerts WHERE id = ?'
 					const data = [id]
 					const [result] = await bdd.execute(sql, data)
-					fetchAlert = result[0]
-				} catch {
+					fetchAlert = result[0] ?? null
+				} catch (error) {
+					console.error(error)
 					return interaction.reply({
 						content:
-							"Une erreur est survenue lors de la suppression de l'alerte base de données 😬",
-						ephemeral: true,
+							"Une erreur est survenue lors de la récupération de l'alerte en base de données 😬",
+						flags: MessageFlags.Ephemeral,
 					})
 				}
 
-				// Vérification si l'alerte existe
-				if (!fetchAlert)
+				if (!fetchAlert) {
 					return interaction.reply({
 						content: "L'alerte n'existe pas 😬",
-						ephemeral: true,
-					})
-
-				// Vérification si l'alerte appartient bien au membre
-				if (fetchAlert.discordID !== interaction.user.id)
-					return interaction.reply({
-						content: "Cette alerte ne t'appartient pas 😬",
-						ephemeral: true,
-					})
-
-				// Suppression en base de données
-				let deleteAlert = {}
-				try {
-					const id = interaction.options.getString('id')
-					const sql = 'DELETE FROM alerts WHERE id = ?'
-					const data = [id]
-					const [result] = await bdd.execute(sql, data)
-					deleteAlert = result
-				} catch {
-					return interaction.reply({
-						content:
-							"Une erreur est survenue lors de la suppression de l'alerte base de données 😬",
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					})
 				}
 
-				if (deleteAlert.affectedRows === 1)
+				if (fetchAlert.discordID !== interaction.user.id) {
 					return interaction.reply({
-						content: "L'alerte a bien été supprimée 👌",
-						ephemeral: true,
+						content: "Cette alerte ne t'appartient pas 😬",
+						flags: MessageFlags.Ephemeral,
 					})
+				}
+
+				try {
+					const sql = 'DELETE FROM alerts WHERE id = ? AND discordID = ?'
+					const data = [id, interaction.user.id]
+					const [result] = await bdd.execute(sql, data)
+
+					if (result.affectedRows === 1) {
+						return interaction.reply({
+							content: "L'alerte a bien été supprimée 👌",
+							flags: MessageFlags.Ephemeral,
+						})
+					}
+				} catch (error) {
+					console.error(error)
+					return interaction.reply({
+						content:
+							"Une erreur est survenue lors de la suppression de l'alerte en base de données 😬",
+						flags: MessageFlags.Ephemeral,
+					})
+				}
+
+				return interaction.reply({
+					content: "L'alerte n'existe pas 😬",
+					flags: MessageFlags.Ephemeral,
+				})
+			}
 		}
 	},
 }

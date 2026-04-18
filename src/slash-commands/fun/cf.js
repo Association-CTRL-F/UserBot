@@ -1,51 +1,54 @@
-import { SlashCommandBuilder } from 'discord.js'
+import { SlashCommandBuilder, MessageFlags } from 'discord.js'
+
+const wait = (ms) => new Promise((resolve) => globalThis.setTimeout(resolve, ms))
 
 export default {
 	data: new SlashCommandBuilder().setName('cf').setDescription('Coinflip! (pile ou face)'),
 	interaction: async (interaction, client) => {
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
-		if (!bdd)
+		if (!bdd) {
 			return interaction.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
-				ephemeral: true,
-			})
-
-		// On diffère la réponse pour avoir plus de 3 secondes
-		await interaction.deferReply()
-
-		let discordIds = []
-		try {
-			const sql = 'SELECT * FROM cf'
-			const [result] = await bdd.execute(sql)
-			discordIds = result
-		} catch (error) {
-			return interaction.editReply({
-				content: 'Une erreur est survenue lors de la récupération des commandes 😕',
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			})
 		}
 
-		const random = Math.round(Math.random() * 100)
+		// On diffère la réponse
+		await interaction.deferReply()
 
-		let resultat = ''
-		if (random < 50) resultat = 'Pile'
-		else if (random > 50) resultat = 'Face'
-		else resultat = 'Tranche'
+		// Vérification si l'utilisateur a le "trucage" actif
+		let hasForcedEdge = false
+		try {
+			const sql = 'SELECT COUNT(*) AS total FROM cf WHERE discordID = ? AND active = 1'
+			const data = [interaction.user.id]
+			const [result] = await bdd.execute(sql, data)
 
-		await interaction.editReply({ content: 'La pièce tourne.' })
-		await interaction.editReply({ content: 'La pièce tourne..' })
-
-		let cf = 0
-		// eslint-disable-next-line require-await
-		discordIds.forEach(async discordId => {
-			if (interaction.user.id === discordId.discordID && discordId.active === 1) cf += 1
-		})
-
-		if (cf > 0)
+			hasForcedEdge = (result?.[0]?.total ?? 0) > 0
+		} catch (error) {
+			console.error(error)
 			return interaction.editReply({
-				content: `La pièce tourne... **Tranche** !`,
+				content: 'Une erreur est survenue lors de la récupération des données 😕',
 			})
+		}
+
+		// Animation
+		await interaction.editReply({ content: 'La pièce tourne.' })
+		await wait(500)
+		await interaction.editReply({ content: 'La pièce tourne..' })
+		await wait(500)
+
+		// Résultat
+		let resultat = ''
+		if (hasForcedEdge) {
+			resultat = 'Tranche'
+		} else {
+			const random = Math.floor(Math.random() * 100)
+
+			if (random < 49) resultat = 'Pile'
+			else if (random < 98) resultat = 'Face'
+			else resultat = 'Tranche'
+		}
 
 		return interaction.editReply({
 			content: `La pièce tourne... **${resultat}** !`,

@@ -1,155 +1,149 @@
-/* eslint-disable no-case-declarations */
-/* eslint-disable default-case */
-import { SlashCommandBuilder, EmbedBuilder, ButtonStyle } from 'discord.js'
+import { SlashCommandBuilder, EmbedBuilder, ButtonStyle, MessageFlags } from 'discord.js'
 import { convertDateForDiscord, displayNameAndID } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
+
+const isValidDiscordId = (value) => /^\d{17,19}$/.test(value)
+const isValidNumericId = (value) => /^\d+$/.test(value)
 
 export default {
 	data: new SlashCommandBuilder()
 		.setName('warns')
 		.setDescription('Gère les avertissements')
-		.addSubcommand(subcommand =>
+		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('view')
 				.setDescription("Voir les avertissements d'un membre")
-				.addStringOption(option =>
+				.addStringOption((option) =>
 					option.setName('membre').setDescription('Discord ID').setRequired(true),
 				),
 		)
-		.addSubcommand(subcommand =>
+		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('create')
 				.setDescription('Crée un nouvel avertissement')
-				.addStringOption(option =>
+				.addStringOption((option) =>
 					option.setName('membre').setDescription('Discord ID').setRequired(true),
 				)
-				.addStringOption(option =>
+				.addStringOption((option) =>
 					option
 						.setName('raison')
 						.setDescription("Raison de l'avertissement")
 						.setRequired(true),
 				)
-				.addBooleanOption(option =>
+				.addBooleanOption((option) =>
 					option
 						.setName('notify')
 						.setDescription('Avertir le membre par message privé')
 						.setRequired(true),
 				)
-				.addAttachmentOption(option =>
+				.addAttachmentOption((option) =>
 					option.setName('preuve').setDescription("Preuve de l'avertissement"),
 				),
 		)
-		.addSubcommand(subcommand =>
+		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('edit')
 				.setDescription('Modifie un avertissement')
-				.addStringOption(option =>
+				.addStringOption((option) =>
 					option.setName('id').setDescription("ID de l'avertissement").setRequired(true),
 				)
-				.addStringOption(option =>
+				.addStringOption((option) =>
 					option
 						.setName('raison')
 						.setDescription("Raison de l'avertissement")
 						.setRequired(true),
 				),
 		)
-		.addSubcommand(subcommand =>
+		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('del')
 				.setDescription('Supprime un avertissement')
-				.addStringOption(option =>
+				.addStringOption((option) =>
 					option.setName('id').setDescription("ID de l'avertissement").setRequired(true),
 				),
 		)
-		.addSubcommand(subcommand =>
+		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('clear')
 				.setDescription("Supprime tous les avertissements d'un membre")
-				.addStringOption(option =>
+				.addStringOption((option) =>
 					option.setName('membre').setDescription('Discord ID').setRequired(true),
 				),
 		),
+
 	interaction: async (interaction, client) => {
-		let user = ''
-		let member = ''
-
-		// Acquisition du membre
-		if (
-			interaction.options.getSubcommand() !== 'edit' &&
-			interaction.options.getSubcommand() !== 'del'
-		) {
-			user = interaction.options.getString('membre')
-			member = interaction.guild.members.cache.get(user)
-			if (!member)
-				return interaction.editReply({
-					content: "Je n'ai pas trouvé cet utilisateur, vérifie la mention ou l'ID 😕",
-				})
-
-			const matchID = user.match(/^(\d{17,19})$/)
-			if (!matchID)
-				return interaction.reply({
-					content: "Tu ne m'as pas donné un ID valide 😕",
-					ephemeral: true,
-				})
-		}
-
-		// Acquisition des bases de données
 		const bdd = client.config.db.pools.userbot
-		if (!bdd)
+		if (!bdd) {
 			return interaction.reply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			})
+		}
 
 		const bddModeration = client.config.db.pools.moderation
-		if (!bddModeration)
+		if (!bddModeration) {
 			return interaction.reply({
 				content:
 					'Une erreur est survenue lors de la connexion à la base de données Moderation 😕',
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			})
+		}
 
 		switch (interaction.options.getSubcommand()) {
-			// Voir les avertissements
-			case 'view':
-				let warnings = []
-				try {
-					const sqlView = 'SELECT * FROM warnings_logs WHERE discord_id = ?'
-					const dataView = [user]
-					const [resultWarnings] = await bddModeration.execute(sqlView, dataView)
-					warnings = resultWarnings
-				} catch {
+			case 'view': {
+				const userId = interaction.options.getString('membre').trim()
+
+				if (!isValidDiscordId(userId)) {
 					return interaction.reply({
-						content:
-							'Une erreur est survenue lors de la récupération des avertissements 😬',
-						ephemeral: true,
+						content: "Tu ne m'as pas donné un ID valide 😕",
+						flags: MessageFlags.Ephemeral,
 					})
 				}
 
-				if (warnings.length === 0)
+				let member = null
+				try {
+					member = await interaction.guild.members.fetch(userId).catch(() => null)
+				} catch (error) {
+					console.error(error)
+				}
+
+				let warnings = []
+				try {
+					const sqlView =
+						'SELECT * FROM warnings_logs WHERE discord_id = ? ORDER BY timestamp DESC'
+					const dataView = [userId]
+					const [resultWarnings] = await bddModeration.execute(sqlView, dataView)
+					warnings = resultWarnings ?? []
+				} catch (error) {
+					console.error(error)
 					return interaction.reply({
-						content: "Aucun avertissement n'a été créé pour cet utilisateur",
-						ephemeral: true,
+						content:
+							'Une erreur est survenue lors de la récupération des avertissements 😬',
+						flags: MessageFlags.Ephemeral,
 					})
+				}
 
-				// Sinon, boucle d'ajout des champs
-				const fieldsEmbed = []
-				warnings.forEach(warning => {
-					const warnedBy = interaction.guild.members.cache.get(warning.executor_id)
+				if (!warnings.length) {
+					return interaction.reply({
+						content: "Aucun avertissement n'a été créé pour cet utilisateur 😕",
+						flags: MessageFlags.Ephemeral,
+					})
+				}
 
-					const warnText = `Par ${
-						warnedBy ? warnedBy.user.tag : warning.executor_id
-					} - ${convertDateForDiscord(warning.timestamp * 1000)}\nRaison : ${
-						warning.reason
-					}${warning.preuve ? `\nPreuve : <${warning.preuve}>` : ''}`
+				const fieldsEmbed = warnings.map((warning) => {
+					const warnedBy = warning.executor_username || warning.executor_id || 'Inconnu'
+					const warnText = `Par ${warnedBy} - ${convertDateForDiscord(
+						warning.timestamp * 1000,
+					)}\nRaison : ${warning.reason}${
+						warning.preuve ? `\nPreuve : <${warning.preuve}>` : ''
+					}`
 
-					fieldsEmbed.push({
+					return {
 						name: `Avertissement #${warning.id}`,
 						value: warnText,
-					})
+					}
 				})
 
-				// Configuration de l'embed
 				const pagination = new Pagination(interaction, {
 					firstEmoji: '⏮',
 					prevEmoji: '◀️',
@@ -164,45 +158,52 @@ export default {
 					loop: false,
 				})
 
-				if (member)
-					pagination.data.author = {
-						name: displayNameAndID(member),
-						icon_url: member.user.displayAvatarURL({ dynamic: true }),
-					}
-				else
-					pagination.data.author = {
-						name: `ID ${user}`,
-					}
-
+				pagination.setTitle(
+					member
+						? `Avertissements de ${displayNameAndID(member, member.user)}`
+						: `Avertissements de l'ID ${userId}`,
+				)
 				pagination.setDescription(`**Total : ${warnings.length}**`)
 				pagination.setColor('#C27C0E')
 				pagination.setFields(fieldsEmbed)
 				pagination.setFooter({ text: 'Page : {pageNumber} / {totalPages}' })
 				pagination.paginateFields(true)
 
-				// Envoi de l'embed
 				return pagination.render()
+			}
 
-			// Crée un nouvel avertissement
-			case 'create':
-				// Acquisition de la raison, de la notification en MP
-				// et de la preuve
-				const reason = interaction.options.getString('raison')
+			case 'create': {
+				const userId = interaction.options.getString('membre').trim()
+				const reason = interaction.options.getString('raison').trim()
 				const notify = interaction.options.getBoolean('notify')
+				const proofAttachment = interaction.options.getAttachment('preuve')
+				const preuve = proofAttachment?.url ?? proofAttachment?.attachment ?? null
 
-				let preuve = ''
-				if (interaction.options.getAttachment('preuve'))
-					preuve = interaction.options.getAttachment('preuve').attachment
-				else preuve = null
+				if (!isValidDiscordId(userId)) {
+					return interaction.reply({
+						content: "Tu ne m'as pas donné un ID valide 😕",
+						flags: MessageFlags.Ephemeral,
+					})
+				}
 
-				// Création de l'avertissement en base de données
+				await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+
+				const targetUser = await client.users.fetch(userId).catch(() => null)
+				if (!targetUser) {
+					return interaction.editReply({
+						content: "Je n'ai pas trouvé cet utilisateur, vérifie l'ID 😕",
+					})
+				}
+
+				const member = await interaction.guild.members.fetch(userId).catch(() => null)
+
 				try {
 					const sqlCreate =
 						'INSERT INTO warnings_logs (discord_id, username, avatar, executor_id, executor_username, reason, preuve, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
 					const dataCreate = [
-						user,
-						member ? member.user.username : user,
-						member ? member.user.avatar : null,
+						userId,
+						targetUser.username,
+						targetUser.avatar ?? null,
 						interaction.user.id,
 						interaction.user.username,
 						reason,
@@ -212,213 +213,224 @@ export default {
 
 					await bddModeration.execute(sqlCreate, dataCreate)
 				} catch (error) {
-					return interaction.reply({
+					console.error(error)
+					return interaction.editReply({
 						content:
 							"Une erreur est survenue lors de la création de l'avertissement en base de données 😕",
-						ephemeral: true,
 					})
 				}
 
 				let errorDM = ''
-				if (notify)
-					if (member) {
-						// Lecture du message d'avertissement
-						let warnDM = ''
-						try {
-							const sqlSelectWarn = 'SELECT * FROM forms WHERE name = ?'
-							const dataSelectWarn = ['warn']
-							const [resultSelectWarn] = await bdd.execute(
-								sqlSelectWarn,
-								dataSelectWarn,
-							)
-							warnDM = resultSelectWarn[0].content
-						} catch (error) {
-							return interaction.reply({
-								content:
-									"Une erreur est survenue lors de la récupération du message d'avertissement en base de données 😕",
-								ephemeral: true,
-							})
-						}
-
-						// Envoi du message d'avertissement en message privé
-						const embedWarn = new EmbedBuilder()
-							.setColor('#C27C0E')
-							.setTitle('Avertissement')
-							.setDescription(warnDM)
-							.setAuthor({
-								name: interaction.guild.name,
-								iconURL: interaction.guild.iconURL({ dynamic: true }),
-								url: interaction.guild.vanityURL,
-							})
-							.addFields([
-								{
-									name: 'Raison',
-									value: reason,
-								},
-							])
-
-						const DMMessage = await member
-							.send({
-								embeds: [embedWarn],
-							})
-							.catch(error => {
-								console.error(error)
-								errorDM =
-									"\n\nℹ️ Le message privé n'a pas été envoyé car le membre les a bloqué"
-							})
-
-						// Si au moins une erreur, throw
-						if (DMMessage instanceof Error)
-							throw new Error(
-								"L'envoi d'un message a échoué. Voir les logs précédents pour plus d'informations.",
-							)
+				if (notify) {
+					let warnDM = ''
+					try {
+						const sqlSelectWarn = 'SELECT * FROM forms WHERE name = ?'
+						const dataSelectWarn = ['warn']
+						const [resultSelectWarn] = await bdd.execute(sqlSelectWarn, dataSelectWarn)
+						warnDM = resultSelectWarn?.[0]?.content ?? ''
+					} catch (error) {
+						console.error(error)
+						return interaction.editReply({
+							content:
+								"Une erreur est survenue lors de la récupération du message d'avertissement en base de données 😕",
+						})
 					}
 
-				// Message de confirmation
-				await interaction.deferReply()
+					if (!warnDM) {
+						return interaction.editReply({
+							content: "Le message d'avertissement est introuvable ou vide 😕",
+						})
+					}
+
+					const embedWarn = new EmbedBuilder()
+						.setColor('#C27C0E')
+						.setTitle('Avertissement')
+						.setDescription(warnDM)
+						.setAuthor({
+							name: interaction.guild.name,
+							iconURL: interaction.guild.iconURL({ dynamic: true }) ?? undefined,
+							url: interaction.guild.vanityURL ?? undefined,
+						})
+						.addFields({
+							name: 'Raison',
+							value: reason,
+						})
+
+					try {
+						await targetUser.send({
+							embeds: [embedWarn],
+						})
+					} catch (error) {
+						console.error(error)
+						errorDM =
+							"\n\nℹ️ Le message privé n'a pas été envoyé car le membre les a bloqués"
+					}
+				}
+
 				return interaction.editReply({
-					content: `⚠️ \`${
-						member ? member.user.tag : user
-					}\` a reçu un avertissement\n\nRaison : ${reason}\n\nNotification en message privé : ${
+					content: `⚠️ \`${targetUser.tag}\` a reçu un avertissement\n\nRaison : ${reason}\n\nNotification en message privé : ${
 						notify ? 'Oui' : 'Non'
-					}${errorDM}${preuve ? `\n\nPreuve : <${preuve}>` : ''}`,
+					}${errorDM}${preuve ? `\n\nPreuve : <${preuve}>` : ''}${
+						!member ? "\n\nℹ️ Le membre n'est plus présent sur le serveur." : ''
+					}`,
 				})
+			}
 
-			// Modifie un avertissement
-			case 'edit':
-				// Acquisition de la raison
-				const reasonEdit = interaction.options.getString('raison')
+			case 'edit': {
+				const warnId = interaction.options.getString('id').trim()
+				const reasonEdit = interaction.options.getString('raison').trim()
 
-				// Acquisition de l'avertissement
-				let editedWarn = {}
+				if (!isValidNumericId(warnId)) {
+					return interaction.reply({
+						content: "Tu ne m'as pas donné un ID d'avertissement valide 😕",
+						flags: MessageFlags.Ephemeral,
+					})
+				}
+
+				let warning = null
 				try {
-					const id = interaction.options.getString('id')
 					const sqlSelect = 'SELECT * FROM warnings_logs WHERE id = ?'
-					const dataSelect = [id]
+					const dataSelect = [warnId]
 					const [resultSelect] = await bddModeration.execute(sqlSelect, dataSelect)
-					editedWarn = resultSelect[0]
-				} catch {
+					warning = resultSelect?.[0] ?? null
+				} catch (error) {
+					console.error(error)
 					return interaction.reply({
 						content:
 							"Une erreur est survenue lors de la récupération de l'avertissement en base de données 😬",
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					})
 				}
 
-				// Vérification si l'avertissement existe bien
-				if (!editedWarn)
+				if (!warning) {
 					return interaction.reply({
 						content: "L'avertissement n'existe pas 😬",
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					})
+				}
 
-				// Vérification si l'avertissement
-				// a été créé par le même utilisateur
-				if (editedWarn.executor_id !== interaction.user.id)
+				if (warning.executor_id !== interaction.user.id) {
 					return interaction.reply({
 						content: "L'avertissement ne t'appartient pas 😬",
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					})
+				}
 
-				// Modification de l'avertissement
 				try {
-					const id = interaction.options.getString('id')
 					const sqlEdit = 'UPDATE warnings_logs SET reason = ? WHERE id = ?'
-					const dataEdit = [reasonEdit, id]
+					const dataEdit = [reasonEdit, warnId]
 					const [resultEdit] = await bddModeration.execute(sqlEdit, dataEdit)
-					editedWarn = resultEdit
-				} catch {
+
+					if (resultEdit.affectedRows === 1) {
+						return interaction.reply({
+							content: "L'avertissement a bien été modifié 👌",
+							flags: MessageFlags.Ephemeral,
+						})
+					}
+				} catch (error) {
+					console.error(error)
 					return interaction.reply({
 						content:
 							"Une erreur est survenue lors de la modification de l'avertissement en base de données 😬",
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					})
 				}
-
-				if (editedWarn.affectedRows === 1)
-					return interaction.reply({
-						content: "L'avertissement a bien été modifié 👌",
-					})
 
 				return interaction.reply({
 					content:
 						"Une erreur est survenue lors de la modification de l'avertissement 😬",
-					ephemeral: true,
+					flags: MessageFlags.Ephemeral,
 				})
+			}
 
-			// Supprime un avertissement
-			case 'del':
-				// Acquisition de l'id de l'avertissement
-				// puis suppresion en base de données
-				let deletedWarn = {}
+			case 'del': {
+				const warnId = interaction.options.getString('id').trim()
+
+				if (!isValidNumericId(warnId)) {
+					return interaction.reply({
+						content: "Tu ne m'as pas donné un ID d'avertissement valide 😕",
+						flags: MessageFlags.Ephemeral,
+					})
+				}
+
+				let deletedWarn = null
 				try {
-					const id = interaction.options.getString('id')
 					const sqlDelete = 'DELETE FROM warnings_logs WHERE id = ?'
-					const dataDelete = [id]
+					const dataDelete = [warnId]
 					const [resultDelete] = await bddModeration.execute(sqlDelete, dataDelete)
 					deletedWarn = resultDelete
-				} catch {
+				} catch (error) {
+					console.error(error)
 					return interaction.reply({
 						content:
 							"Une erreur est survenue lors de la suppression de l'avertissement en base de données 😬",
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					})
 				}
 
-				if (deletedWarn.affectedRows === 1)
+				if (deletedWarn.affectedRows === 1) {
 					return interaction.reply({
 						content: "L'avertissement a bien été supprimé 👌",
+						flags: MessageFlags.Ephemeral,
 					})
+				}
 
-				// Sinon, message d'erreur
 				return interaction.reply({
 					content: "L'avertissement n'existe pas 😬",
-					ephemeral: true,
+					flags: MessageFlags.Ephemeral,
 				})
+			}
 
-			// Supprime tous les avertissements
-			case 'clear':
-				// Acquisition du membre
-				const discordId = interaction.options.getString('membre')
+			case 'clear': {
+				const discordId = interaction.options.getString('membre').trim()
 
-				// Vérification si le membre a des avertissements
+				if (!isValidDiscordId(discordId)) {
+					return interaction.reply({
+						content: "Tu ne m'as pas donné un ID valide 😕",
+						flags: MessageFlags.Ephemeral,
+					})
+				}
+
 				let deletedWarns = []
 				try {
-					const sqlDelete = 'SELECT * FROM warnings_logs WHERE discord_id = ?'
-					const dataDelete = [discordId]
-					const [resultDelete] = await bddModeration.execute(sqlDelete, dataDelete)
-					deletedWarns = resultDelete
-				} catch {
+					const sqlSelect = 'SELECT * FROM warnings_logs WHERE discord_id = ?'
+					const dataSelect = [discordId]
+					const [resultSelect] = await bddModeration.execute(sqlSelect, dataSelect)
+					deletedWarns = resultSelect ?? []
+				} catch (error) {
+					console.error(error)
 					return interaction.reply({
 						content:
 							'Une erreur est survenue lors de la récupération des avertissements en base de données 😬',
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					})
 				}
 
-				if (deletedWarns.length === 0)
+				if (!deletedWarns.length) {
 					return interaction.reply({
 						content: "Ce membre n'a pas d'avertissements 😕",
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					})
+				}
 
 				try {
-					// Suppression en base de données
 					const sqlDeleteAll = 'DELETE FROM warnings_logs WHERE discord_id = ?'
 					const dataDeleteAll = [discordId]
 					await bddModeration.execute(sqlDeleteAll, dataDeleteAll)
-				} catch {
+				} catch (error) {
+					console.error(error)
 					return interaction.reply({
 						content:
 							'Une erreur est survenue lors de la suppression des avertissements en base de données 😬',
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					})
 				}
 
-				// Sinon, message de confirmation
 				return interaction.reply({
 					content: 'Les avertissements ont bien été supprimés 👌',
+					flags: MessageFlags.Ephemeral,
 				})
+			}
 		}
 	},
 }

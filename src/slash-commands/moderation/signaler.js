@@ -1,105 +1,141 @@
+import { EmbedBuilder, ContextMenuCommandBuilder, ApplicationCommandType, MessageFlags } from 'discord.js'
 import { convertDateForDiscord } from '../../util/util.js'
-import { EmbedBuilder, ContextMenuCommandBuilder } from 'discord.js'
+
+const truncateForCodeBlock = (text, max = 1000) => {
+	if (!text || !text.trim()) return '[Aucun contenu texte]'
+	const escaped = text.replace(/```/g, '\\`\\`\\`')
+	return escaped.length <= max ? escaped : `${escaped.slice(0, max - 6)} [...]`
+}
+
+const getReportMetaFieldCount = () => 3
+
+const getReportFieldName = (reportCount) => {
+	switch (reportCount) {
+		case 1:
+			return '1er signalement'
+		case 2:
+			return '2nd signalement'
+		case 3:
+			return '3ème signalement'
+		case 4:
+			return '4ème signalement'
+		default:
+			return `${reportCount}ème signalement`
+	}
+}
+
+const getReportColor = (reportCount) => {
+	switch (reportCount) {
+		case 1:
+			return 0xffae00
+		case 2:
+			return 0xff8200
+		case 3:
+			return 0xff6600
+		default:
+			return 0xff3200
+	}
+}
 
 export default {
-	contextMenu: new ContextMenuCommandBuilder().setName('signaler').setType(3),
+	contextMenu: new ContextMenuCommandBuilder()
+		.setName('signaler')
+		.setType(ApplicationCommandType.Message),
+
 	interaction: async (interaction, client) => {
-		if (!interaction.commandType === 3) return
+		if (interaction.commandType !== ApplicationCommandType.Message) return
 
-		// On diffère la réponse pour avoir plus de 3 secondes
-		await interaction.deferReply({ ephemeral: true })
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
-		// Acquisition du message
+		if (!interaction.guild?.available) {
+			return interaction.editReply({
+				content: 'La guilde est indisponible pour le moment 😕',
+			})
+		}
+
 		const message = interaction.targetMessage
+		if (!message || !message.guild) {
+			return interaction.editReply({
+				content: "Je n'ai pas trouvé le message ciblé 😕",
+			})
+		}
 
-		// On ne peut pas signaler le message d'un bot
-		if (message.author.bot || !message.guild)
+		if (message.author.bot) {
 			return interaction.editReply({
 				content: "Tu ne peux pas signaler le message d'un bot 😕",
 			})
+		}
 
-		// On ne peut pas signaler son propre message
-		if (message.author === interaction.user)
+		if (message.author.id === interaction.user.id) {
 			return interaction.editReply({
 				content: 'Tu ne peux pas signaler ton propre message 😕',
 			})
+		}
 
-		// Acquisition du salon de logs
 		const reportChannel = message.guild.channels.cache.get(
 			client.config.guild.channels.REPORT_CHANNEL_ID,
 		)
-		if (!reportChannel) return
 
-		const fetchedMessages = await reportChannel.messages.fetch()
+		if (!reportChannel?.isTextBased()) {
+			return interaction.editReply({
+				content: "Il n'y a pas de salon de signalement valide 😕",
+			})
+		}
 
-		// Recherche si un report a déjà été posté
-		const logReport = fetchedMessages
-			.filter(msg => msg.embeds)
-			.find(msg => msg.embeds[0].fields.find(field => field.value.includes(message.id)))
+		const fetchedMessages = await reportChannel.messages.fetch().catch((error) => {
+			console.error(error)
+			return null
+		})
 
-		// Si un report a déjà été posté
+		if (!fetchedMessages) {
+			return interaction.editReply({
+				content: 'Une erreur est survenue lors de la récupération des signalements 😬',
+			})
+		}
+
+		const logReport = fetchedMessages.find((msg) =>
+			msg.embeds?.[0]?.fields?.some((field) => field.value?.includes(message.id)),
+		)
+
 		if (logReport) {
 			const logReportEmbed = logReport.embeds[0]
 
-			// On return si l'utilisateur a déjà report ce message
-			if (logReportEmbed.fields.some(field => field.value.includes(interaction.user.id)))
+			if (logReportEmbed.fields.some((field) => field.value?.includes(interaction.user.id))) {
 				return interaction.editReply({
 					content: 'Tu as déjà signalé ce message 😕',
 				})
-
-			const editLogReport = {
-				author: logReportEmbed.author,
-				description: logReportEmbed.description,
-				fields: [logReportEmbed.fields],
 			}
 
-			// On ajoute un field en fonction
-			// du nombre de report qu'il y a déjà
-			switch (logReportEmbed.fields.length - 3) {
-				case 1:
-					editLogReport.color = 'FF8200'
-					editLogReport.fields.push({
-						name: '2nd signalement',
-						value: `Signalement de ${interaction.user} le ${convertDateForDiscord(
-							Date.now(),
-						)}`,
-					})
-					break
+			const existingFields = [...logReportEmbed.fields]
+			const currentReportCount = Math.max(
+				0,
+				existingFields.length - getReportMetaFieldCount(),
+			)
+			const nextReportCount = currentReportCount + 1
 
-				case 2:
-					editLogReport.color = 'FF6600'
-					editLogReport.fields.push({
-						name: '3ème signalement',
-						value: `Signalement de ${interaction.user} le ${convertDateForDiscord(
-							Date.now(),
-						)}`,
-					})
-					break
+			const updatedEmbed = new EmbedBuilder()
+				.setColor(getReportColor(nextReportCount))
+				.setDescription(logReportEmbed.description ?? null)
 
-				case 3:
-					editLogReport.color = 'FF3200'
-					editLogReport.fields.push({
-						name: '4ème signalement',
-						value: `Signalement de ${interaction.user} le ${convertDateForDiscord(
-							Date.now(),
-						)}`,
-					})
-					break
-
-				default:
-					break
+			if (logReportEmbed.author) {
+				updatedEmbed.setAuthor({
+					name: logReportEmbed.author.name,
+					iconURL: logReportEmbed.author.iconURL ?? undefined,
+					url: logReportEmbed.author.url ?? undefined,
+				})
 			}
 
-			// Edit de l'embed
-			await logReport.edit({ embeds: [editLogReport] })
+			updatedEmbed.addFields(...existingFields, {
+				name: getReportFieldName(nextReportCount),
+				value: `Signalement de ${interaction.user} le ${convertDateForDiscord(Date.now())}`,
+			})
 
-			if (logReportEmbed.fields.length - 3 === 3) {
-				await message.delete().catch(() =>
-					interaction.editReply({
-						content:
-							'Le message a reçu 4 signalements mais une erreur est survenue lors de sa suppression 😬',
-					}),
-				)
+			await logReport.edit({ embeds: [updatedEmbed] })
+
+			if (nextReportCount >= 4) {
+				await message.delete().catch((error) => {
+					console.error(error)
+				})
 
 				return interaction.editReply({
 					content: 'Le message a reçu 4 signalements et a donc été supprimé 👌',
@@ -111,15 +147,16 @@ export default {
 			})
 		}
 
-		// S'il n'y a pas de report déjà posté
+		const preview = truncateForCodeBlock(message.content)
+
 		const sendLogReport = new EmbedBuilder()
-			.setDescription(`**Contenu du message**\n\`\`\`${message.content}\`\`\``)
-			.setColor('FFAE00')
+			.setDescription(`**Contenu du message**\n\`\`\`${preview}\`\`\``)
+			.setColor(getReportColor(1))
 			.setAuthor({
 				name: 'Nouveau signalement',
 				iconURL: message.author.displayAvatarURL({ dynamic: true }),
 			})
-			.addFields([
+			.addFields(
 				{
 					name: 'Auteur',
 					value: message.author.toString(),
@@ -141,9 +178,8 @@ export default {
 						Date.now(),
 					)}`,
 				},
-			])
+			)
 
-		// Envoi de l'embed
 		await reportChannel.send({ embeds: [sendLogReport] })
 
 		return interaction.editReply({

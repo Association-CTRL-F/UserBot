@@ -1,29 +1,33 @@
 import { convertDateForDiscord, diffDate, displayNameAndID } from '../../util/util.js'
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
+import { SlashCommandBuilder, EmbedBuilder, MessageFlags } from 'discord.js'
 
 export default {
 	data: new SlashCommandBuilder()
 		.setName('whois')
-		.setDescription('Donne des infos sur soit ou un autre utilisateur')
-		.addUserOption(option => option.setName('membre').setDescription('Membre')),
+		.setDescription('Donne des infos sur soi ou un autre utilisateur')
+		.addUserOption((option) => option.setName('membre').setDescription('Membre')),
+
 	interaction: async (interaction, client) => {
 		// Acquisition du membre
 		const user = interaction.options.getUser('membre') || interaction.user
-		const member = interaction.guild.members.cache.get(user.id)
-		if (!member)
+		const member = await interaction.guild.members.fetch(user.id).catch(() => null)
+
+		if (!member) {
 			return interaction.reply({
 				content: "Je n'ai pas trouvé cet utilisateur, vérifie la mention ou l'ID 😕",
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			})
+		}
 
 		// Acquisition de la base de données
 		const bddModeration = client.config.db.pools.moderation
-		if (!bddModeration)
+		if (!bddModeration) {
 			return interaction.reply({
 				content:
 					'Une erreur est survenue lors de la connexion à la base de données Moderation 😕',
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			})
+		}
 
 		// Nombre de warns
 		let warnings = []
@@ -31,12 +35,12 @@ export default {
 			const sql = 'SELECT * FROM warnings_logs WHERE discord_id = ?'
 			const data = [user.id]
 			const [result] = await bddModeration.execute(sql, data)
-			warnings = result
-		} catch {
+			warnings = result ?? []
+		} catch (error) {
+			console.error(error)
 			return interaction.reply({
-				content:
-					'Une erreur est survenue lors de la récupération des avertissements 😬',
-				ephemeral: true,
+				content: 'Une erreur est survenue lors de la récupération des avertissements 😬',
+				flags: MessageFlags.Ephemeral,
 			})
 		}
 
@@ -46,23 +50,24 @@ export default {
 			const sql = 'SELECT * FROM demandes_logs WHERE discord_id = ?'
 			const data = [user.id]
 			const [result] = await bddModeration.execute(sql, data)
-			ban = result
-		} catch {
+			ban = result ?? []
+		} catch (error) {
+			console.error(error)
 			return interaction.reply({
 				content:
 					"Une erreur est survenue lors de la récupération de l'historique de bannissement 😬",
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			})
 		}
 
 		// Création de l'embed
 		const embed = new EmbedBuilder()
-			.setColor(member.displayColor)
+			.setColor(member.displayColor || 0x2f3136)
 			.setAuthor({
-				name: displayNameAndID(member),
+				name: displayNameAndID(member, member.user),
 				iconURL: member.user.displayAvatarURL({ dynamic: true }),
 			})
-			.addFields([
+			.addFields(
 				{
 					name: "Compte de l'utilisateur",
 					value: member.user.tag,
@@ -85,28 +90,29 @@ export default {
 				},
 				{
 					name: 'Serveur rejoint le',
-					value: convertDateForDiscord(member.joinedAt),
+					value: member.joinedAt ? convertDateForDiscord(member.joinedAt) : 'Inconnu',
 					inline: true,
 				},
 				{
 					name: 'Est sur le serveur depuis',
-					value: diffDate(member.joinedAt),
+					value: member.joinedAt ? diffDate(member.joinedAt) : 'Inconnu',
 					inline: true,
 				},
 				{
-					name: "Historique",
+					name: 'Historique',
 					value: `Nombre d'avertissement(s) : ${warnings.length}\nA déjà été banni : ${ban.length} fois`,
 					inline: false,
 				},
-			])
+			)
 
 		// Ajout d'un champ si l'utilisateur boost le serveur
-		if (member.premiumSince)
-			embed.data.fields.push({
+		if (member.premiumSince) {
+			embed.addFields({
 				name: 'Boost Nitro depuis',
 				value: diffDate(member.premiumSince),
 				inline: true,
 			})
+		}
 
 		return interaction.reply({ embeds: [embed] })
 	},

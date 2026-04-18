@@ -14,8 +14,7 @@
             "MEDIATION_CHANNEL_ID": "",
             "CONFIG_CHANNEL_ID": "",
             "UPGRADE_CHANNEL_ID": "",
-            "BLABLA_CHANNEL_ID": "",
-            "FREE_GAMES_CHANNEL_ID": ""
+            "BLABLA_CHANNEL_ID": ""
         },
         "roles": {
             "MEMBER_ROLE_ID": "",
@@ -23,8 +22,7 @@
             "MUTED_ROLE_ID": "",
             "STAFF_EDITEURS_ROLE_ID": "",
             "MODO_ROLE_ID": "",
-            "CERTIF_ROLE_ID": "",
-            "NOTIF_GAMES_ROLE_ID": ""
+            "CERTIF_ROLE_ID": ""
         },
         "managers": {
             "VOICE_MANAGER_CHANNELS_IDS": "",

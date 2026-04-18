@@ -5,15 +5,12 @@ import {
 	displayNameAndID,
 } from '../../util/util.js'
 import { readFile } from 'fs/promises'
-import {
-	PermissionsBitField,
-	Message,
-	GuildMember,
-	EmbedBuilder,
-	RESTJSONErrorCodes,
-} from 'discord.js'
+import { PermissionsBitField, EmbedBuilder, RESTJSONErrorCodes } from 'discord.js'
 
-const removeAddedReactions = reactions => Promise.all(reactions.map(reaction => reaction.remove()))
+const removeBotReactions = async (reactions, client) =>
+	Promise.all(
+		reactions.map((reaction) => reaction.users.remove(client.user.id).catch(() => null)),
+	)
 
 export default async (guildMember, client) => {
 	const guild = guildMember.guild
@@ -23,15 +20,17 @@ export default async (guildMember, client) => {
 
 	// Acquisition de la base de données
 	const bdd = client.config.db.pools.userbot
-	if (!bdd)
-		return console.log('Une erreur est survenue lors de la connexion à la base de données')
+	if (!bdd) {
+		console.log('Une erreur est survenue lors de la connexion à la base de données')
+		return
+	}
 
 	// Acquisition de la base de données Moderation
 	const bddModeration = client.config.db.pools.moderation
-	if (!bddModeration)
-		return console.log(
-			'Une erreur est survenue lors de la connexion à la base de données Moderation',
-		)
+	if (!bddModeration) {
+		console.log('Une erreur est survenue lors de la connexion à la base de données Moderation')
+		return
+	}
 
 	// Acquisition du salon de logs join-leave
 	const leaveJoinChannel = guild.channels.cache.get(
@@ -45,12 +44,12 @@ export default async (guildMember, client) => {
 
 	// Envoi du message de join
 	const embedJoin = new EmbedBuilder()
-		.setColor('57C92A')
+		.setColor(0x57c92a)
 		.setAuthor({
 			name: displayNameAndID(guildMember),
 			iconURL: guildMember.user.displayAvatarURL({ dynamic: true }),
 		})
-		.addFields([
+		.addFields(
 			{
 				name: 'Mention',
 				value: guildMember.toString(),
@@ -66,7 +65,7 @@ export default async (guildMember, client) => {
 				value: diffDate(guildMember.user.createdAt),
 				inline: true,
 			},
-		])
+		)
 		.setFooter({
 			text: 'Un utilisateur a rejoint le serveur',
 		})
@@ -77,76 +76,94 @@ export default async (guildMember, client) => {
 	})
 
 	// Si le membre n'est pas bannable, réaction avec 🚫
-	if (!guildMember.bannable) return sentMessage.react('🚫')
+	if (!guildMember.bannable) {
+		await sentMessage.react('🚫').catch(() => null)
+		return
+	}
 
 	// Lecture du fichier de configuration
-	const emotesConfig = new Map(JSON.parse(await readFile('./config/env/banEmotesAtJoin.json')))
+	let emotesConfig
+	try {
+		emotesConfig = new Map(
+			JSON.parse(await readFile('./config/env/banEmotesAtJoin.json', 'utf8')),
+		)
+	} catch (error) {
+		console.error(error)
+		await sentMessage.react('⚠️').catch(() => null)
+		return
+	}
 
+	// Ajout des réactions de choix
 	const reactionsList = []
 	for (const [emoji] of emotesConfig) {
-		// eslint-disable-next-line no-await-in-loop
-		const sentReaction = await sentMessage.react(emoji)
-		reactionsList.push(sentReaction)
+		const sentReaction = await sentMessage.react(emoji).catch(() => null)
+		if (sentReaction) reactionsList.push(sentReaction)
 	}
 
 	// Filtre pour la réaction de ban
-	const banReactionFilter = ({ _emoji: emoji }, user) =>
-		(emotesConfig.has(emoji.name) || emotesConfig.has(emoji.id)) &&
-		guild.members.cache
-			.get(user.id)
-			.permissionsIn(leaveJoinChannel)
-			.has(PermissionsBitField.Flags.BanMembers) &&
-		!user.bot
+	const banReactionFilter = (messageReaction, user) => {
+		if (user.bot) return false
+
+		const emojiName = messageReaction.emoji.name
+		const emojiId = messageReaction.emoji.id
+
+		const hasMatchingEmoji = emotesConfig.has(emojiName) || emotesConfig.has(emojiId)
+		if (!hasMatchingEmoji) return false
+
+		return leaveJoinChannel.permissionsFor(user)?.has(PermissionsBitField.Flags.BanMembers)
+	}
 
 	// Création du collecteur de réactions de ban
 	const banReactions = await sentMessage.awaitReactions({
 		filter: banReactionFilter,
-		// Une seule réaction / émoji / user
 		max: 1,
 		maxEmojis: 1,
 		maxUsers: 1,
-		// 12 heures = 4,32e+7 ms
-		idle: 43200000,
+		idle: 43200000, // 12 heures
 	})
 
-	// Si réaction correcte ajoutée ou temps écoulé,
-	// on supprime les réactions ajoutées
-	await removeAddedReactions(reactionsList)
+	// On supprime les réactions ajoutées par le bot
+	await removeBotReactions(reactionsList, client)
 
 	// Si pas de réaction, return
 	if (!banReactions.size) return
 
 	// Acquisition de la réaction de ban et de son user
-	const { users: banReactionUsers, _emoji: banReactionEmoji } = banReactions.first()
-	const banReactionUser = banReactionUsers.cache.filter(user => !user.bot).first()
+	const firstBanReaction = banReactions.first()
+	if (!firstBanReaction) return
+
+	const banReactionUser = firstBanReaction.users.cache.find((user) => !user.bot)
+	if (!banReactionUser) return
+
+	const banReactionEmoji = firstBanReaction.emoji
 
 	// Ajout de la réaction de confirmation
-	const confirmationReaction = await sentMessage.react('✅')
+	const confirmationReaction = await sentMessage.react('✅').catch(() => null)
+	if (!confirmationReaction) return
 
 	// Filtre pour la réaction de confirmation
 	const confirmReactionFilter = (messageReaction, user) =>
-		messageReaction.emoji.name === '✅' && user === banReactionUser
+		messageReaction.emoji.name === '✅' && user.id === banReactionUser.id
 
 	// Création du collecteur de réactions de confirmation
 	const confirmationReactions = await sentMessage.awaitReactions({
 		filter: confirmReactionFilter,
-		// Une seule réaction / émoji / user
 		max: 1,
 		maxEmojis: 1,
 		maxUsers: 1,
-		// 5 minutes = 300000 ms
-		idle: 300000,
+		idle: 300000, // 5 minutes
 	})
 
-	// Si réaction correcte ajoutée ou temps écoulé,
-	// on supprime la réaction de confirmation
-	await confirmationReaction.remove()
+	// On supprime la réaction ✅ du bot
+	await confirmationReaction.users.remove(client.user.id).catch(() => null)
 
-	// Si pas de réaction de confirmation return
-	if (!confirmationReactions) return
+	// Si pas de réaction de confirmation, return
+	if (!confirmationReactions.size) return
 
 	// Définition de la variable 'reason' en fonction de la réaction cliquée
 	const reason = emotesConfig.get(banReactionEmoji.name) || emotesConfig.get(banReactionEmoji.id)
+
+	if (!reason) return
 
 	// Acquisition du message de bannissement
 	let banDM = ''
@@ -155,125 +172,147 @@ export default async (guildMember, client) => {
 		const dataSelectBan = ['ban']
 		const [resultSelectBan] = await bdd.execute(sqlSelectBan, dataSelectBan)
 
+		if (!resultSelectBan?.[0]?.content) {
+			console.log('Aucun contenu trouvé pour le message de bannissement en base de données')
+			return
+		}
+
 		banDM = resultSelectBan[0].content
-	} catch {
-		return console.log(
-			'Une erreur est survenue lors de la récupération du message de bannissement en base de données 😬',
-		)
+	} catch (error) {
+		console.error(error)
+		return
 	}
 
 	// Envoi du message de bannissement en message privé
-	const embed = new EmbedBuilder()
+	const dmEmbed = new EmbedBuilder()
 		.setColor('#C27C0E')
 		.setTitle('Bannissement')
 		.setDescription(banDM)
 		.setAuthor({
 			name: guild.name,
 			iconURL: guild.iconURL({ dynamic: true }),
-			url: guild.vanityURL,
+			url: guild.vanityURL ?? undefined,
 		})
-		.addFields([
-			{
-				name: 'Raison du bannissement',
-				value: reason,
-			},
-		])
-
-	const DMMessage = await guildMember
-		.send({
-			embeds: [embed],
+		.addFields({
+			name: 'Raison du bannissement',
+			value: reason,
 		})
-		.catch(async error => {
-			if (error.code === RESTJSONErrorCodes.CannotSendMessagesToThisUser)
-				return sentMessage.react('⛔')
 
+	let dmMessage = null
+	let dmFailed = false
+
+	try {
+		dmMessage = await guildMember.send({
+			embeds: [dmEmbed],
+		})
+		await sentMessage.react('📩').catch(() => null)
+	} catch (error) {
+		if (error.code === RESTJSONErrorCodes.CannotSendMessagesToThisUser) {
+			dmFailed = true
+			await sentMessage.react('⛔').catch(() => null)
+		} else {
 			console.error(error)
-			await sentMessage.react('⚠️')
-			return error
-		})
-
-	// Si le message a bien été envoyé, ajout réaction 📩
-	if (DMMessage instanceof Message) await sentMessage.react('📩')
-
-	// Ban du membre
-	const banAction = await guildMember
-		.ban({ deleteMessageSeconds: 604800, reason: `${banReactionUser.tag} : ${reason}` })
-		.catch(async error => {
-			console.error(error)
-			await sentMessage.react('❌')
-
-			// Edit du message envoyé en DM
-			const editedDMEmbedBuilder = new EmbedBuilder(DMMessage.embeds[0])
-			editedDMEmbedBuilder.title = 'Avertissement'
-			editedDMEmbedBuilder.description = 'Tu as reçu un avertissement !'
-			editedDMEmbedBuilder.fields[0].name = "Raison de l'avertissement"
-			await DMMessage.edit({
-				embeds: [editedDMEmbedBuilder],
-			})
-
-			return error
-		})
-
-	// Si pas d'erreur, réaction avec 🚪 pour confirmer le ban
-	if (banAction instanceof GuildMember) {
-		// Insertion du nouveau ban en base de données
-		try {
-			const sql =
-				'INSERT INTO bans_logs (discord_id, username, avatar, executor_id, executor_username, reason, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)'
-			const data = [
-				guildMember.user.id,
-				guildMember.user.username,
-				guildMember.user.avatar ? guildMember.user.avatar : null,
-				banReactionUser.id,
-				banReactionUser.username,
-				`${reason} (réaction)`,
-				Math.round(Date.now() / 1000),
-			]
-
-			await bddModeration.execute(sql, data)
-		} catch (error) {
-			console.error(error)
+			dmFailed = true
+			await sentMessage.react('⚠️').catch(() => null)
 		}
-
-		await sentMessage.react('🚪')
-
-		// Création de l'embed
-		const logEmbed = new EmbedBuilder()
-			.setColor('C9572A')
-			.setAuthor({
-				name: displayNameAndID(banAction, banAction),
-				iconURL: banAction.displayAvatarURL({ dynamic: true }),
-			})
-			.setDescription(`\`\`\`\n${banReactionUser.tag} : ${reason} (réaction)\`\`\``)
-			.addFields([
-				{
-					name: 'Mention',
-					value: banAction.toString(),
-					inline: true,
-				},
-				{
-					name: 'Date de création du compte',
-					value: convertDateForDiscord(banAction.user.createdAt),
-					inline: true,
-				},
-				{
-					name: 'Âge du compte',
-					value: diffDate(banAction.user.createdAt),
-					inline: true,
-				},
-			])
-			.setFooter({
-				iconURL: banReactionUser.displayAvatarURL({ dynamic: true }),
-				text: `Membre banni par ${banReactionUser.tag}`,
-			})
-			.setTimestamp(new Date())
-
-		return logsChannel.send({ embeds: [logEmbed] })
 	}
 
-	// Si au moins une erreur, throw
-	if (banAction instanceof Error || DMMessage instanceof Error)
-		throw new Error(
-			"L'envoi d'un message et / ou le bannissement d'un membre a échoué. Voir les logs précédents pour plus d'informations.",
+	// Ban du membre
+	try {
+		await guildMember.ban({
+			deleteMessageSeconds: 604800,
+			reason: `${banReactionUser.tag} : ${reason}`,
+		})
+	} catch (error) {
+		console.error(error)
+		await sentMessage.react('❌').catch(() => null)
+
+		// Si un DM a été envoyé, on l'édite en avertissement
+		if (dmMessage) {
+			const warningEmbed = new EmbedBuilder()
+				.setColor('#C27C0E')
+				.setTitle('Avertissement')
+				.setDescription('Tu as reçu un avertissement !')
+				.setAuthor({
+					name: guild.name,
+					iconURL: guild.iconURL({ dynamic: true }),
+					url: guild.vanityURL ?? undefined,
+				})
+				.addFields({
+					name: "Raison de l'avertissement",
+					value: reason,
+				})
+
+			await dmMessage
+				.edit({
+					embeds: [warningEmbed],
+				})
+				.catch(() => null)
+		}
+
+		return
+	}
+
+	// Si le ban a réussi, réaction avec 🚪 pour confirmer
+	await sentMessage.react('🚪').catch(() => null)
+
+	// Insertion du nouveau ban en base de données
+	try {
+		const sql =
+			'INSERT INTO bans_logs (discord_id, username, avatar, executor_id, executor_username, reason, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)'
+		const data = [
+			guildMember.user.id,
+			guildMember.user.username,
+			guildMember.user.avatar ?? null,
+			banReactionUser.id,
+			banReactionUser.username,
+			`${reason} (réaction)`,
+			Math.round(Date.now() / 1000),
+		]
+
+		await bddModeration.execute(sql, data)
+	} catch (error) {
+		console.error(error)
+	}
+
+	// Création de l'embed de log
+	const logEmbed = new EmbedBuilder()
+		.setColor(0xc9572a)
+		.setAuthor({
+			name: displayNameAndID(guildMember, guildMember.user),
+			iconURL: guildMember.displayAvatarURL({ dynamic: true }),
+		})
+		.setDescription(`\`\`\`\n${banReactionUser.tag} : ${reason} (réaction)\n\`\`\``)
+		.addFields(
+			{
+				name: 'Mention',
+				value: guildMember.toString(),
+				inline: true,
+			},
+			{
+				name: 'Date de création du compte',
+				value: convertDateForDiscord(guildMember.user.createdAt),
+				inline: true,
+			},
+			{
+				name: 'Âge du compte',
+				value: diffDate(guildMember.user.createdAt),
+				inline: true,
+			},
 		)
+		.setFooter({
+			iconURL: banReactionUser.displayAvatarURL({ dynamic: true }),
+			text: `Membre banni par ${banReactionUser.tag}`,
+		})
+		.setTimestamp(new Date())
+
+	if (dmFailed) {
+		logEmbed.addFields({
+			name: 'DM',
+			value: "Le message privé n'a pas pu être envoyé.",
+			inline: false,
+		})
+	}
+
+	return logsChannel.send({ embeds: [logEmbed] })
 }

@@ -1,24 +1,37 @@
-import { ContextMenuCommandBuilder } from 'discord.js'
+import { ContextMenuCommandBuilder, ApplicationCommandType, MessageFlags } from 'discord.js'
 
 export default {
-	contextMenu: new ContextMenuCommandBuilder().setName('userdiag').setType(2),
+	contextMenu: new ContextMenuCommandBuilder()
+		.setName('userdiag')
+		.setType(ApplicationCommandType.User),
+
 	interaction: async (interaction, client) => {
-		// On diffère la réponse pour avoir plus de 3 secondes
-		await interaction.deferReply()
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+
+		if (!interaction.guild?.available) {
+			return interaction.editReply({
+				content: 'La guilde est indisponible pour le moment 😕',
+			})
+		}
 
 		// Acquisition du membre
-		const member = interaction.guild.members.cache.get(interaction.targetUser.id)
-		if (!member)
+		const member = await interaction.guild.members
+			.fetch(interaction.targetUser.id)
+			.catch(() => null)
+
+		if (!member) {
 			return interaction.editReply({
 				content: "Je n'ai pas trouvé cet utilisateur, vérifie la mention ou l'ID 😕",
 			})
+		}
 
 		// Acquisition de la base de données
 		const bdd = client.config.db.pools.userbot
-		if (!bdd)
+		if (!bdd) {
 			return interaction.editReply({
 				content: 'Une erreur est survenue lors de la connexion à la base de données 😕',
 			})
+		}
 
 		// Acquisition du message
 		let userdiagMessage = ''
@@ -27,11 +40,18 @@ export default {
 			const data = ['userdiag']
 			const [result] = await bdd.execute(sql, data)
 
-			userdiagMessage = result[0].content
-		} catch {
+			userdiagMessage = result?.[0]?.content ?? ''
+		} catch (error) {
+			console.error(error)
 			return interaction.editReply({
 				content:
 					'Une erreur est survenue lors de la récupération du message UserDiag en base de données 😬',
+			})
+		}
+
+		if (!userdiagMessage) {
+			return interaction.editReply({
+				content: 'Le message UserDiag est introuvable ou vide 😕',
 			})
 		}
 

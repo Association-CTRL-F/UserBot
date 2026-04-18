@@ -1,97 +1,137 @@
 import { convertDateForDiscord } from '../../util/util.js'
 import { EmbedBuilder } from 'discord.js'
 
+const getReportColor = (count) => {
+	switch (count) {
+		case 1:
+			return 0xffae00
+		case 2:
+			return 0xff8200
+		case 3:
+			return 0xff6600
+		default:
+			return 0xff3200
+	}
+}
+
+const getReportFieldName = (count) => {
+	switch (count) {
+		case 1:
+			return '1er signalement'
+		case 2:
+			return '2nd signalement'
+		case 3:
+			return '3ème signalement'
+		default:
+			return '4ème signalement'
+	}
+}
+
+const isReportField = (field) => /signalement/i.test(field.name)
+
 export default async (messageReaction, user, client) => {
 	const { message, emoji } = messageReaction
 
-	if (message.partial) await message.fetch()
-	if (messageReaction.partial) await messageReaction.fetch()
+	if (message.partial) {
+		await message.fetch().catch(() => null)
+		if (message.partial) return
+	}
+
+	if (messageReaction.partial) {
+		await messageReaction.fetch().catch(() => null)
+		if (messageReaction.partial) return
+	}
 
 	if (user.bot || !message.guild || !message.guild.available) return
-
-	// Acquisition de la base de données
-	const bdd = client.config.db.pools.userbot
 
 	switch (emoji.name) {
 		// Si c'est un signalement (report)
 		case '🚨': {
-			if (message.author.bot || !message.guild) return
+			if (message.author?.bot) return
 
 			// On ne peut pas report son propre message
-			if (message.author === user) return messageReaction.users.remove(user)
+			if (message.author?.id === user.id) {
+				await messageReaction.users.remove(user.id).catch(() => null)
+				return
+			}
 
 			const reportChannel = message.guild.channels.cache.get(
 				client.config.guild.channels.REPORT_CHANNEL_ID,
 			)
-			if (!reportChannel) return
+			if (!reportChannel || !reportChannel.isTextBased()) return
 
-			const fetchedMessages = await reportChannel.messages.fetch()
+			const fetchedMessages = await reportChannel.messages
+				.fetch({ limit: 100 })
+				.catch(() => null)
+			if (!fetchedMessages) return
 
-			// Recherche si un report a déjà été posté
-			const logReport = fetchedMessages
-				.filter(msg => msg.embeds)
-				.find(msg => msg.embeds[0].fields.find(field => field.value.includes(message.id)))
+			// Recherche si un report a déjà été posté pour ce message
+			const logReport = fetchedMessages.find((msg) => {
+				const embed = msg.embeds?.[0]
+				if (!embed?.fields?.length) return false
+
+				return embed.fields.some(
+					(field) => field.name === 'ID du message' && field.value === message.id,
+				)
+			})
+
+			const reportLine = `Signalement de ${user} (ID : ${user.id}) le ${convertDateForDiscord(
+				new Date(),
+			)}`
 
 			// Si un report a déjà été posté
 			if (logReport) {
 				const logReportEmbed = logReport.embeds[0]
+				if (!logReportEmbed) return
+
+				const existingFields = logReportEmbed.fields ?? []
+				const baseFields = existingFields.filter((field) => !isReportField(field))
+				const reportFields = existingFields.filter((field) => isReportField(field))
 
 				// On return si l'utilisateur a déjà report ce message
-				if (logReportEmbed.data.fields.some(field => field.value.includes(user.id)))
-					return messageReaction.users.remove(user)
-
-				const editLogReport = {
-					author: logReportEmbed.author,
-					description: logReportEmbed.description,
-					fields: [logReportEmbed.data.fields],
+				if (reportFields.some((field) => field.value.includes(`ID : ${user.id}`))) {
+					await messageReaction.users.remove(user.id).catch(() => null)
+					return
 				}
 
-				// On ajoute un field en fonction
-				// du nombre de report qu'il y a déjà
-				switch (logReportEmbed.data.fields.length - 3) {
-					case 1:
-						editLogReport.color = 'ff8200'
-						editLogReport.data.fields.push({
-							name: '2nd signalement',
-							value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
-						})
-						break
+				const nextCount = Math.min(reportFields.length + 1, 4)
+				const updatedReportFields = [
+					...reportFields,
+					{
+						name: getReportFieldName(nextCount),
+						value: reportLine,
+						inline: false,
+					},
+				]
 
-					case 2:
-						editLogReport.color = 'ff6600'
-						editLogReport.data.fields.push({
-							name: '3ème signalement',
-							value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
-						})
-						break
+				const updatedEmbed = EmbedBuilder.from(logReportEmbed)
+					.setColor(getReportColor(updatedReportFields.length))
+					.setFields([...baseFields, ...updatedReportFields])
 
-					case 3:
-						editLogReport.color = 'ff3200'
-						editLogReport.data.fields.push({
-							name: '4ème signalement',
-							value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
-						})
+				await logReport.edit({ embeds: [updatedEmbed] }).catch(console.error)
 
-						client.cache.deleteMessagesID.add(messageReaction.message.id)
-						messageReaction.message.delete()
-						break
-
-					default:
-						break
+				if (updatedReportFields.length >= 4) {
+					client.cache.deleteMessagesID.add(message.id)
+					await message.delete().catch(() => null)
 				}
 
-				// Edit de l'embed
-				return logReport.edit({ embeds: [editLogReport] })
+				await messageReaction.users.remove(user.id).catch(() => null)
+				return
 			}
 
 			// S'il n'y a pas de report déjà posté
+			const escapedContent = (message.content || '[Message sans contenu texte]')
+				.replace(/```/g, '\\`\\`\\`')
+				.slice(0, 3900)
+
 			const sendLogReport = new EmbedBuilder()
-				.setDescription(`**Contenu du message**\n\`\`\`${message.content}\`\`\``)
+				.setColor(getReportColor(1))
+				.setDescription(`**Contenu du message**\n\`\`\`\n${escapedContent}\n\`\`\``)
 				.setAuthor({
 					name: 'Nouveau signalement',
 					iconURL: message.author.displayAvatarURL({ dynamic: true }),
 				})
-				.addFields([
+				.addFields(
 					{
 						name: 'Auteur',
 						value: message.author.toString(),
@@ -104,85 +144,24 @@ export default async (messageReaction, user, client) => {
 					},
 					{
 						name: 'Message',
-						value: `[Posté le ${convertDateForDiscord(message.createdAt)}](${
-							message.url
-						})`,
+						value: `[Posté le ${convertDateForDiscord(message.createdAt)}](${message.url})`,
 						inline: true,
 					},
-				])
-
-			switch (messageReaction.count) {
-				case 1:
-					sendLogReport.color = 'FFAE00'
-					sendLogReport.data.fields.push({
+					{
+						name: 'ID du message',
+						value: message.id,
+						inline: false,
+					},
+					{
 						name: '1er signalement',
-						value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
-					})
-					break
+						value: reportLine,
+						inline: false,
+					},
+				)
 
-				case 2:
-					sendLogReport.color = 'FF8200'
-					sendLogReport.data.fields.push(
-						{
-							name: '1er signalement',
-							value: '?',
-						},
-						{
-							name: '2nd signalement',
-							value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
-						},
-					)
-					break
-
-				case 3:
-					sendLogReport.color = 'FF6600'
-					sendLogReport.data.fields.push(
-						{
-							name: '1er signalement',
-							value: '?',
-						},
-						{
-							name: '2nd signalement',
-							value: '?',
-						},
-						{
-							name: '3ème signalement',
-							value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
-						},
-					)
-					break
-
-				case 4:
-					sendLogReport.color = 'FF3200'
-					sendLogReport.data.fields.push(
-						{
-							name: '1er signalement',
-							value: '?',
-						},
-						{
-							name: '2nd signalement',
-							value: '?',
-						},
-						{
-							name: '3ème signalement',
-							value: '?',
-						},
-						{
-							name: '4ème signalement',
-							value: `Signalement de ${user} le ${convertDateForDiscord(Date.now())}`,
-						},
-					)
-
-					client.cache.deleteMessagesID.add(messageReaction.message.id)
-					messageReaction.message.delete()
-					break
-
-				default:
-					break
-			}
-
-			// Envoi de l'embed
-			return reportChannel.send({ embeds: [sendLogReport] })
+			await reportChannel.send({ embeds: [sendLogReport] }).catch(console.error)
+			await messageReaction.users.remove(user.id).catch(() => null)
+			return
 		}
 
 		// Si c'est un salon auto-thread
@@ -191,18 +170,21 @@ export default async (messageReaction, user, client) => {
 				? client.config.guild.managers.THREADS_MANAGER_CHANNELS_IDS.split(/, */)
 				: []
 
-			if (THREADS.includes(message.channel.id) && !message.hasThread)
-				// Création automatique du thread associé
-				await message.startThread({
-					name: `Thread de ${message.member.displayName}`,
-					// Archivage après 24H
-					autoArchiveDuration: 24 * 60,
-				})
+			if (THREADS.includes(message.channel.id) && !message.hasThread) {
+				await message
+					.startThread({
+						name: `Thread de ${message.member?.displayName || message.author.username}`,
+						// Archivage après 24H
+						autoArchiveDuration: 24 * 60,
+					})
+					.catch(() => null)
+			}
 
-			return messageReaction.remove()
+			await messageReaction.users.remove(user.id).catch(() => null)
+			return
 		}
 
 		default:
-			break
+			return
 	}
 }
