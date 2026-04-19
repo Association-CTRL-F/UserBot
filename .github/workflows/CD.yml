@@ -24,8 +24,6 @@ jobs:
           images: ctrlfdocker/userbot
           tags: |
             type=semver,pattern={{version}},value=${{ github.event.release.tag_name }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ github.event.release.tag_name }}
-            type=semver,pattern={{major}},value=${{ github.event.release.tag_name }}
 
       - name: Login to DockerHub
         uses: docker/login-action@v4
