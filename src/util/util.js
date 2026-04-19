@@ -10,6 +10,21 @@ const ensureString = (value) => {
 	return value
 }
 
+/**
+ * Gère l'ajout de "s" à la fin d'un mot en fonction de la quantité
+ * @param {string} word
+ * @param {number} quantity
+ * @param {boolean} isAlwaysPlural
+ * @returns {string}
+ */
+export const pluralize = (word, quantity, isAlwaysPlural = false) => {
+	if (quantity === 0) return ''
+
+	if (isAlwaysPlural) return `${quantity} ${word}`
+
+	return `${quantity} ${word}${quantity > 1 ? 's' : ''}`
+}
+
 const formatDuration = (totalSeconds, { withSeconds = true } = {}) => {
 	const safeSeconds = Math.max(0, Math.floor(totalSeconds))
 
@@ -26,21 +41,6 @@ const formatDuration = (totalSeconds, { withSeconds = true } = {}) => {
 	if (withSeconds && seconds) parts.push(pluralize('seconde', seconds))
 
 	return parts.join(' ')
-}
-
-/**
- * Gère l'ajout de "s" à la fin d'un mot en fonction de la quantité
- * @param {string} word
- * @param {number} quantity
- * @param {boolean} isAlwaysPlural
- * @returns {string}
- */
-export const pluralize = (word, quantity, isAlwaysPlural = false) => {
-	if (quantity === 0) return ''
-
-	if (isAlwaysPlural) return `${quantity} ${word}`
-
-	return `${quantity} ${word}${quantity > 1 ? 's' : ''}`
 }
 
 /**

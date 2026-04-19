@@ -3,7 +3,7 @@ import {
 	ContextMenuCommandBuilder,
 	ApplicationCommandType,
 	RESTJSONErrorCodes,
-	MessageFlags
+	MessageFlags,
 } from 'discord.js'
 
 export default {

@@ -1,5 +1,10 @@
 import { convertDateForDiscord, diffDate } from '../../util/util.js'
-import { SlashCommandBuilder, EmbedBuilder, version as discordVersion, MessageFlags } from 'discord.js'
+import {
+	SlashCommandBuilder,
+	EmbedBuilder,
+	version as discordVersion,
+	MessageFlags,
+} from 'discord.js'
 import { readFileSync } from 'node:fs'
 
 const { version } = JSON.parse(readFileSync('./package.json', 'utf8'))

@@ -88,7 +88,6 @@ export default async (interaction, client) => {
 			}
 
 			default:
-				return
 		}
 	} catch (error) {
 		console.error(error)

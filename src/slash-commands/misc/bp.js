@@ -6,8 +6,7 @@ import {
 	TextInputStyle,
 	EmbedBuilder,
 	RESTJSONErrorCodes,
-	ChannelType,
-	MessageFlags
+	MessageFlags,
 } from 'discord.js'
 
 export default {

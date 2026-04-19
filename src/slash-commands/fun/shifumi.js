@@ -6,7 +6,7 @@ import {
 	ButtonStyle,
 	ComponentType,
 	AttachmentBuilder,
-	MessageFlags
+	MessageFlags,
 } from 'discord.js'
 import { convertDateForDiscord } from '../../util/util.js'
 
@@ -136,9 +136,15 @@ export default {
 			if (i.user.id === interaction.user.id) {
 				if (!playerOneChoice) {
 					playerOneChoice = i.customId
-					await i.reply({ content: 'Réponse enregistrée 👌', flags: MessageFlags.Ephemeral })
+					await i.reply({
+						content: 'Réponse enregistrée 👌',
+						flags: MessageFlags.Ephemeral,
+					})
 				} else {
-					await i.reply({ content: 'Tu as déjà validé ta réponse 😬', flags: MessageFlags.Ephemeral })
+					await i.reply({
+						content: 'Tu as déjà validé ta réponse 😬',
+						flags: MessageFlags.Ephemeral,
+					})
 				}
 				return
 			}
@@ -146,14 +152,23 @@ export default {
 			if (i.user.id === reactionUser.id) {
 				if (!playerTwoChoice) {
 					playerTwoChoice = i.customId
-					await i.reply({ content: 'Réponse enregistrée 👌', flags: MessageFlags.Ephemeral })
+					await i.reply({
+						content: 'Réponse enregistrée 👌',
+						flags: MessageFlags.Ephemeral,
+					})
 				} else {
-					await i.reply({ content: 'Tu as déjà validé ta réponse 😬', flags: MessageFlags.Ephemeral })
+					await i.reply({
+						content: 'Tu as déjà validé ta réponse 😬',
+						flags: MessageFlags.Ephemeral,
+					})
 				}
 				return
 			}
 
-			await i.reply({ content: 'Tu ne fais pas partie du jeu 😬', flags: MessageFlags.Ephemeral })
+			await i.reply({
+				content: 'Tu ne fais pas partie du jeu 😬',
+				flags: MessageFlags.Ephemeral,
+			})
 		})
 
 		// Affichage du gagnant

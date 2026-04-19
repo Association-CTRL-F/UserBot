@@ -1,4 +1,9 @@
-import { EmbedBuilder, ContextMenuCommandBuilder, ApplicationCommandType, MessageFlags } from 'discord.js'
+import {
+	EmbedBuilder,
+	ContextMenuCommandBuilder,
+	ApplicationCommandType,
+	MessageFlags,
+} from 'discord.js'
 import { convertDateForDiscord } from '../../util/util.js'
 
 const truncateForCodeBlock = (text, max = 1000) => {

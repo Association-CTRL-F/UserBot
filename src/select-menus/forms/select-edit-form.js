@@ -1,4 +1,10 @@
-import { ModalBuilder, TextInputBuilder, ActionRowBuilder, TextInputStyle, MessageFlags } from 'discord.js'
+import {
+	ModalBuilder,
+	TextInputBuilder,
+	ActionRowBuilder,
+	TextInputStyle,
+	MessageFlags,
+} from 'discord.js'
 
 export default {
 	data: {

@@ -68,9 +68,9 @@ export default {
 				await member.roles.add(rolesAdd)
 			}
 
-			const description =
-				rolesAdd.map((roleId) => `- <@&${roleId}>`).join('\n') +
-				`\n\n**Raison :** ${reason}`
+			const description = `${rolesAdd
+				.map((roleId) => `- <@&${roleId}>`)
+				.join('\n')}\n\n**Raison :** ${reason}`
 
 			// Envoi du message de logs
 			if (rolesLogs?.isTextBased()) {

@@ -4,7 +4,7 @@ import {
 	TextInputBuilder,
 	ActionRowBuilder,
 	TextInputStyle,
-	MessageFlags
+	MessageFlags,
 } from 'discord.js'
 
 export default {

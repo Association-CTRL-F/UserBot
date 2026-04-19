@@ -6,7 +6,7 @@ import {
 	ButtonStyle,
 	RESTJSONErrorCodes,
 	ChannelType,
-	MessageFlags
+	MessageFlags,
 } from 'discord.js'
 import { convertMinutesToString, displayNameAndID } from '../../util/util.js'
 

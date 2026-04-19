@@ -1,4 +1,4 @@
-import { PermissionsBitField, ChannelType } from 'discord.js'
+import { ChannelType } from 'discord.js'
 
 const handleLeave = async (oldState, client) => {
 	// Acquisition de la base de données

@@ -1,4 +1,11 @@
-import { SlashCommandBuilder, EmbedBuilder, ChannelType, ButtonStyle, Collection, MessageFlags } from 'discord.js'
+import {
+	SlashCommandBuilder,
+	EmbedBuilder,
+	ChannelType,
+	ButtonStyle,
+	Collection,
+	MessageFlags,
+} from 'discord.js'
 import { convertDateForDiscord, convertMsToString, pluralize } from '../../util/util.js'
 import { Pagination } from 'pagination.djs'
 import ms from 'ms'
@@ -766,7 +773,7 @@ export default {
 					})
 				}
 
-				await interaction.deferReply({ flags: MessageFlags.Ephemeral, })
+				await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
 				const channel = await interaction.guild.channels
 					.fetch(fetchGiveaway.channel)

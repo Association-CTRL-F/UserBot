@@ -1,4 +1,4 @@
-export default async (messageReaction, user, client) => {
+export default async (messageReaction) => {
 	const { message } = messageReaction
 
 	if (message.partial) {
@@ -8,8 +8,5 @@ export default async (messageReaction, user, client) => {
 
 	if (messageReaction.partial) {
 		await messageReaction.fetch().catch(() => null)
-		if (messageReaction.partial) return
 	}
-
-	if (user.bot || !message.guild || !message.guild.available) return
 }

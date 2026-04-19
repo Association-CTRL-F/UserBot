@@ -3,7 +3,7 @@ import {
 	ContextMenuCommandBuilder,
 	RESTJSONErrorCodes,
 	ApplicationCommandType,
-	MessageFlags
+	MessageFlags,
 } from 'discord.js'
 import { displayNameAndID } from '../../util/util.js'
 

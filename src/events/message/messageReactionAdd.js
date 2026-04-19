@@ -181,10 +181,8 @@ export default async (messageReaction, user, client) => {
 			}
 
 			await messageReaction.users.remove(user.id).catch(() => null)
-			return
 		}
 
 		default:
-			return
 	}
 }

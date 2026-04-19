@@ -1,4 +1,9 @@
-import { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, MessageFlags } from 'discord.js'
+import {
+	SlashCommandBuilder,
+	ActionRowBuilder,
+	StringSelectMenuBuilder,
+	MessageFlags,
+} from 'discord.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -78,8 +83,6 @@ export default {
 					reason,
 					message,
 				})
-
-				return
 			}
 		}
 	},

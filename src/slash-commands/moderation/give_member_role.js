@@ -1,4 +1,9 @@
-import { ContextMenuCommandBuilder, ApplicationCommandType, RESTJSONErrorCodes, MessageFlags } from 'discord.js'
+import {
+	ContextMenuCommandBuilder,
+	ApplicationCommandType,
+	RESTJSONErrorCodes,
+	MessageFlags,
+} from 'discord.js'
 
 export default {
 	contextMenu: new ContextMenuCommandBuilder()
