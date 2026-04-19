@@ -1,11 +1,9 @@
-import { MessageFlags } from 'discord.js'
-
 export default {
 	data: {
 		name: 'form-edit',
 	},
 	interaction: async (modal, client) => {
-		await modal.deferReply({ flags: MessageFlags.Ephemeral })
+		await modal.deferReply()
 
 		// Acquisition du nom et du contenu
 		const nom = modal.fields.getTextInputValue('form-edit-name').trim().toLowerCase()

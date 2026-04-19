@@ -22,24 +22,12 @@ export default {
 		),
 
 	interaction: async (interaction, client) => {
+		const member = interaction.guild.members.cache.get(interaction.user.id)
+
 		switch (interaction.options.getSubcommand()) {
 			case 'roles': {
-				// Acquisition du membre
-				const member = await interaction.guild.members
-					.fetch(interaction.user.id)
-					.catch(() => null)
+				const reason = interaction.options.getString('raison')
 
-				if (!member) {
-					return interaction.reply({
-						content: "Je n'ai pas trouvé ton profil sur le serveur 😕",
-						flags: MessageFlags.Ephemeral,
-					})
-				}
-
-				// Acquisition de la raison
-				const reason = interaction.options.getString('raison').trim()
-
-				// Acquisition des rôles à proposer
 				const [staffEditeurs, modo, certifie] = await Promise.all([
 					interaction.guild.roles.fetch(client.config.guild.roles.STAFF_EDITEURS_ROLE_ID),
 					interaction.guild.roles.fetch(client.config.guild.roles.MODO_ROLE_ID),
@@ -48,21 +36,17 @@ export default {
 
 				if (!staffEditeurs || !modo || !certifie) {
 					return interaction.reply({
-						content: 'Impossible de récupérer un ou plusieurs rôles staff 😕',
+						content: 'Impossible de récupérer un ou plusieurs rôles 😕',
 						flags: MessageFlags.Ephemeral,
 					})
 				}
 
-				const rolesArray = [staffEditeurs, modo, certifie]
-
-				// Valeurs par défaut du menu
-				const rolesArrayDefault = rolesArray.map((role) => ({
+				const rolesArrayDefault = [staffEditeurs, modo, certifie].map((role) => ({
 					label: role.name,
 					value: role.id,
 					default: member.roles.cache.has(role.id),
 				}))
 
-				// Création du menu
 				const roles = new ActionRowBuilder().addComponents(
 					new StringSelectMenuBuilder()
 						.setCustomId('roles')
@@ -72,16 +56,18 @@ export default {
 						.addOptions(rolesArrayDefault),
 				)
 
-				const message = await interaction.reply({
+				await interaction.reply({
 					components: [roles],
 					flags: MessageFlags.Ephemeral,
-					fetchReply: true,
 				})
 
-				client.cache.staffRolesReason.add({
-					memberId: interaction.user.id,
+				if (!(client.cache.staffRolesReason instanceof Map)) {
+					client.cache.staffRolesReason = new Map()
+				}
+
+				client.cache.staffRolesReason.set(interaction.user.id, {
 					reason,
-					message,
+					interaction,
 				})
 			}
 		}

@@ -25,7 +25,7 @@ export default {
 		const memberRoleId = client.config.guild.roles.MEMBER_ROLE_ID
 		if (!memberRoleId) {
 			return interaction.editReply({
-				content: 'Le rôle membre n’est pas configuré 😕',
+				content: "Le rôle membre n'est pas configuré 😕",
 			})
 		}
 
@@ -54,7 +54,7 @@ export default {
 			})
 		}
 
-		// On ne peut pas s’ajouter le rôle soi-même
+		// On ne peut pas s'ajouter le rôle soi-même
 		if (member.user.id === interaction.user.id) {
 			return interaction.editReply({
 				content: "Tu ne peux pas t'ajouter le rôle membre 😕",

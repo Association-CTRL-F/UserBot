@@ -21,7 +21,7 @@ export default {
 			})
 		}
 
-		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+		await interaction.deferReply()
 
 		try {
 			const result = math.evaluate(calcul)

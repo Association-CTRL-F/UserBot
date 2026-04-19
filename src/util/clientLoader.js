@@ -28,7 +28,6 @@ export default async () => {
 	client.buttons = new Collection()
 	client.cooldowns = new Collection()
 
-	// Lire le fichier config.json
 	let configGuild = null
 	try {
 		const configRaw = await readFile('./config/env/config.json', 'utf8')
@@ -57,7 +56,6 @@ export default async () => {
 		},
 	}
 
-	// Création des pools
 	try {
 		const [POOL_urlsAPI, POOL_moderation, POOL_userbot] = await Promise.all([
 			pool({
@@ -86,24 +84,17 @@ export default async () => {
 	}
 
 	client.cache = {
-		// Messages supprimés par le bot pour ne pas
-		// les log lors de l'event "messageDelete"
 		deleteMessagesID: new Set(),
-		// Anti-spam commandes /config et /upgrade
 		conseilsUsersID: new Set(),
-		// Domaines blacklistés
 		blacklistedDomains: new Set(),
-		// Raison de modification de rôles staff
-		staffRolesReason: new Set(),
+		staffRolesReason: new Map(),
 	}
 
-	// Maps
 	client.commandsCategories = new Map()
 	client.modalsCategories = new Map()
 	client.selectMenusCategories = new Map()
 	client.buttonsCategories = new Map()
 
-	// Map utilisée pour la gestion des salons vocaux
 	client.voiceManager = new Map()
 
 	return client

@@ -1,11 +1,11 @@
-import { EmbedBuilder, ChannelType, MessageFlags } from 'discord.js'
+import { EmbedBuilder, ChannelType } from 'discord.js'
 
 export default {
 	data: {
 		name: 'bp',
 	},
 	interaction: async (modal, client) => {
-		await modal.deferReply({ flags: MessageFlags.Ephemeral })
+		await modal.deferReply()
 
 		// Acquisition du titre, de la description et du lien
 		const titre = modal.fields.getTextInputValue('bp-titre').trim()

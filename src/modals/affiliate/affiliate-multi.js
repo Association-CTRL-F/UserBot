@@ -1,12 +1,10 @@
-import { MessageFlags } from 'discord.js'
-
 export default {
 	data: {
 		name: 'affiliate-multi',
 	},
 	interaction: async (modal, client) => {
 		// On diffère la réponse pour éviter le timeout des interactions
-		await modal.deferReply({ flags: MessageFlags.Ephemeral })
+		await modal.deferReply()
 
 		// Acquisition des liens
 		const liens = modal.fields

@@ -6,7 +6,7 @@ export default {
 		.setType(ApplicationCommandType.User),
 
 	interaction: async (interaction, client) => {
-		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+		await interaction.deferReply()
 
 		if (!interaction.guild?.available) {
 			return interaction.editReply({

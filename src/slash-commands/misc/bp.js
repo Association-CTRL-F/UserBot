@@ -78,7 +78,7 @@ export default {
 		}
 
 		// End / Del : on diffère la réponse
-		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+		await interaction.deferReply()
 
 		if (!interaction.guild?.available) {
 			return interaction.editReply({

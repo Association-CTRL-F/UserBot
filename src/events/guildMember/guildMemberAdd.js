@@ -7,10 +7,8 @@ import {
 import { readFile } from 'fs/promises'
 import { PermissionsBitField, EmbedBuilder, RESTJSONErrorCodes } from 'discord.js'
 
-const removeBotReactions = async (reactions, client) =>
-	Promise.all(
-		reactions.map((reaction) => reaction.users.remove(client.user.id).catch(() => null)),
-	)
+const removeBotReactions = async (reactions) =>
+	Promise.all(reactions.map((reaction) => reaction.remove().catch(() => null)))
 
 export default async (guildMember, client) => {
 	const guild = guildMember.guild
@@ -122,7 +120,7 @@ export default async (guildMember, client) => {
 		idle: 43200000, // 12 heures
 	})
 
-	// On supprime les réactions ajoutées par le bot
+	// On supprime les réactions ajoutées
 	await removeBotReactions(reactionsList, client)
 
 	// Si pas de réaction, return
@@ -155,7 +153,7 @@ export default async (guildMember, client) => {
 	})
 
 	// On supprime la réaction ✅ du bot
-	await confirmationReaction.users.remove(client.user.id).catch(() => null)
+	await confirmationReaction.remove().catch(() => null)
 
 	// Si pas de réaction de confirmation, return
 	if (!confirmationReactions.size) return

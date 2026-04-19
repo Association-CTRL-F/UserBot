@@ -31,7 +31,7 @@ export default {
 		),
 
 	interaction: async (interaction, client) => {
-		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+		await interaction.deferReply()
 
 		const userId = interaction.options.getString('membre')
 		const reason = interaction.options.getString('raison').trim()

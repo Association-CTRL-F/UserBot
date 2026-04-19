@@ -29,7 +29,7 @@ const getReportFieldName = (count) => {
 
 const isReportField = (field) => /signalement/i.test(field.name)
 
-export default async (messageReaction, user, client) => {
+export default async (messageReaction, user, _details, client) => {
 	const { message, emoji } = messageReaction
 
 	if (message.partial) {
@@ -50,10 +50,10 @@ export default async (messageReaction, user, client) => {
 			if (message.author?.bot) return
 
 			// On ne peut pas report son propre message
-			if (message.author?.id === user.id) {
-				await messageReaction.users.remove(user.id).catch(() => null)
-				return
-			}
+			// if (message.author?.id === user.id) {
+			// 	await messageReaction.users.remove(user.id).catch(() => null)
+			// 	return
+			// }
 
 			const reportChannel = message.guild.channels.cache.get(
 				client.config.guild.channels.REPORT_CHANNEL_ID,
@@ -174,13 +174,13 @@ export default async (messageReaction, user, client) => {
 				await message
 					.startThread({
 						name: `Thread de ${message.member?.displayName || message.author.username}`,
-						// Archivage après 24H
+						// Archivage après 24h
 						autoArchiveDuration: 24 * 60,
 					})
 					.catch(() => null)
 			}
 
-			await messageReaction.users.remove(user.id).catch(() => null)
+			await messageReaction.remove().catch(() => null)
 		}
 
 		default:

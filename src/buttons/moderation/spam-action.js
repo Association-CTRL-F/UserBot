@@ -50,7 +50,6 @@ export default {
 		if (!canHandleSpamDecision(interaction.member)) {
 			return interaction.reply({
 				content: "Tu n'as pas les permissions pour traiter ce signalement 😬",
-				flags: MessageFlags.Ephemeral,
 			})
 		}
 
@@ -58,7 +57,6 @@ export default {
 		if (!bdd) {
 			return interaction.reply({
 				content: 'Base de données indisponible 😬',
-				flags: MessageFlags.Ephemeral,
 			})
 		}
 
@@ -74,21 +72,18 @@ export default {
 			console.error(error)
 			return interaction.reply({
 				content: 'Erreur lors de la lecture du signalement 😬',
-				flags: MessageFlags.Ephemeral,
 			})
 		}
 
 		if (!report) {
 			return interaction.reply({
 				content: 'Signalement introuvable 😕',
-				flags: MessageFlags.Ephemeral,
 			})
 		}
 
 		if (report.status !== 'pending') {
 			return interaction.reply({
 				content: 'Une décision a déjà été prise pour ce signalement 😕',
-				flags: MessageFlags.Ephemeral,
 			})
 		}
 
@@ -105,14 +100,12 @@ export default {
 				if (error.code === RESTJSONErrorCodes.MissingPermissions) {
 					return interaction.reply({
 						content: "Je n'ai pas les permissions pour bannir ce membre 😬",
-						flags: MessageFlags.Ephemeral,
 					})
 				}
 
 				console.error(error)
 				return interaction.reply({
 					content: 'Impossible de bannir ce membre 😬',
-					flags: MessageFlags.Ephemeral,
 				})
 			}
 
@@ -157,7 +150,6 @@ export default {
 				console.error(error)
 				return interaction.reply({
 					content: 'Impossible de retirer la sanction 😬',
-					flags: MessageFlags.Ephemeral,
 				})
 			}
 
@@ -220,7 +212,6 @@ export default {
 
 		return interaction.reply({
 			content: 'Action inconnue 😕',
-			flags: MessageFlags.Ephemeral,
 		})
 	},
 }

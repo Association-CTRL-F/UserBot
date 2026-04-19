@@ -3,7 +3,6 @@ import {
 	ContextMenuCommandBuilder,
 	ApplicationCommandType,
 	RESTJSONErrorCodes,
-	MessageFlags,
 } from 'discord.js'
 
 export default {
@@ -14,7 +13,7 @@ export default {
 	interaction: async (interaction, client) => {
 		if (interaction.commandType !== ApplicationCommandType.Message) return
 
-		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+		await interaction.deferReply()
 
 		if (!interaction.guild?.available) {
 			return interaction.editReply({

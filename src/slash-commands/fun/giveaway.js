@@ -420,7 +420,6 @@ export default {
 					content: `Giveaway créé 👌\nPrix : ${prize}\nNombre de gagnants : ${winners}\nSalon : ${channel}\nDurée : ${convertMsToString(
 						durationMs,
 					)}`,
-					flags: MessageFlags.Ephemeral,
 				})
 			}
 
@@ -501,7 +500,6 @@ export default {
 					content: `Giveaway modifié 👌\nPrix : ${prize}\nNombre de gagnants : ${winners}\nSalon : ${channel}\nDurée : ${convertMsToString(
 						durationMs,
 					)}`,
-					flags: MessageFlags.Ephemeral,
 				})
 			}
 
@@ -535,7 +533,6 @@ export default {
 					if (result.affectedRows === 1) {
 						return interaction.reply({
 							content: 'Le giveaway a bien été supprimé 👌',
-							flags: MessageFlags.Ephemeral,
 						})
 					}
 				} catch (error) {
@@ -589,7 +586,7 @@ export default {
 					})
 				}
 
-				await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+				await interaction.deferReply()
 
 				const channelStart = await interaction.guild.channels
 					.fetch(fetchGiveaway.channel)
@@ -692,7 +689,7 @@ export default {
 					})
 				}
 
-				await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+				await interaction.deferReply()
 
 				const channel = await interaction.guild.channels
 					.fetch(fetchGiveaway.channel)
@@ -773,7 +770,7 @@ export default {
 					})
 				}
 
-				await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+				await interaction.deferReply()
 
 				const channel = await interaction.guild.channels
 					.fetch(fetchGiveaway.channel)

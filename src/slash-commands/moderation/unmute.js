@@ -285,7 +285,7 @@ export default {
 
 				if (!unmuttedMembers.length) {
 					return interaction.editReply({
-						content: 'Aucun des membres fournis n’était muté 😕',
+						content: "Aucun des membres fournis n'était muté 😕",
 					})
 				}
 

@@ -51,8 +51,8 @@ export default {
 			idle: 43200000, // 12 heures
 		})
 
-		// On enlève uniquement la réaction du bot
-		await reaction.users.remove(interaction.client.user.id).catch(() => null)
+		// On enlève les réactions
+		await reaction.remove()
 
 		// Si personne n'a accepté
 		if (!reactions.size) {
@@ -97,15 +97,15 @@ export default {
 
 		const buttons = new ActionRowBuilder().addComponents(
 			new ButtonBuilder()
-				.setCustomId('pierre')
+				.setCustomId('shifumi:pierre')
 				.setEmoji('🪨')
 				.setStyle(ButtonStyle.Secondary),
 			new ButtonBuilder()
-				.setCustomId('feuille')
+				.setCustomId('shifumi:feuille')
 				.setEmoji('📰')
 				.setStyle(ButtonStyle.Secondary),
 			new ButtonBuilder()
-				.setCustomId('ciseaux')
+				.setCustomId('shifumi:ciseaux')
 				.setEmoji('✂️')
 				.setStyle(ButtonStyle.Secondary),
 		)
@@ -135,7 +135,7 @@ export default {
 		collector.on('collect', async (i) => {
 			if (i.user.id === interaction.user.id) {
 				if (!playerOneChoice) {
-					playerOneChoice = i.customId
+					playerOneChoice = i.customId.split(':')[1]
 					await i.reply({
 						content: 'Réponse enregistrée 👌',
 						flags: MessageFlags.Ephemeral,
@@ -151,7 +151,7 @@ export default {
 
 			if (i.user.id === reactionUser.id) {
 				if (!playerTwoChoice) {
-					playerTwoChoice = i.customId
+					playerTwoChoice = i.customId.split(':')[1]
 					await i.reply({
 						content: 'Réponse enregistrée 👌',
 						flags: MessageFlags.Ephemeral,

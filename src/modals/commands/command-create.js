@@ -1,11 +1,11 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 
 export default {
 	data: {
 		name: 'command-create',
 	},
 	interaction: async (modal, client) => {
-		await modal.deferReply({ flags: MessageFlags.Ephemeral })
+		await modal.deferReply()
 
 		// Acquisition du nom, des alias et du contenu
 		const nom = modal.fields.getTextInputValue('name-command-create').trim().toLowerCase()
@@ -47,7 +47,7 @@ export default {
 				}
 			} catch {
 				return modal.editReply({
-					content: 'Le lien du bouton n’est pas valide 😕',
+					content: "Le lien du bouton n'est pas valide 😕",
 				})
 			}
 

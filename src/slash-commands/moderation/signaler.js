@@ -132,7 +132,7 @@ export default {
 
 			updatedEmbed.addFields(...existingFields, {
 				name: getReportFieldName(nextReportCount),
-				value: `Signalement de ${interaction.user} le ${convertDateForDiscord(Date.now())}`,
+				value: `Signalement de ${interaction.user} (ID : ${interaction.user.id}) le ${convertDateForDiscord(Date.now())}`,
 			})
 
 			await logReport.edit({ embeds: [updatedEmbed] })
@@ -179,7 +179,7 @@ export default {
 				},
 				{
 					name: '1er signalement',
-					value: `Signalement de ${interaction.user} le ${convertDateForDiscord(
+					value: `Signalement de ${interaction.user} (ID : ${interaction.user.id}) le ${convertDateForDiscord(
 						Date.now(),
 					)}`,
 				},

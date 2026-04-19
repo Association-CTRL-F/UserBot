@@ -186,7 +186,7 @@ export default {
 					})
 				}
 
-				await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+				await interaction.deferReply()
 
 				const targetUser = await client.users.fetch(userId).catch(() => null)
 				if (!targetUser) {
@@ -324,7 +324,6 @@ export default {
 					if (resultEdit.affectedRows === 1) {
 						return interaction.reply({
 							content: "L'avertissement a bien été modifié 👌",
-							flags: MessageFlags.Ephemeral,
 						})
 					}
 				} catch (error) {
@@ -371,7 +370,6 @@ export default {
 				if (deletedWarn.affectedRows === 1) {
 					return interaction.reply({
 						content: "L'avertissement a bien été supprimé 👌",
-						flags: MessageFlags.Ephemeral,
 					})
 				}
 
@@ -428,7 +426,6 @@ export default {
 
 				return interaction.reply({
 					content: 'Les avertissements ont bien été supprimés 👌',
-					flags: MessageFlags.Ephemeral,
 				})
 			}
 		}

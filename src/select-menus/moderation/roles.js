@@ -1,4 +1,4 @@
-import { EmbedBuilder, MessageFlags } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import { displayNameAndID } from '../../util/util.js'
 
 export default {
@@ -6,10 +6,9 @@ export default {
 		name: 'roles',
 	},
 	interaction: async (menu, client) => {
-		await menu.deferReply({ flags: MessageFlags.Ephemeral })
+		await menu.deferReply()
 
 		try {
-			// Acquisition des rôles à proposer
 			const [staffEditeurs, modo, certifie] = await Promise.all([
 				menu.guild.roles.fetch(client.config.guild.roles.STAFF_EDITEURS_ROLE_ID),
 				menu.guild.roles.fetch(client.config.guild.roles.MODO_ROLE_ID),
@@ -24,7 +23,6 @@ export default {
 
 			const rolesArray = [staffEditeurs.id, modo.id, certifie.id]
 
-			// Acquisition du membre
 			const member = await menu.guild.members.fetch(menu.user.id).catch(() => null)
 			if (!member) {
 				return menu.editReply({
@@ -32,23 +30,24 @@ export default {
 				})
 			}
 
-			// Acquisition de la raison
-			let reason = 'Non précisée'
-			for (const [key, entry] of client.cache.staffRolesReason) {
-				if (entry.memberId === menu.user.id) {
-					reason = entry.reason || 'Non précisée'
-
-					await entry.message?.delete().catch(() => null)
-					client.cache.staffRolesReason.delete(key)
-				}
+			if (!(client.cache.staffRolesReason instanceof Map)) {
+				client.cache.staffRolesReason = new Map()
 			}
 
-			// Acquisition du salon de logs
+			let reason = 'Non précisée'
+			const staffRoleEntry = client.cache.staffRolesReason.get(menu.user.id)
+
+			if (staffRoleEntry) {
+				reason = staffRoleEntry.reason || 'Non précisée'
+
+				await staffRoleEntry.interaction?.deleteReply().catch(() => null)
+				client.cache.staffRolesReason.delete(menu.user.id)
+			}
+
 			const rolesLogs = menu.guild.channels.cache.get(
 				client.config.guild.channels.LOGS_ROLES_CHANNEL_ID,
 			)
 
-			// Vérification si aucun rôle parmi Modos et Certifiés
 			if (!menu.values.includes(modo.id) && !menu.values.includes(certifie.id)) {
 				return menu.editReply({
 					content:
@@ -56,13 +55,11 @@ export default {
 				})
 			}
 
-			// Suppression des rôles actuels
 			const rolesRemove = rolesArray.filter((roleId) => member.roles.cache.has(roleId))
 			if (rolesRemove.length) {
 				await member.roles.remove(rolesRemove)
 			}
 
-			// Ajout des rôles choisis
 			const rolesAdd = [...new Set(menu.values)]
 			if (rolesAdd.length) {
 				await member.roles.add(rolesAdd)
@@ -72,7 +69,6 @@ export default {
 				.map((roleId) => `- <@&${roleId}>`)
 				.join('\n')}\n\n**Raison :** ${reason}`
 
-			// Envoi du message de logs
 			if (rolesLogs?.isTextBased()) {
 				const embed = new EmbedBuilder()
 					.setColor(0x00ff00)

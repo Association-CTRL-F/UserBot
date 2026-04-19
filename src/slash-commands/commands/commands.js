@@ -121,7 +121,6 @@ export default {
 
 					return interaction.reply({
 						embeds: [embed],
-						flags: MessageFlags.Ephemeral,
 					})
 				}
 

@@ -63,11 +63,9 @@ export default async (interaction, client) => {
 						client.buttons.get(interaction.customId) ||
 						client.buttons.get(interaction.customId.split(':')[0])
 
+					// Boutons gérés par un collector / une lib externe
 					if (!button || typeof button.interaction !== 'function') {
-						return replyNotFound(
-							interaction,
-							`Impossible de trouver le bouton "${interaction.customId}"`,
-						)
+						return
 					}
 
 					return await button.interaction(interaction, client)

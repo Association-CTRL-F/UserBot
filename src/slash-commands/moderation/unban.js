@@ -10,7 +10,7 @@ export default {
 		),
 
 	interaction: async (interaction, client) => {
-		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+		await interaction.deferReply()
 
 		// Acquisition de l'utilisateur
 		const userId = interaction.options.getString('id').trim()

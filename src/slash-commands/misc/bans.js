@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 export default {
 	data: new SlashCommandBuilder().setName('bans').setDescription('Importe les bans'),
 	interaction: async (interaction, client) => {
-		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+		await interaction.deferReply()
 
 		// Acquisition de la base de données Moderation
 		const bddModeration = client.config.db.pools.moderation

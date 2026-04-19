@@ -223,7 +223,6 @@ export default {
 
 		return modal.reply({
 			content: `La configuration de **${fieldId}** a bien été modifiée 👌`,
-			flags: MessageFlags.Ephemeral,
 		})
 	},
 }

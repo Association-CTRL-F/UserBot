@@ -111,11 +111,12 @@ export default {
 					description: anonyme ? '✅ : 0\n⌛ : 0\n❌ : 0' : null,
 				})
 
-				const sentMessage = await interaction.reply({
+				await interaction.reply({
 					embeds: [embed],
 					components: anonyme ? [anonymousButtons] : [],
-					fetchReply: true,
 				})
+
+				const sentMessage = await interaction.fetchReply()
 
 				if (thread) {
 					const threadCreate = await sentMessage.startThread({

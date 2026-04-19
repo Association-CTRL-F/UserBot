@@ -1,5 +1,5 @@
 import { displayNameAndID } from '../../util/util.js'
-import { ChannelType, SlashCommandBuilder, MessageFlags } from 'discord.js'
+import { ChannelType, SlashCommandBuilder } from 'discord.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -9,7 +9,7 @@ export default {
 		),
 
 	interaction: async (interaction, client) => {
-		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+		await interaction.deferReply()
 
 		if (!interaction.guild?.available) {
 			return interaction.editReply({

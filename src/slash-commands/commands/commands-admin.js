@@ -227,7 +227,6 @@ export default {
 
 				return interaction.reply({
 					content: `La commande **${nom}** a bien été supprimée 👌`,
-					flags: MessageFlags.Ephemeral,
 				})
 			}
 

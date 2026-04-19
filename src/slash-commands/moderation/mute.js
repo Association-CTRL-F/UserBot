@@ -482,7 +482,7 @@ export default {
 					console.error(error)
 					return interaction.editReply({
 						content:
-							'Une erreur est survenue lors du mute d’un ou plusieurs membres 😬',
+							"Une erreur est survenue lors du mute d'un ou plusieurs membres 😬",
 					})
 				}
 
