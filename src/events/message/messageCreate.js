@@ -6,6 +6,7 @@ import {
 	ButtonStyle,
 	RESTJSONErrorCodes,
 	PermissionsBitField,
+	AttachmentBuilder,
 } from 'discord.js'
 import {
 	modifyWrongUsernames,
@@ -15,12 +16,18 @@ import {
 	displayNameAndID,
 } from '../../util/util.js'
 import { ChatGPTAPI } from 'chatgpt'
+import bent from 'bent'
 
 const SPAM_WINDOW_MS = 10 * 60 * 1000
 const SPAM_MIN_MESSAGES = 3
 const SPAM_MIN_CHANNELS = 3
 const SPAM_TRACK_LIMIT = 25
 const SPAM_TIMEOUT_MS = 12 * 60 * 60 * 1000
+
+const getLinkBuffer = (url) => {
+	const getBuffer = bent('buffer')
+	return getBuffer(url)
+}
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
@@ -34,6 +41,28 @@ const truncateText = (value, max = 1000) => {
 }
 
 const normalizeSpamContent = (value) => value.trim().toLowerCase().replace(/\s+/g, ' ')
+
+const getAttachmentSignature = (attachments) =>
+	[...attachments.values()]
+		.map(
+			(attachment) =>
+				`${attachment.name ?? 'fichier'}:${attachment.size ?? 0}:${
+					attachment.contentType ?? 'unknown'
+				}`,
+		)
+		.sort()
+		.join('|')
+
+const normalizeSpamPayload = (message) => {
+	const normalizedText = message.content?.trim() ? normalizeSpamContent(message.content) : ''
+	const attachmentSignature = getAttachmentSignature(message.attachments)
+
+	if (normalizedText && attachmentSignature) {
+		return `${normalizedText}|||${attachmentSignature}`
+	}
+
+	return normalizedText || attachmentSignature
+}
 
 const getSpamImmuneRoleIds = (client) =>
 	[
@@ -130,9 +159,47 @@ const applySpamSanction = async (member, client) => {
 	}
 }
 
+const buildSpamReportAssets = async (entries) => {
+	let embedImageFile = null
+	const attachmentLabels = []
+	let attachmentIndex = 0
+
+	for (const entry of entries) {
+		for (const attachment of entry.message.attachments.values()) {
+			attachmentIndex += 1
+
+			const originalName = attachment.name ?? `fichier-${attachmentIndex}`
+			attachmentLabels.push(`• ${originalName} — <#${entry.channelId}>`)
+
+			if (embedImageFile || !isImage(originalName)) continue
+
+			const uniqueName = `${entry.messageId}-${attachmentIndex}-${originalName}`
+
+			const buffer = await getLinkBuffer(attachment.proxyURL ?? attachment.url).catch(
+				() => null,
+			)
+
+			if (!buffer) continue
+
+			embedImageFile = new AttachmentBuilder(buffer, {
+				name: uniqueName,
+			})
+		}
+	}
+
+	return {
+		embedImageFile,
+		attachmentLabels,
+	}
+}
+
 const handleCrossChannelSpam = async (message, client) => {
 	if (!message.guild || !message.member) return false
-	if (!message.content?.trim()) return false
+
+	const hasText = Boolean(message.content?.trim())
+	const hasAttachments = message.attachments.size > 0
+
+	if (!hasText && !hasAttachments) return false
 	if (isSpamImmune(message.member, client)) return false
 
 	const bdd = client.config.db.pools.userbot
@@ -147,7 +214,7 @@ const handleCrossChannelSpam = async (message, client) => {
 
 	const userKey = `${message.guild.id}-${message.author.id}`
 	const now = message.createdTimestamp
-	const normalizedContent = normalizeSpamContent(message.content)
+	const normalizedPayload = normalizeSpamPayload(message)
 
 	const history = client.cache.crossChannelSpam.get(userKey) || []
 	const nextHistory = history
@@ -156,7 +223,7 @@ const handleCrossChannelSpam = async (message, client) => {
 			messageId: message.id,
 			channelId: message.channel.id,
 			createdTimestamp: now,
-			content: normalizedContent,
+			payload: normalizedPayload,
 			message,
 		})
 		.slice(-SPAM_TRACK_LIMIT)
@@ -165,7 +232,7 @@ const handleCrossChannelSpam = async (message, client) => {
 
 	const identicalEntries = nextHistory.filter(
 		(entry) =>
-			entry.content === normalizedContent && now - entry.createdTimestamp <= SPAM_WINDOW_MS,
+			entry.payload === normalizedPayload && now - entry.createdTimestamp <= SPAM_WINDOW_MS,
 	)
 
 	const distinctChannels = new Set(identicalEntries.map((entry) => entry.channelId))
@@ -176,8 +243,10 @@ const handleCrossChannelSpam = async (message, client) => {
 
 	client.cache.crossChannelSpam.set(
 		userKey,
-		nextHistory.filter((entry) => entry.content !== normalizedContent),
+		nextHistory.filter((entry) => entry.payload !== normalizedPayload),
 	)
+
+	const { embedImageFile, attachmentLabels } = await buildSpamReportAssets(identicalEntries)
 
 	const deletedMessages = []
 	for (const entry of identicalEntries) {
@@ -204,7 +273,7 @@ const handleCrossChannelSpam = async (message, client) => {
 	}
 
 	const channelsList = [...distinctChannels].map((channelId) => `<#${channelId}>`).join(', ')
-	const preview = truncateText(message.content, 1500)
+	const preview = truncateText(message.content ?? '', 1500)
 	const reportId = `${message.author.id}-${Date.now()}`
 
 	const reportEmbed = new EmbedBuilder()
@@ -237,14 +306,9 @@ const handleCrossChannelSpam = async (message, client) => {
 				inline: false,
 			},
 			{
-				name: 'Fenêtre de détection',
-				value: '10 minutes',
-				inline: true,
-			},
-			{
 				name: 'Critère',
-				value: '3 messages identiques dans 3 salons différents',
-				inline: true,
+				value: '3 messages identiques dans 3 salons différents en moins de 10 minutes',
+				inline: false,
 			},
 		)
 		.setFooter({
@@ -252,9 +316,26 @@ const handleCrossChannelSpam = async (message, client) => {
 		})
 		.setTimestamp(new Date())
 
+	if (attachmentLabels.length) {
+		const attachmentValue = attachmentLabels.join('\n')
+		reportEmbed.addFields({
+			name: 'Pièces jointes',
+			value:
+				attachmentValue.length > 1024
+					? `${attachmentValue.slice(0, 1020)} ...`
+					: attachmentValue,
+			inline: false,
+		})
+	}
+
+	if (embedImageFile) {
+		reportEmbed.setImage(`attachment://${embedImageFile.name}`)
+	}
+
 	const reportMessage = await reportChannel.send({
 		embeds: [reportEmbed],
 		components: [buildSpamActionRow(reportId)],
+		files: embedImageFile ? [embedImageFile] : [],
 	})
 
 	try {

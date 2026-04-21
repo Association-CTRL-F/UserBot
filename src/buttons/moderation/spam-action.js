@@ -1,5 +1,14 @@
-import { EmbedBuilder, RESTJSONErrorCodes, PermissionsBitField, MessageFlags } from 'discord.js'
+import {
+	EmbedBuilder,
+	RESTJSONErrorCodes,
+	PermissionsBitField,
+	MessageFlags,
+	AttachmentBuilder,
+} from 'discord.js'
 import { convertDateForDiscord, diffDate } from '../../util/util.js'
+import bent from 'bent'
+
+const getBuffer = bent('buffer')
 
 const canHandleSpamDecision = (member) => {
 	if (!member) return false
@@ -104,6 +113,40 @@ const parseCustomId = (customId) => {
 	return { action, reportId }
 }
 
+const buildDecisionMessagePayload = async (interaction, updatedEmbed) => {
+	const currentImageUrl =
+		interaction.message.embeds?.[0]?.data?.image?.url ??
+		interaction.message.attachments.first()?.url ??
+		null
+
+	if (!currentImageUrl) {
+		return {
+			embeds: [updatedEmbed],
+			components: [],
+		}
+	}
+
+	const buffer = await getBuffer(currentImageUrl).catch(() => null)
+
+	if (!buffer) {
+		return {
+			embeds: [updatedEmbed],
+			components: [],
+		}
+	}
+
+	const fileName = 'spam-report-image.png'
+	const file = new AttachmentBuilder(buffer, { name: fileName })
+
+	updatedEmbed.setImage(`attachment://${fileName}`)
+
+	return {
+		embeds: [updatedEmbed],
+		components: [],
+		files: [file],
+	}
+}
+
 export default {
 	data: {
 		name: 'spam-action',
@@ -119,9 +162,11 @@ export default {
 			})
 		}
 
+		await interaction.deferUpdate()
+
 		const bddUserbot = client.config.db.pools.userbot
 		if (!bddUserbot) {
-			return interaction.reply({
+			return interaction.followUp({
 				content: 'Base de données UserBot indisponible 😬',
 				flags: MessageFlags.Ephemeral,
 			})
@@ -129,7 +174,7 @@ export default {
 
 		const bddModeration = client.config.db.pools.moderation
 		if (!bddModeration) {
-			return interaction.reply({
+			return interaction.followUp({
 				content: 'Base de données Moderation indisponible 😬',
 				flags: MessageFlags.Ephemeral,
 			})
@@ -145,21 +190,21 @@ export default {
 			report = result?.[0] ?? null
 		} catch (error) {
 			console.error(error)
-			return interaction.reply({
+			return interaction.followUp({
 				content: 'Erreur lors de la lecture du signalement 😬',
 				flags: MessageFlags.Ephemeral,
 			})
 		}
 
 		if (!report) {
-			return interaction.reply({
+			return interaction.followUp({
 				content: 'Signalement introuvable 😕',
 				flags: MessageFlags.Ephemeral,
 			})
 		}
 
 		if (report.status !== 'pending') {
-			return interaction.reply({
+			return interaction.followUp({
 				content: 'Une décision a déjà été prise pour ce signalement 😕',
 				flags: MessageFlags.Ephemeral,
 			})
@@ -191,14 +236,14 @@ export default {
 				}
 
 				if (error.code === RESTJSONErrorCodes.MissingPermissions) {
-					return interaction.reply({
+					return interaction.followUp({
 						content: "Je n'ai pas les permissions pour bannir ce membre 😬",
 						flags: MessageFlags.Ephemeral,
 					})
 				}
 
 				console.error(error)
-				return interaction.reply({
+				return interaction.followUp({
 					content: 'Impossible de bannir ce membre 😬',
 					flags: MessageFlags.Ephemeral,
 				})
@@ -298,10 +343,10 @@ export default {
 					iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
 				})
 
-			return interaction.update({
-				embeds: [updatedEmbed],
-				components: [],
-			})
+			await interaction.message.edit(
+				await buildDecisionMessagePayload(interaction, updatedEmbed),
+			)
+			return
 		}
 
 		if (action === 'lift') {
@@ -316,7 +361,7 @@ export default {
 				)
 			} catch (error) {
 				console.error(error)
-				return interaction.reply({
+				return interaction.followUp({
 					content: 'Impossible de retirer la sanction 😬',
 					flags: MessageFlags.Ephemeral,
 				})
@@ -345,10 +390,10 @@ export default {
 					iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
 				})
 
-			return interaction.update({
-				embeds: [updatedEmbed],
-				components: [],
-			})
+			await interaction.message.edit(
+				await buildDecisionMessagePayload(interaction, updatedEmbed),
+			)
+			return
 		}
 
 		if (action === 'keep') {
@@ -373,13 +418,13 @@ export default {
 					iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
 				})
 
-			return interaction.update({
-				embeds: [updatedEmbed],
-				components: [],
-			})
+			await interaction.message.edit(
+				await buildDecisionMessagePayload(interaction, updatedEmbed),
+			)
+			return
 		}
 
-		return interaction.reply({
+		return interaction.followUp({
 			content: 'Action inconnue 😕',
 			flags: MessageFlags.Ephemeral,
 		})
