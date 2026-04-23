@@ -21,6 +21,26 @@ const canHandleSpamDecision = (member) => {
 	)
 }
 
+const replyEphemeral = async (interaction, content) => {
+	const payload = {
+		content,
+		flags: MessageFlags.Ephemeral,
+	}
+
+	if (interaction.deferred || interaction.replied) {
+		return interaction.followUp(payload).catch(() => null)
+	}
+
+	return interaction.reply(payload).catch(() => null)
+}
+
+const parseCustomId = (customId) => {
+	const [prefix, action, reportId] = customId.split(':')
+	if (prefix !== 'spam-action' || !action || !reportId) return null
+
+	return { action, reportId }
+}
+
 const buildScamBanDmEmbed = (guild) =>
 	new EmbedBuilder()
 		.setColor('#C27C0E')
@@ -106,11 +126,93 @@ const clearSpamSanctionBeforeBan = async (guild, userId, sanctionType, client) =
 	}
 }
 
-const parseCustomId = (customId) => {
-	const [prefix, action, reportId] = customId.split(':')
-	if (prefix !== 'spam-action' || !action || !reportId) return null
+const getTargetUserData = async (client, userId, member) => {
+	const targetUser = member?.user ?? (await client.users.fetch(userId).catch(() => null))
 
-	return { action, reportId }
+	return {
+		targetUser,
+		targetTag: targetUser?.tag ?? userId,
+		targetUsername: targetUser?.username ?? userId,
+		targetAvatar: targetUser?.avatar ?? null,
+	}
+}
+
+const buildBanLogEmbed = ({ interaction, targetUser, targetTag, userId }) => {
+	const embed = new EmbedBuilder()
+		.setColor('#C9572A')
+		.setAuthor({
+			name: `${targetTag} (ID : ${userId})`,
+			iconURL: targetUser?.displayAvatarURL({ dynamic: true }) ?? undefined,
+		})
+		.setDescription(
+			`\`\`\`\n${interaction.user.tag} : spam cross-salons validé manuellement\n\`\`\``,
+		)
+		.setFooter({
+			iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
+			text: `Membre banni par ${interaction.user.tag}`,
+		})
+		.setTimestamp(new Date())
+
+	if (targetUser) {
+		embed.addFields(
+			{
+				name: 'Mention',
+				value: targetUser.toString(),
+				inline: true,
+			},
+			{
+				name: 'Date de création du compte',
+				value: convertDateForDiscord(targetUser.createdAt),
+				inline: true,
+			},
+			{
+				name: 'Âge du compte',
+				value: diffDate(targetUser.createdAt),
+				inline: true,
+			},
+		)
+	} else {
+		embed.addFields({
+			name: 'Utilisateur',
+			value: `<@${userId}> (ID : ${userId})`,
+			inline: true,
+		})
+	}
+
+	return embed
+}
+
+const updateSpamReportStatus = async (bddUserbot, reportId, status, handledBy, handledAt) => {
+	const sql =
+		'UPDATE spam_reports SET status = ?, handled_by = ?, handled_at = ? WHERE report_id = ?'
+	const data = [status, handledBy, handledAt, reportId]
+
+	await bddUserbot.execute(sql, data)
+}
+
+const insertBanLog = async ({
+	bddModeration,
+	userId,
+	targetUsername,
+	targetAvatar,
+	executorId,
+	executorUsername,
+	reason,
+	timestamp,
+}) => {
+	const sql =
+		'INSERT INTO bans_logs (discord_id, username, avatar, executor_id, executor_username, reason, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)'
+	const data = [
+		userId,
+		targetUsername,
+		targetAvatar,
+		executorId,
+		executorUsername,
+		reason,
+		timestamp,
+	]
+
+	await bddModeration.execute(sql, data)
 }
 
 const buildDecisionMessagePayload = async (interaction, updatedEmbed) => {
@@ -123,6 +225,7 @@ const buildDecisionMessagePayload = async (interaction, updatedEmbed) => {
 		return {
 			embeds: [updatedEmbed],
 			components: [],
+			attachments: [],
 		}
 	}
 
@@ -132,6 +235,7 @@ const buildDecisionMessagePayload = async (interaction, updatedEmbed) => {
 		return {
 			embeds: [updatedEmbed],
 			components: [],
+			attachments: [],
 		}
 	}
 
@@ -143,6 +247,7 @@ const buildDecisionMessagePayload = async (interaction, updatedEmbed) => {
 	return {
 		embeds: [updatedEmbed],
 		components: [],
+		attachments: [],
 		files: [file],
 	}
 }
@@ -156,28 +261,22 @@ export default {
 		if (!parsed) return
 
 		if (!canHandleSpamDecision(interaction.member)) {
-			return interaction.reply({
-				content: "Tu n'as pas les permissions pour traiter ce signalement 😬",
-				flags: MessageFlags.Ephemeral,
-			})
+			return replyEphemeral(
+				interaction,
+				"Tu n'as pas les permissions pour traiter ce signalement 😬",
+			)
 		}
 
-		await interaction.deferUpdate()
+		await interaction.deferUpdate().catch(() => null)
 
 		const bddUserbot = client.config.db.pools.userbot
 		if (!bddUserbot) {
-			return interaction.followUp({
-				content: 'Base de données UserBot indisponible 😬',
-				flags: MessageFlags.Ephemeral,
-			})
+			return replyEphemeral(interaction, 'Base de données UserBot indisponible 😬')
 		}
 
 		const bddModeration = client.config.db.pools.moderation
 		if (!bddModeration) {
-			return interaction.followUp({
-				content: 'Base de données Moderation indisponible 😬',
-				flags: MessageFlags.Ephemeral,
-			})
+			return replyEphemeral(interaction, 'Base de données Moderation indisponible 😬')
 		}
 
 		const { action, reportId } = parsed
@@ -190,24 +289,18 @@ export default {
 			report = result?.[0] ?? null
 		} catch (error) {
 			console.error(error)
-			return interaction.followUp({
-				content: 'Erreur lors de la lecture du signalement 😬',
-				flags: MessageFlags.Ephemeral,
-			})
+			return replyEphemeral(interaction, 'Erreur lors de la lecture du signalement 😬')
 		}
 
 		if (!report) {
-			return interaction.followUp({
-				content: 'Signalement introuvable 😕',
-				flags: MessageFlags.Ephemeral,
-			})
+			return replyEphemeral(interaction, 'Signalement introuvable 😕')
 		}
 
 		if (report.status !== 'pending') {
-			return interaction.followUp({
-				content: 'Une décision a déjà été prise pour ce signalement 😕',
-				flags: MessageFlags.Ephemeral,
-			})
+			return replyEphemeral(
+				interaction,
+				'Une décision a déjà été prise pour ce signalement 😕',
+			)
 		}
 
 		const updatedEmbed = new EmbedBuilder(interaction.message.embeds[0]?.data ?? {})
@@ -236,93 +329,56 @@ export default {
 				}
 
 				if (error.code === RESTJSONErrorCodes.MissingPermissions) {
-					return interaction.followUp({
-						content: "Je n'ai pas les permissions pour bannir ce membre 😬",
-						flags: MessageFlags.Ephemeral,
-					})
+					return replyEphemeral(
+						interaction,
+						"Je n'ai pas les permissions pour bannir ce membre 😬",
+					)
 				}
 
 				console.error(error)
-				return interaction.followUp({
-					content: 'Impossible de bannir ce membre 😬',
-					flags: MessageFlags.Ephemeral,
-				})
+				return replyEphemeral(interaction, 'Impossible de bannir ce membre 😬')
 			}
 
 			try {
-				const sql =
-					'UPDATE spam_reports SET status = ?, handled_by = ?, handled_at = ? WHERE report_id = ?'
-				const data = ['banned', interaction.user.id, now, reportId]
-				await bddUserbot.execute(sql, data)
+				await updateSpamReportStatus(
+					bddUserbot,
+					reportId,
+					'banned',
+					interaction.user.id,
+					now,
+				)
 			} catch (error) {
 				console.error(error)
 			}
 
-			const targetUser =
-				member?.user ?? (await client.users.fetch(report.user_id).catch(() => null))
-			const targetTag = targetUser?.tag ?? report.user_id
-			const targetUsername = targetUser?.username ?? report.user_id
-			const targetAvatar = targetUser?.avatar ?? null
+			const { targetUser, targetTag, targetUsername, targetAvatar } = await getTargetUserData(
+				client,
+				report.user_id,
+				member,
+			)
 
 			const logsChannel = interaction.guild.channels.cache.get(
 				client.config.guild.channels.LOGS_BANS_CHANNEL_ID,
 			)
 
-			const logEmbed = new EmbedBuilder()
-				.setColor('#C9572A')
-				.setAuthor({
-					name: `${targetTag} (ID : ${report.user_id})`,
-					iconURL: targetUser?.displayAvatarURL({ dynamic: true }) ?? undefined,
-				})
-				.setDescription(
-					`\`\`\`\n${interaction.user.tag} : spam cross-salons validé manuellement\n\`\`\``,
-				)
-				.setFooter({
-					iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
-					text: `Membre banni par ${interaction.user.tag}`,
-				})
-				.setTimestamp(new Date())
-
-			if (targetUser) {
-				logEmbed.addFields(
-					{
-						name: 'Mention',
-						value: targetUser.toString(),
-						inline: true,
-					},
-					{
-						name: 'Date de création du compte',
-						value: convertDateForDiscord(targetUser.createdAt),
-						inline: true,
-					},
-					{
-						name: 'Âge du compte',
-						value: diffDate(targetUser.createdAt),
-						inline: true,
-					},
-				)
-			} else {
-				logEmbed.addFields({
-					name: 'Utilisateur',
-					value: `<@${report.user_id}> (ID : ${report.user_id})`,
-					inline: true,
-				})
-			}
+			const logEmbed = buildBanLogEmbed({
+				interaction,
+				targetUser,
+				targetTag,
+				userId: report.user_id,
+			})
 
 			try {
-				const sql =
-					'INSERT INTO bans_logs (discord_id, username, avatar, executor_id, executor_username, reason, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)'
-				const data = [
-					report.user_id,
+				await insertBanLog({
+					bddModeration,
+					userId: report.user_id,
 					targetUsername,
 					targetAvatar,
-					interaction.user.id,
-					interaction.user.username,
-					'spam cross-salons validé manuellement',
-					now,
-				]
-
-				await bddModeration.execute(sql, data)
+					executorId: interaction.user.id,
+					executorUsername: interaction.user.username,
+					reason: 'spam cross-salons validé manuellement',
+					timestamp: now,
+				})
 			} catch (error) {
 				console.error(error)
 			}
@@ -343,9 +399,10 @@ export default {
 					iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
 				})
 
-			await interaction.message.edit(
-				await buildDecisionMessagePayload(interaction, updatedEmbed),
-			)
+			await interaction.message
+				.edit(await buildDecisionMessagePayload(interaction, updatedEmbed))
+				.catch(console.error)
+
 			return
 		}
 
@@ -361,17 +418,17 @@ export default {
 				)
 			} catch (error) {
 				console.error(error)
-				return interaction.followUp({
-					content: 'Impossible de retirer la sanction 😬',
-					flags: MessageFlags.Ephemeral,
-				})
+				return replyEphemeral(interaction, 'Impossible de retirer la sanction 😬')
 			}
 
 			try {
-				const sql =
-					'UPDATE spam_reports SET status = ?, handled_by = ?, handled_at = ? WHERE report_id = ?'
-				const data = ['lifted', interaction.user.id, now, reportId]
-				await bddUserbot.execute(sql, data)
+				await updateSpamReportStatus(
+					bddUserbot,
+					reportId,
+					'lifted',
+					interaction.user.id,
+					now,
+				)
 			} catch (error) {
 				console.error(error)
 			}
@@ -390,18 +447,16 @@ export default {
 					iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
 				})
 
-			await interaction.message.edit(
-				await buildDecisionMessagePayload(interaction, updatedEmbed),
-			)
+			await interaction.message
+				.edit(await buildDecisionMessagePayload(interaction, updatedEmbed))
+				.catch(console.error)
+
 			return
 		}
 
 		if (action === 'keep') {
 			try {
-				const sql =
-					'UPDATE spam_reports SET status = ?, handled_by = ?, handled_at = ? WHERE report_id = ?'
-				const data = ['kept', interaction.user.id, now, reportId]
-				await bddUserbot.execute(sql, data)
+				await updateSpamReportStatus(bddUserbot, reportId, 'kept', interaction.user.id, now)
 			} catch (error) {
 				console.error(error)
 			}
@@ -418,15 +473,13 @@ export default {
 					iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
 				})
 
-			await interaction.message.edit(
-				await buildDecisionMessagePayload(interaction, updatedEmbed),
-			)
+			await interaction.message
+				.edit(await buildDecisionMessagePayload(interaction, updatedEmbed))
+				.catch(console.error)
+
 			return
 		}
 
-		return interaction.followUp({
-			content: 'Action inconnue 😕',
-			flags: MessageFlags.Ephemeral,
-		})
+		return replyEphemeral(interaction, 'Action inconnue 😕')
 	},
 }

@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, RESTJSONErrorCodes, MessageFlags } from 'discord.js'
+import { SlashCommandBuilder, EmbedBuilder, RESTJSONErrorCodes } from 'discord.js'
 import { convertDateForDiscord, diffDate } from '../../util/util.js'
 
 export default {

@@ -16,7 +16,7 @@ export default {
 		// Sécurité supplémentaire
 		if (interaction.commandType !== ApplicationCommandType.User) return
 
-		await interaction.deferReply()
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
 		if (!interaction.guild?.available) {
 			return interaction.editReply({

@@ -1,4 +1,4 @@
-import { ContextMenuCommandBuilder, ApplicationCommandType, MessageFlags } from 'discord.js'
+import { ContextMenuCommandBuilder, ApplicationCommandType } from 'discord.js'
 
 export default {
 	contextMenu: new ContextMenuCommandBuilder()

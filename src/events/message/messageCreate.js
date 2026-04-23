@@ -193,6 +193,102 @@ const buildSpamReportAssets = async (entries) => {
 	}
 }
 
+const parsePrefixedCommand = (messageContent, prefix) => {
+	if (!messageContent.startsWith(prefix)) return null
+
+	const escapedPrefix = escapeRegex(prefix)
+	const regexCommands = new RegExp(`^${escapedPrefix}([a-zA-Z0-9]+)(?:\\s+(.*))?$`)
+	const match = messageContent.match(regexCommands)
+
+	if (!match) return null
+
+	return {
+		name: match[1].toLowerCase(),
+		argsRaw: match[2] ?? '',
+	}
+}
+
+const handleCustomCommand = async (message, client, bdd, parsedCommand) => {
+	let command = null
+
+	try {
+		const sql = 'SELECT * FROM commands WHERE name = ? OR aliases REGEXP ?'
+		const data = [parsedCommand.name, `(?:^|,)(${parsedCommand.name})(?:,|$)`]
+		const [result] = await bdd.execute(sql, data)
+		command = result[0] ?? null
+	} catch (error) {
+		console.error(error)
+		await message.reply({ content: 'Il y a eu une erreur en exécutant la commande 😬' })
+		return true
+	}
+
+	if (!command || !command.active) {
+		return true
+	}
+
+	if (!client.cooldowns.has(command.name)) {
+		client.cooldowns.set(command.name, new Collection())
+	}
+
+	const now = Date.now()
+	const timestamps = client.cooldowns.get(command.name)
+	const cooldownAmount = (command.cooldown || 4) * 1000
+
+	if (timestamps.has(message.author.id)) {
+		const expirationTime = timestamps.get(message.author.id) + cooldownAmount
+
+		if (now < expirationTime) {
+			const timeLeft = expirationTime - now
+			const sentMessage = await message.reply({
+				content: `Merci d'attendre ${(timeLeft / 1000).toFixed(
+					1,
+				)} seconde(s) de plus avant de réutiliser la commande **${command.name}** 😬`,
+			})
+
+			client.cache.deleteMessagesID.add(sentMessage.id)
+			return true
+		}
+	}
+
+	timestamps.set(message.author.id, now)
+	globalThis.setTimeout(() => {
+		timestamps.delete(message.author.id)
+	}, cooldownAmount)
+
+	let button = null
+	if (command.textLinkButton && command.linkButton) {
+		button = new ActionRowBuilder().addComponents(
+			new ButtonBuilder()
+				.setLabel(command.textLinkButton)
+				.setURL(command.linkButton)
+				.setStyle(ButtonStyle.Link),
+		)
+	}
+
+	try {
+		const sql = 'UPDATE commands SET numberOfUses = numberOfUses + 1 WHERE name = ?'
+		const data = [command.name]
+		await bdd.execute(sql, data)
+
+		if (!button) {
+			await message.channel.send({
+				content: command.content,
+			})
+			return true
+		}
+
+		await message.channel.send({
+			content: command.content,
+			components: [button],
+		})
+		return true
+	} catch (error) {
+		console.error(error)
+		await message.reply({ content: 'Il y a eu une erreur en exécutant la commande 😬' })
+		return true
+	}
+}
+
 const handleCrossChannelSpam = async (message, client) => {
 	if (!message.guild || !message.member) return false
 
@@ -208,15 +304,12 @@ const handleCrossChannelSpam = async (message, client) => {
 		return false
 	}
 
-	if (!client.cache.crossChannelSpam) {
-		client.cache.crossChannelSpam = new Map()
-	}
-
+	const spamCache = client.cache.crossChannelSpam
 	const userKey = `${message.guild.id}-${message.author.id}`
 	const now = message.createdTimestamp
 	const normalizedPayload = normalizeSpamPayload(message)
 
-	const history = client.cache.crossChannelSpam.get(userKey) || []
+	const history = spamCache.get(userKey) || []
 	const nextHistory = history
 		.filter((entry) => now - entry.createdTimestamp <= SPAM_WINDOW_MS)
 		.concat({
@@ -228,7 +321,7 @@ const handleCrossChannelSpam = async (message, client) => {
 		})
 		.slice(-SPAM_TRACK_LIMIT)
 
-	client.cache.crossChannelSpam.set(userKey, nextHistory)
+	spamCache.set(userKey, nextHistory)
 
 	const identicalEntries = nextHistory.filter(
 		(entry) =>
@@ -241,7 +334,7 @@ const handleCrossChannelSpam = async (message, client) => {
 		return false
 	}
 
-	client.cache.crossChannelSpam.set(
+	spamCache.set(
 		userKey,
 		nextHistory.filter((entry) => entry.payload !== normalizedPayload),
 	)
@@ -369,6 +462,7 @@ export default async (message, client) => {
 	if (!message.guild) return
 
 	const messageContent = message.content ?? ''
+	const parsedCommand = parsePrefixedCommand(messageContent, client.config.guild.COMMANDS_PREFIX)
 
 	// Anti-spam cross-salons
 	const spamHandled = await handleCrossChannelSpam(message, client)
@@ -429,6 +523,12 @@ export default async (message, client) => {
 	if (!bdd) {
 		console.log('Une erreur est survenue lors de la connexion à la base de données')
 		return
+	}
+
+	// Command handler
+	if (parsedCommand) {
+		const handled = await handleCustomCommand(message, client, bdd, parsedCommand)
+		if (handled) return
 	}
 
 	// Alertes personnalisées
@@ -521,92 +621,6 @@ export default async (message, client) => {
 					console.error(error)
 				}
 			})
-	}
-
-	// Command handler
-	if (messageContent.startsWith(client.config.guild.COMMANDS_PREFIX)) {
-		const escapedPrefix = escapeRegex(client.config.guild.COMMANDS_PREFIX)
-		const regexCommands = new RegExp(`^${escapedPrefix}([a-zA-Z0-9]+)(?:\\s.*|$)`)
-
-		const args = messageContent.match(regexCommands)
-		if (!args) return
-
-		const commandName = args[1].toLowerCase()
-		if (!commandName) return
-
-		let command = null
-		try {
-			const sql = 'SELECT * FROM commands WHERE name = ? OR aliases REGEXP ?'
-			const data = [commandName, `(?:^|,)(${commandName})(?:,|$)`]
-			const [result] = await bdd.execute(sql, data)
-
-			command = result[0] ?? null
-		} catch (error) {
-			console.error(error)
-			await message.reply({ content: 'Il y a eu une erreur en exécutant la commande 😬' })
-			return
-		}
-
-		if (!command || !command.active) return
-
-		if (!client.cooldowns.has(command.name)) {
-			client.cooldowns.set(command.name, new Collection())
-		}
-
-		const now = Date.now()
-		const timestamps = client.cooldowns.get(command.name)
-		const cooldownAmount = (command.cooldown || 4) * 1000
-
-		if (timestamps.has(message.author.id)) {
-			const expirationTime = timestamps.get(message.author.id) + cooldownAmount
-
-			if (now < expirationTime) {
-				const timeLeft = expirationTime - now
-				const sentMessage = await message.reply({
-					content: `Merci d'attendre ${(timeLeft / 1000).toFixed(
-						1,
-					)} seconde(s) de plus avant de réutiliser la commande **${command.name}** 😬`,
-				})
-
-				client.cache.deleteMessagesID.add(sentMessage.id)
-				return
-			}
-		}
-
-		timestamps.set(message.author.id, now)
-		globalThis.setTimeout(() => {
-			timestamps.delete(message.author.id)
-		}, cooldownAmount)
-
-		let button = null
-		if (command.textLinkButton && command.linkButton) {
-			button = new ActionRowBuilder().addComponents(
-				new ButtonBuilder()
-					.setLabel(command.textLinkButton)
-					.setURL(command.linkButton)
-					.setStyle(ButtonStyle.Link),
-			)
-		}
-
-		try {
-			const sql = 'UPDATE commands SET numberOfUses = numberOfUses + 1 WHERE name = ?'
-			const data = [commandName]
-			await bdd.execute(sql, data)
-
-			if (!button) {
-				return message.channel.send({
-					content: command.content,
-				})
-			}
-
-			return message.channel.send({
-				content: command.content,
-				components: [button],
-			})
-		} catch (error) {
-			console.error(error)
-			return message.reply({ content: 'Il y a eu une erreur en exécutant la commande 😬' })
-		}
 	}
 
 	// Mention bot

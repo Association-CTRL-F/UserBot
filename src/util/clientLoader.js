@@ -88,6 +88,8 @@ export default async () => {
 		conseilsUsersID: new Set(),
 		blacklistedDomains: new Set(),
 		staffRolesReason: new Map(),
+		muteTimeouts: new Map(),
+		crossChannelSpam: new Map(),
 	}
 
 	client.commandsCategories = new Map()

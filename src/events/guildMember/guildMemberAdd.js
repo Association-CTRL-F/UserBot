@@ -6,6 +6,7 @@ import {
 } from '../../util/util.js'
 import { readFile } from 'fs/promises'
 import { PermissionsBitField, EmbedBuilder, RESTJSONErrorCodes } from 'discord.js'
+import { restoreMuteForMember, getUnmuteMessage } from '../client/mutesLoader.js'
 
 const removeBotReactions = async (reactions) =>
 	Promise.all(reactions.map((reaction) => reaction.remove().catch(() => null)))
@@ -28,6 +29,72 @@ export default async (guildMember, client) => {
 	if (!bddModeration) {
 		console.log('Une erreur est survenue lors de la connexion à la base de données Moderation')
 		return
+	}
+
+	// Restauration éventuelle d'un mute actif
+	try {
+		const sqlMute = 'SELECT * FROM mute WHERE discordID = ? ORDER BY timestampEnd DESC'
+		const dataMute = [guildMember.id]
+		const [muteRows] = await bdd.execute(sqlMute, dataMute)
+
+		if (muteRows?.length) {
+			const unmuteDM = await getUnmuteMessage(bdd)
+			const now = Math.round(Date.now() / 1000)
+			let restored = false
+
+			for (const mutedMember of muteRows) {
+				const timestampEnd = Number.parseInt(mutedMember.timestampEnd, 10)
+
+				if (Number.isNaN(timestampEnd)) {
+					try {
+						const sqlDelete =
+							'DELETE FROM mute WHERE discordID = ? AND timestampEnd = ?'
+						const dataDelete = [guildMember.id, mutedMember.timestampEnd]
+						await bdd.execute(sqlDelete, dataDelete)
+					} catch (error) {
+						console.error(error)
+					}
+					continue
+				}
+
+				// On nettoie les éventuelles lignes expirées
+				if (timestampEnd <= now) {
+					try {
+						const sqlDelete =
+							'DELETE FROM mute WHERE discordID = ? AND timestampEnd = ?'
+						const dataDelete = [guildMember.id, mutedMember.timestampEnd]
+						await bdd.execute(sqlDelete, dataDelete)
+					} catch (error) {
+						console.error(error)
+					}
+					continue
+				}
+
+				// On ne restaure qu'un seul mute actif
+				if (!restored) {
+					restored = await restoreMuteForMember({
+						client,
+						bdd,
+						guild,
+						member: guildMember,
+						mutedMember,
+						unmuteDM,
+					})
+					continue
+				}
+
+				// Si plusieurs lignes actives existent par erreur, on supprime les doublons
+				try {
+					const sqlDelete = 'DELETE FROM mute WHERE discordID = ? AND timestampEnd = ?'
+					const dataDelete = [guildMember.id, mutedMember.timestampEnd]
+					await bdd.execute(sqlDelete, dataDelete)
+				} catch (error) {
+					console.error(error)
+				}
+			}
+		}
+	} catch (error) {
+		console.error(error)
 	}
 
 	// Acquisition du salon de logs join-leave
@@ -80,7 +147,7 @@ export default async (guildMember, client) => {
 	}
 
 	// Lecture du fichier de configuration
-	let emotesConfig
+	let emotesConfig = null
 	try {
 		emotesConfig = new Map(
 			JSON.parse(await readFile('./config/env/banEmotesAtJoin.json', 'utf8')),
@@ -121,7 +188,7 @@ export default async (guildMember, client) => {
 	})
 
 	// On supprime les réactions ajoutées
-	await removeBotReactions(reactionsList, client)
+	await removeBotReactions(reactionsList)
 
 	// Si pas de réaction, return
 	if (!banReactions.size) return
@@ -160,7 +227,6 @@ export default async (guildMember, client) => {
 
 	// Définition de la variable 'reason' en fonction de la réaction cliquée
 	const reason = emotesConfig.get(banReactionEmoji.name) || emotesConfig.get(banReactionEmoji.id)
-
 	if (!reason) return
 
 	// Acquisition du message de bannissement
@@ -188,7 +254,7 @@ export default async (guildMember, client) => {
 		.setDescription(banDM)
 		.setAuthor({
 			name: guild.name,
-			iconURL: guild.iconURL({ dynamic: true }),
+			iconURL: guild.iconURL({ dynamic: true }) ?? undefined,
 			url: guild.vanityURL ?? undefined,
 		})
 		.addFields({
@@ -233,7 +299,7 @@ export default async (guildMember, client) => {
 				.setDescription('Tu as reçu un avertissement !')
 				.setAuthor({
 					name: guild.name,
-					iconURL: guild.iconURL({ dynamic: true }),
+					iconURL: guild.iconURL({ dynamic: true }) ?? undefined,
 					url: guild.vanityURL ?? undefined,
 				})
 				.addFields({

@@ -4,7 +4,6 @@ import {
 	EmbedBuilder,
 	RESTJSONErrorCodes,
 	ApplicationCommandType,
-	MessageFlags,
 } from 'discord.js'
 
 export default {

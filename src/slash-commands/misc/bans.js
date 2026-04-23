@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, MessageFlags } from 'discord.js'
+import { SlashCommandBuilder } from 'discord.js'
 import { readFileSync } from 'node:fs'
 
 export default {
