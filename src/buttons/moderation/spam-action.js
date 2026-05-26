@@ -438,8 +438,8 @@ export default {
 				.addFields({
 					name: 'Décision modération',
 					value: lifted
-						? `Sanction retirée par ${interaction.user}`
-						: `Aucune sanction active à retirer pour ${interaction.user}`,
+						? `Sanction automatique levée par ${interaction.user}`
+						: `Aucune sanction automatique active n'était présente sur <@${report.user_id}>`,
 					inline: false,
 				})
 				.setFooter({
