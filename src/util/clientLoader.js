@@ -51,9 +51,6 @@ export default async () => {
 			version,
 		},
 		guild: configGuild.guild,
-		others: {
-			openAiKey: process.env.OPEN_AI_KEY,
-		},
 	}
 
 	try {

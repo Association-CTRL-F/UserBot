@@ -16,7 +16,6 @@ import {
 	getFileInfos,
 	displayNameAndID,
 } from '../../util/util.js'
-import { ChatGPTAPI } from 'chatgpt'
 import bent from 'bent'
 
 const SPAM_WINDOW_MS = 10 * 60 * 1000
@@ -1436,41 +1435,7 @@ export default async (message, client) => {
 
 	// Mention bot
 	if (message.mentions.users.has(client.user.id) && !message.mentions.repliedUser) {
-		if (client.config.others.openAiKey !== '') {
-			const chatgpt = new ChatGPTAPI({
-				apiKey: client.config.others.openAiKey,
-				completionParams: {
-					model: 'gpt-5',
-				},
-			})
-
-			try {
-				const chatgptResponse = await chatgpt.sendMessage(messageContent)
-
-				if (
-					chatgptResponse.text.includes('@everyone') ||
-					chatgptResponse.text.includes('@here')
-				) {
-					return message.reply({
-						content: `Désolé, je ne peux pas mentionner ${message.guild.memberCount} personnes 😬`,
-					})
-				}
-
-				if (chatgptResponse.text.length > 1960) {
-					return message.reply({
-						content: `**[Réponse partielle]**\n\n${chatgptResponse.text.slice(
-							0,
-							1960,
-						)} [...]`,
-					})
-				}
-
-				return message.reply({ content: chatgptResponse.text })
-			} catch (error) {
-				console.error(error)
-				return message.reply({ content: 'Une erreur est survenue 😬' })
-			}
-		}
+		return message.channel.send({ content: `Salut ${message.author} !` })
 	}
 
 	// Citations Discord

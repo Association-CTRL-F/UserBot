@@ -199,7 +199,6 @@ Le bot repose sur les variables d'environnement pour pouvoir fonctionner.
 | DB_NAME_URLS_API   | Base de données des URLs courtes                                                                                 |
 | DB_NAME_USERBOT    | Base de données du bot                                                                                           |
 | JOKE_TOKEN         | Token de l'API blagues-api                                                                                       |
-| OPEN_AI_KEY        | Clé API de l'API ChatGPT                                                                                         |
 
 > Pour pouvoir récupérer les identifiants (ID) sur Discord, il faut [activer le mode développeur](https://support.discord.com/hc/fr/articles/206346498-O%C3%B9-trouver-l-ID-de-mon-compte-utilisateur-serveur-message).
 

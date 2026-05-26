@@ -1,6 +1,6 @@
 {
 	"name": "userbot",
-	"version": "26.5.1",
+	"version": "26.5.2",
 	"description": "UserBot",
 	"type": "module",
 	"main": "src/index.js",
@@ -17,7 +17,6 @@
 	},
 	"dependencies": {
 		"bent": "^7.3.12",
-		"chatgpt": "^5.2.5",
 		"discord.js": "^14.26.4",
 		"mathjs": "^15.0.0",
 		"ms": "^2.1.3",
