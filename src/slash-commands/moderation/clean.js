@@ -57,7 +57,7 @@ export default {
 		}
 
 		const fetchedMessages = (
-			await interaction.channel.messages.fetch({ limit: chosenNumber + 1 })
+			await interaction.channel.messages.fetch({ limit: chosenNumber })
 		).filter((fetchedMessage) => !fetchedMessage.pinned)
 
 		const deletedMessages = await interaction.channel.bulkDelete(fetchedMessages, true)
