@@ -6,22 +6,26 @@ on:
       - '**/*.js'
       - 'package.json'
       - 'package-lock.json'
+      - 'eslint.config.js'
+      - '.prettierrc'
+      - 'docker/**'
       - '.github/workflows/**'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NPM_CONFIG_UPDATE_NOTIFIER: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - name: Setup Node.js 24
-        uses: actions/setup-node@v6
+      - name: Setup Node.js 26
+        uses: actions/setup-node@v7
         with:
-          node-version: '24'
+          node-version: '26'
           check-latest: true
           cache: 'npm'
 

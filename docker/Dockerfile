@@ -1,17 +1,18 @@
 # ── Stage 1: deps ─────────────────────────────────────────────────────────────
-FROM node:26-alpine AS deps
+FROM node:26-trixie-slim AS deps
+ENV NPM_CONFIG_UPDATE_NOTIFIER=false
 WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm ci --omit=dev
 
 # ── Stage 2: build ────────────────────────────────────────────────────────────
-FROM node:26-alpine AS build
+FROM node:26-trixie-slim AS build
 WORKDIR /usr/src/app
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY . .
 
 # ── Stage 3: runtime (distroless) ─────────────────────────────────────────────
-FROM gcr.io/distroless/nodejs24-debian13
+FROM gcr.io/distroless/nodejs26-debian13
 ENV NODE_ENV=production
 WORKDIR /usr/src/app
 COPY --from=build /usr/src/app/node_modules ./node_modules

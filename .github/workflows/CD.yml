@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout main
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Docker meta
         id: docker_meta
@@ -24,6 +24,7 @@ jobs:
           images: ctrlfdocker/userbot
           tags: |
             type=semver,pattern={{version}},value=${{ github.event.release.tag_name }}
+            type=raw,value=latest
 
       - name: Login to DockerHub
         uses: docker/login-action@v4
@@ -46,7 +47,7 @@ jobs:
     needs: build_and_push
     steps:
       - name: Executing remote ssh commands
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}

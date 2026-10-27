@@ -77,23 +77,21 @@ L'application est capable de tourner sous plusieurs environnements :
 
 #### Prérequis
 
-1. Il est nécessaire d'avoir [Node.js](https://nodejs.org/fr) v18.7.0 ou plus récent d'installé sur votre machine.
+1. Il est nécessaire d'avoir [Node.js](https://nodejs.org/fr) v20.19.0 ou plus récent d'installé sur votre machine.
 
 	> Utilisez la commande `node -v` pour vous assurez que Node est bien installé et que sa version est suffisante.
 
 2. Téléchargez le code de l'application sur votre machine. _cf. [Télécharger le code de l'application sur votre machine](#download)_
 
-3. Il faut au préalable installer les dépendances de l'application avant de lancer celle-ci en utilisant la commande `npm i`.
+3. Il faut au préalable installer les dépendances de l'application avant de lancer celle-ci en utilisant la commande `npm ci`.
 
-	> Toutes les dépendances vont être installées, y compris celles prévues pour les développeurs, car le package [dotenv](https://www.npmjs.com/package/dotenv) est nécessaire. Ci toutefois vous avez appliqué les variables d'environnement à l'application par vos propres moyens, seule la commande `npm i --production` est nécessaire.
+	> Toutes les dépendances vont être installées, y compris celles prévues pour les développeurs, car le package [dotenv](https://www.npmjs.com/package/dotenv) est nécessaire. Si toutefois vous avez appliqué les variables d'environnement à l'application par vos propres moyens, seule la commande `npm ci --omit=dev` est nécessaire.
 
-4. Renommez le fichier `bot.example.env` en `bot.env`, puis modifiez les variables d'environnement pour que l'application fonctionne correctement. _cf. [Variables d'environnement](#environnement)_
+4. Renommez le fichier `config/env/bot.example.env` en `config/env/bot.env`, puis modifiez les variables d'environnement pour que l'application fonctionne correctement. _cf. [Variables d'environnement](#environnement)_
 
-5. Renommez le fichier `config.example.json` en `config.json`, puis modifiez les variables d'environnement pour que l'application fonctionne correctement. _cf. [Variables d'environnement](#environnement)_
+5. Renommez le fichier `config/env/config.example.json` en `config/env/config.json`, puis modifiez les variables d'environnement pour que l'application fonctionne correctement. _cf. [Variables d'environnement](#environnement)_
 
-6. Renommez le fichier `reactionRoleConfig.example.json` en `reactionRoleConfig.json`, puis modifiez son contenu pour que le système fonctionne correctement. _cf. [Variables d'environnement](#environnement)_
-
-7. Renommez le fichier `banEmotesAtJoin.example.json` en `banEmotesAtJoin.json`, puis modifiez son contenu pour que le système fonctionne correctement. _cf. [Variables d'environnement](#environnement)_
+6. Renommez le fichier `config/env/banEmotesAtJoin.example.json` en `config/env/banEmotesAtJoin.json`, puis modifiez son contenu pour que le système fonctionne correctement. _cf. [Configuration des émojis bannis à l'arrivée](#reaction)_
 
 #### Lancement et arrêt de l'application
 
@@ -109,53 +107,49 @@ L'application est capable de tourner sous plusieurs environnements :
 #### Prérequis
 
 1. Il est nécessaire d'avoir [Docker](https://docs.docker.com/get-docker) ainsi que [Docker Compose](https://docs.docker.com/compose/install) d'installé.
-	> Utilisez les commandes `docker -v` et `docker-compose -v` pour vérifier que les deux applications soient bien installées.
+	> Utilisez les commandes `docker -v` et `docker compose version` pour vérifier que les deux applications soient bien installées.
 
-2. Créez les fichiers `bot.env`, `config.json`, `reactionRoleConfig.json` et `banEmotesAtJoin.json` dans le dossier `config` ainsi que le fichier `docker-compose.yml` dans le dossier `docker` :
+2. Créez les fichiers `bot.env`, `config.json` et `banEmotesAtJoin.json` dans le dossier `config/env` ainsi que le fichier `docker-compose.yml` dans le dossier `docker` :
 	```bash
-	mkdir config
-	cd config
-	touch bot.env config.json reactionRoleConfig.json banEmotesAtJoin.json
-	cd ..
-	mkdir docker
-	touch docker-compose.yml
+	mkdir -p config/env
+	touch config/env/bot.env config/env/config.json config/env/banEmotesAtJoin.json
+	mkdir -p docker
+	touch docker/docker-compose.yml
 	```
 
    - Configurez le fichier `bot.env` en ajoutant les variables d'environnement pour que l'application fonctionne correctement. _cf. [Variables d'environnement](#environnement)_
 
    - Configurez le fichier `config.json` en ajoutant les variables d'environnement pour que l'application fonctionne correctement. _cf. [Variables d'environnement](#environnement)_
 
-   - Configurez le fichier `reactionRoleConfig.json`, puis modifiez le fichier pour que le système fonctionne correctement. _cf. [Configuration du sytème de réactions / rôles](#reaction)_
+   - Configurez le fichier `banEmotesAtJoin.json`, puis modifiez le fichier pour que le système fonctionne correctement. _cf. [Configuration des émojis bannis à l'arrivée](#reaction)_
 
-   - Configurez le fichier `banEmotesAtJoin.json`, puis modifiez le fichier pour que le système fonctionne correctement. _cf. [Configuration du sytème de réactions / rôles](#reaction)_
-
-   - Copiez le contenu du fichier [docker/docker-compose.yml](docker/docker-compose.yml) dans le fichier du même emplacement sur votre machine. Il correspond au fichier de configuration pour `docker-compose`.
+   - Copiez le contenu du fichier [docker/docker-compose.yml](docker/docker-compose.yml) dans le fichier du même emplacement sur votre machine. Il correspond au fichier de configuration pour Docker Compose.
 
 > La structure des dossiers et fichiers devrait ressembler à ça :
 > ```
 > .
 > ├── config
-> │   ├── bot.env
-> │   ├── config.json
-> │   ├── reactionRoleConfig.json
-> │   └── banEmotesAtJoin.json
+> │   └── env
+> │       ├── bot.env
+> │       ├── config.json
+> │       └── banEmotesAtJoin.json
 > └── docker
 > 	  └── docker-compose.yml
 > ```
 
 #### Lancement de l'application
 
--   Vous pouvez utiliser les commandes `docker pull ctrlfdocker/userbot:latest` puis `docker-compose -f ./docker/docker-compose.yml up -d` pour lancer l'application.
+-   Vous pouvez utiliser les commandes `docker pull ctrlfdocker/userbot:latest` puis `docker compose -f ./docker/docker-compose.yml up -d` pour lancer l'application.
 
-> docker pull va télécharger ou mettre à jour si besoin l'image de l'application hébergée sur [Docker Hub](https://hub.docker.com/repository/docker/ctrlfdocker/userbot). Le tag ici est `latest` ce qui correspond, de fait, au code présent sur la branche [master](https://github.com/Association-CTRL-F/UserBot/tree/master). Vous pouvez spécifier une version spécifique comme par exemple `8.0.0`. _cf. [liste des tags disponibles](https://hub.docker.com/repository/registry-1.docker.io/ctrlfdocker/userbot/tags?page=1) ainsi que leur [version correspondante](https://github.com/Association-CTRL-F/UserBot/releases)_
+> docker pull va télécharger ou mettre à jour si besoin l'image de l'application hébergée sur [Docker Hub](https://hub.docker.com/repository/docker/ctrlfdocker/userbot). Le tag ici est `latest` ce qui correspond, de fait, à la dernière version publiée. Vous pouvez spécifier une version spécifique comme par exemple `8.0.0`. _cf. [liste des tags disponibles](https://hub.docker.com/repository/registry-1.docker.io/ctrlfdocker/userbot/tags?page=1) ainsi que leur [version correspondante](https://github.com/Association-CTRL-F/UserBot/releases)_
 
-> docker-compose va lancer le container avec les règles définies dans `docker-compose.yml`.
+> Docker Compose va lancer le container avec les règles définies dans `docker-compose.yml`.
 
 > Pour plus d'infos sur les technologies liées à Docker utilisées ici, vous pouvez consulter leur [documentation](https://docs.docker.com/reference) ou leur [manuel](https://docs.docker.com/engine).
 
 #### Arrêt de l'application
 
--   Vous pouvez utiliser la commande `docker-compose -f ./docker/docker-compose.yml stop` pour stopper le container. Pour le supprimer, utilisez la commande `docker-compose -f ./docker/docker-compose.yml down`.
+-   Vous pouvez utiliser la commande `docker compose -f ./docker/docker-compose.yml stop` pour stopper le container. Pour le supprimer, utilisez la commande `docker compose -f ./docker/docker-compose.yml down`.
 
 ## Ressources
 
@@ -207,67 +201,7 @@ Le bot repose sur les variables d'environnement pour pouvoir fonctionner.
 </details>
 
 <details id='reaction'>
-<summary><b>Configuration du sytème de réactions / rôles</b></summary>
-
-#### Fichier reactionRoleConfig.json
-
-> Exemple disponible [ici](config/env/reactionRoleConfig.example.json) :
-> ```js
-> [
-> 	{
-> 		// Salon n°1
-> 		"channelID": "123456789123456789",
-> 		"messageArray": [
-> 			// Message n°1
-> 			{
-> 				// ID du message
-> 				"messageID": "123456789123456789",
-> 				// Émoji unicode en clé, objet avec "id" en valeur
-> 				"emojiRoleMap": {
-> 					"💸": { "id": "123456789123456789" },
-> 					"🔧": { "id": "123456789123456789" }
-> 				}
-> 			},
-> 			// Message n°2
-> 			{
-> 				// ID du message
-> 				"messageID": "123456789123456789",
-> 				// Émoji unicode en clé, objet avec "id" et giveJoinRole en valeur
-> 				"emojiRoleMap": {
-> 					"🥵": { "id": "123456789123456789" },
-> 					"✅": { "id": "123456789123456789", "giveJoinRole": true }
-> 				}
-> 			}
-> 		]
-> 	},
-> 	{
-> 		"channelID": "123456789123456789",
-> 		"messageArray": [
-> 			{
-> 				"messageID": "123456789123456789",
-> 				"emojiRoleMap": {
-> 					"123456789123456789": { "id": "123456789123456789" },
-> 					"987654321987654321": { "id": "123456789123456789" }
-> 				}
-> 			},
-> 			{
-> 				"messageID": "123456789123456789",
-> 				"emojiRoleMap": {
-> 					"123456789123456789": { "id": "123456789123456789" },
-> 					"987654321987654321": { "id": "123456789123456789", "giveJoinRole": true }
-> 				}
-> 			}
-> 		]
-> 	}
-> ]
-> ```
-
-> Pour pouvoir récupérer les identifiants (ID) sur Discord, il faut [activer le mode développeur](https://support.discord.com/hc/fr/articles/206346498-O%C3%B9-trouver-l-ID-de-mon-compte-utilisateur-serveur-message).
-
-> Pour désactiver le système, le fichier doit être composé d'un tableau (array) **vide** :
-> ```js
-> []
-> ```
+<summary><b>Configuration des émojis bannis à l'arrivée</b></summary>
 
 #### Fichier banEmotesAtJoin.json
 
