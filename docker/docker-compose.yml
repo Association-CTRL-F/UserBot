@@ -1,6 +1,6 @@
 services:
   userbot:
-    image: ctrlfdocker/userbot:latest
+    image: registry.ctrl-f.info/ctrlfdocker/userbot:latest
     container_name: UserBot
     restart: on-failure
     env_file:

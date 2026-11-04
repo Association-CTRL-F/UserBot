@@ -139,9 +139,9 @@ L'application est capable de tourner sous plusieurs environnements :
 
 #### Lancement de l'application
 
--   Vous pouvez utiliser les commandes `docker pull ctrlfdocker/userbot:latest` puis `docker compose -f ./docker/docker-compose.yml up -d` pour lancer l'application.
+-   Vous pouvez utiliser les commandes `docker pull registry.ctrl-f.info/ctrlfdocker/userbot:latest` puis `docker compose -f ./docker/docker-compose.yml up -d` pour lancer l'application.
 
-> docker pull va télécharger ou mettre à jour si besoin l'image de l'application hébergée sur [Docker Hub](https://hub.docker.com/repository/docker/ctrlfdocker/userbot). Le tag ici est `latest` ce qui correspond, de fait, à la dernière version publiée. Vous pouvez spécifier une version spécifique comme par exemple `8.0.0`. _cf. [liste des tags disponibles](https://hub.docker.com/repository/registry-1.docker.io/ctrlfdocker/userbot/tags?page=1) ainsi que leur [version correspondante](https://github.com/Association-CTRL-F/UserBot/releases)_
+> docker pull va télécharger ou mettre à jour si besoin l'image de l'application hébergée sur le registre privé `registry.ctrl-f.info`. Le tag ici est `latest` ce qui correspond, de fait, à la dernière version publiée. Vous pouvez spécifier une version spécifique comme par exemple `8.0.0`. _cf. [liste des releases](https://github.com/Association-CTRL-F/UserBot/releases)_
 
 > Docker Compose va lancer le container avec les règles définies dans `docker-compose.yml`.
 
