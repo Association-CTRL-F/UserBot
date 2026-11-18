@@ -1,20 +1,22 @@
 name: CD
 
 on:
-  release:
-    types:
-      - published
+  push:
+    tags:
+      - "v*.*.*"
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  build_and_push:
+  build:
     name: Build and push OCI image to registry
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
-      - name: Checkout main
+      - name: Checkout
         uses: actions/checkout@v7
 
       - name: Docker meta
@@ -23,7 +25,7 @@ jobs:
         with:
           images: registry.ctrl-f.info/ctrlfdocker/userbot
           tags: |
-            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }}
+            type=semver,pattern={{version}},value=${{ github.ref_name }}
             type=raw,value=latest
 
       - name: Login to registry
@@ -42,10 +44,16 @@ jobs:
           tags: ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
 
-  pull:
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v3
+        with:
+          token: ${{ github.token }}
+          generate_release_notes: true
+
+  deploy:
     name: Pull the image and restart the container
     runs-on: ubuntu-latest
-    needs: build_and_push
+    needs: build
     steps:
       - name: Executing remote ssh commands
         uses: appleboy/ssh-action@v1.2.5
